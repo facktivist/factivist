@@ -1,0 +1,53 @@
+{
+  "timestamp": "2026-05-19T21:27:05.634Z",
+  "mode": "headless",
+  "workerType": "optimize",
+  "model": "sonnet",
+  "durationMs": 212767,
+  "executionId": "optimize_1779225812867_s6fpeu",
+  "success": true,
+  "findings": {
+    "sections": [
+      {
+        "title": "N+1 Queries",
+        "content": "```ts\n// BAD: fetches cases, then one query per case for related matter\nconst cases = await db.case.findMany();\nfor (const c of cases) {\n  c.matter = await db.matter.findUnique({ where: { id: c.matterId } });\n}\n\n// GOOD: single query with include\nconst cases = await db.case.findMany({ include: { matter: true } });\n```\n\n",
+        "level": 3
+      },
+      {
+        "title": "Unnecessary React Re-renders",
+        "content": "```tsx\n// BAD: new object reference on every render\n<Component config={{ theme: 'dark' }} />\n\n// GOOD: stable reference\nconst config = useMemo(() => ({ theme: 'dark' }), []);\n<Component config={config} />\n```\n\n",
+        "level": 3
+      },
+      {
+        "title": "Caching Opportunities (Next.js / React Query)",
+        "content": "```ts\n// Next.js fetch with cache\nconst data = await fetch('/api/matters', { next: { revalidate: 60 } });\n\n// React Query for client-side\nconst { data } = useQuery({ queryKey: ['matters'], queryFn: fetchMatters, staleTime: 5 * 60 * 1000 });\n```\n\n",
+        "level": 3
+      },
+      {
+        "title": "Memory Leaks",
+        "content": "```ts\n// BAD: subscription never cleaned up\nuseEffect(() => {\n  const sub = store.subscribe(handler);\n}, []);\n\n// GOOD: cleanup function\nuseEffect(() => {\n  const sub = store.subscribe(handler);\n  return () => sub.unsubscribe();\n}, []);\n```\n\nPoint me to actual source files or a repo and I'll do a precise, file-level audit.",
+        "level": 3
+      }
+    ],
+    "codeBlocks": [
+      {
+        "language": "ts",
+        "code": "// BAD: fetches cases, then one query per case for related matter\nconst cases = await db.case.findMany();\nfor (const c of cases) {\n  c.matter = await db.matter.findUnique({ where: { id: c.matterId } });\n}\n\n// GOOD: single query with include\nconst cases = await db.case.findMany({ include: { matter: true } });"
+      },
+      {
+        "language": "tsx",
+        "code": "// BAD: new object reference on every render\n<Component config={{ theme: 'dark' }} />\n\n// GOOD: stable reference\nconst config = useMemo(() => ({ theme: 'dark' }), []);\n<Component config={config} />"
+      },
+      {
+        "language": "ts",
+        "code": "// Next.js fetch with cache\nconst data = await fetch('/api/matters', { next: { revalidate: 60 } });\n\n// React Query for client-side\nconst { data } = useQuery({ queryKey: ['matters'], queryFn: fetchMatters, staleTime: 5 * 60 * 1000 });"
+      },
+      {
+        "language": "ts",
+        "code": "// BAD: subscription never cleaned up\nuseEffect(() => {\n  const sub = store.subscribe(handler);\n}, []);\n\n// GOOD: cleanup function\nuseEffect(() => {\n  const sub = store.subscribe(handler);\n  return () => sub.unsubscribe();\n}, []);"
+      }
+    ]
+  },
+  "rawOutputPreview": "This project has no source code yet — only configuration files and a SQLite database. The `lawsafe` directory contains:\n\n- `CLAUDE.md` — project configuration\n- `ruvector.db` — a vector database file\n- `.claude/` — agent and settings configuration\n\nThere are no TypeScript, JavaScript, React, Python, or other source files to analyze for the performance patterns you listed (N+1 queries, unnecessary re-renders, memory leaks, etc.).\n\n**To get a meaningful performance analysis, I'd need:**\n\n1. **Source files** — React components (`.tsx`/`.jsx`), API routes, database query files\n2. **A `package.json`** — to understand the tech stack (ORM, framework, state management)\n3. **Database models or schema** — to identify N+1 query risks\n4. **Data fetching code** — hooks, service layers, server actions\n\nIf this project is still in early setup, here are the performance patterns to watch for **as you build**:\n\n---\n\n### N+1 Queries\n```ts\n// BAD: fetches cases, then one query per case for related matter\nconst cases = await db.case.findMany();\nfor (const c of cases) {\n  c.matter = await db.matter.findUnique({ where: { id: c.matterId } });\n}\n\n// GOOD: single query with include\nconst cases = await db.case.findMany({ include: { matter: true } });\n```\n\n### Unnecessary React Re-renders\n```tsx\n// BAD: new object reference on every render\n<Component config={{ theme: 'dark' }} />\n\n// GOOD: stable reference\nconst config = useMemo(() => ({ theme: 'dark' }), []);\n<Component config={config} />\n```\n\n### Caching Opportunities (Next.js / React Query)\n```ts\n// Next.js fetch with cache\nconst data = await fetch('/api/matters', { next: { revalidate: 60 } });\n\n// React Query for client-side\nconst { data } = useQuery({ queryKey: ['matters'], queryFn: fetchMatters, staleTime: 5 * 60 * 1000 });\n```\n\n### Memory Leaks\n```ts\n// BAD: subscription never cleaned up\nuseEffect(() => {\n  const sub = store.subscribe(handler);\n}, []);\n\n// GOOD: cleanup function\nuseEffect(() => {\n  const sub = store.subscribe(handler);\n",
+  "rawOutputLength": 2130
+}
