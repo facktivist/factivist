@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-05-19T19:13:01.890Z",
+  "mode": "headless",
+  "workerType": "testgaps",
+  "model": "sonnet",
+  "durationMs": 98347,
+  "executionId": "testgaps_1779217883543_k3k6tu",
+  "success": true,
+  "findings": {
+    "sections": [],
+    "codeBlocks": []
+  },
+  "rawOutputPreview": "The `lawsafe` project has **no application source code** — the directory contains only:\n\n- `CLAUDE.md` — project configuration\n- `ruvector.db` — a vector database file\n- `.claude/` — Claude Code config (agents, commands, settings)\n- `.claude-flow/` — Claude Flow orchestration config\n\nThere are no source files (`.ts`, `.js`, `.py`, etc.), no test files, and no `package.json` to analyze for test coverage.\n\n**To perform a test coverage analysis, I need an actual codebase.** A few possibilities:\n\n1. **The project hasn't been scaffolded yet** — source code needs to be created before tests can be written.\n2. **The code lives elsewhere** — perhaps in a subdirectory, a different repo, or a monorepo package I should point to.\n3. **This is a configuration-only project** — in which case there's nothing testable here.\n\nCould you clarify where the application source code lives? If you share a file path or point me to the relevant directory, I can run the full coverage gap analysis with test skeletons.\n",
+  "rawOutputLength": 1004
+}

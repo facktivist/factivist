@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-05-19T21:25:48.422Z",
+  "mode": "headless",
+  "workerType": "audit",
+  "model": "haiku",
+  "durationMs": 135651,
+  "executionId": "audit_1779225812771_3gxicn",
+  "success": false,
+  "findings": {
+    "parseError": true,
+    "rawOutput": "Prompt is too long\n"
+  },
+  "rawOutputPreview": "Prompt is too long\n",
+  "rawOutputLength": 19
+}
