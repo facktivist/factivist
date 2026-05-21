@@ -30,7 +30,7 @@
   "peerDependencies": {
     "heroui-native": "*",
     "react": "^19.0.0",
-    "react-native": "^0.76.0"
+    "react-native": "^0.85.3"
   },
   "devDependencies": {
     "@factivist/tsconfig": "workspace:*",

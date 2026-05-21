@@ -18,11 +18,10 @@ export type Id = z.infer<typeof idSchema>
  * Uses Zod's built-in email check plus an explicit regex guard.
  */
 export const emailSchema = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .email('Must be a valid email address')
-  .regex(EMAIL_REGEX, 'Must be a valid email address')
+  .preprocess(
+    (v) => (typeof v === 'string' ? v.trim().toLowerCase() : v),
+    z.email('Must be a valid email address').regex(EMAIL_REGEX, 'Must be a valid email address'),
+  )
   .brand<'Email'>()
 
 export type Email = z.infer<typeof emailSchema>
@@ -43,9 +42,8 @@ export type Slug = z.infer<typeof slugSchema>
 /**
  * ISO-8601 timestamp string. Branded for type-level safety.
  */
-export const timestampSchema = z
-  .string()
-  .datetime({ offset: true, message: 'Must be an ISO-8601 timestamp' })
+export const timestampSchema = z.iso
+  .datetime({ offset: true, error: 'Must be an ISO-8601 timestamp' })
   .brand<'Timestamp'>()
 
 export type Timestamp = z.infer<typeof timestampSchema>

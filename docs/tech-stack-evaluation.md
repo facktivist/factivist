@@ -15,7 +15,33 @@ A minimum **95% code coverage** target is enforced across all layers via a multi
 
 ---
 
-## 2. Architecture Overview
+## 2. Version Reference (as of May 2026)
+
+| Technology | Version | Status |
+|---|---|---|
+| Next.js | 16.2.6 | Stable |
+| TypeScript | 6.0.3 | Stable |
+| HeroUI (web) | 3.0.5 | Stable |
+| HeroUI Native | 1.x | Stable (v1.0.0 March 2026) |
+| Hono | 4.12.21 | Stable |
+| Drizzle ORM | 0.45.2 | Stable (1.0.0-beta.2 also available) |
+| Expo SDK | 55 | Stable (SDK 56 in beta) |
+| React | 19.x | Stable |
+| React Native | 0.83 (SDK 55) | Stable |
+| Tailwind CSS | 4.3.0 | Stable |
+| Uniwind | Latest | Stable (Tailwind CSS v4.3 for React Native) |
+| Bun | 1.2.x | Stable |
+| Turborepo | Latest | Stable (Vercel-maintained) |
+| Vitest | Latest | Stable |
+| Playwright | Latest | Stable |
+| Detox | Latest | Stable |
+| Supabase | Managed | Cloud service |
+| Biome | Latest | Stable |
+| Ruflo | 3.7.x-alpha | Alpha (rapid release cadence) |
+
+---
+
+## 3. Architecture Overview
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -24,7 +50,7 @@ A minimum **95% code coverage** target is enforced across all layers via a multi
 │   apps/web   │ apps/mobile  │   apps/api   │  Agent Layer    │
 │  (Next.js)   │   (Expo)     │   (Hono)     │   (Ruflo)       │
 │  HeroUI v3   │ HeroUI Native│  Bun Runtime │  Claude Code    │
-│  Tailwind v4 │   Uniwind    │              │  Multi-Agent    │
+│  Tailwind CSS v4.3 │   Uniwind    │              │  Multi-Agent    │
 ├──────────────┴──────────────┴──────────────┴─────────────────┤
 │                     SHARED PACKAGES                          │
 │  ui/theme · ui/web · ui/native · shared · db                 │
@@ -43,7 +69,7 @@ A minimum **95% code coverage** target is enforced across all layers via a multi
 
 ---
 
-## 3. Monorepo Structure
+## 4. Monorepo Structure
 
 ```
 monorepo/
@@ -102,7 +128,7 @@ monorepo/
 │   │   └── vitest.config.ts
 │
 ├── tooling/
-│   ├── tailwind-config/          # Shared Tailwind v4 preset + HeroUI plugin
+│   ├── tailwind-config/          # Shared Tailwind CSS v4.3 preset + HeroUI plugin
 │   ├── tsconfig/                 # Shared TypeScript configurations
 │   ├── eslint-config/            # Shared lint rules
 │   └── vitest-config/            # Shared Vitest preset + coverage config
@@ -124,7 +150,7 @@ monorepo/
 
 ---
 
-## 4. Layer-by-Layer Evaluation
+## 5. Layer-by-Layer Evaluation
 
 ### 4.1 Monorepo Orchestration — Turborepo + Bun Workspaces
 
@@ -141,8 +167,8 @@ monorepo/
 |---|---|
 | **Framework** | Next.js (App Router). SSR/SSG for SEO, React Server Components for performance, API routes for lightweight backend needs. |
 | **Bundler** | Turbopack (built-in). Rust-based, default in Next.js. No separate config required. |
-| **UI Library** | HeroUI v3. Built on React Aria (Adobe) for accessibility, Tailwind v4 for styling, compound component API (dot notation). Zero runtime CSS — all styles resolved at build time. Design tokens via CSS custom properties in `@theme` directives. |
-| **Styling** | Tailwind CSS v4. Utility-first, oklch color space, CSS-native theming. Shared preset in `tooling/tailwind-config/`. |
+| **UI Library** | HeroUI v3. Built on React Aria (Adobe) for accessibility, Tailwind CSS v4.3 for styling, compound component API (dot notation). Zero runtime CSS — all styles resolved at build time. Design tokens via CSS custom properties in `@theme` directives. |
+| **Styling** | Tailwind CSS v4.3. Utility-first, oklch color space, CSS-native theming. Shared preset in `tooling/tailwind-config/`. |
 | **Testing** | Vitest (unit/integration for components, hooks, server actions, Zod schemas) + Playwright (E2E for async server components, auth flows, full user journeys). |
 | **Risk** | HeroUI v3 is relatively new (2026). Mitigation: built on mature foundations (React Aria, Tailwind v4), YC S24 backed, 27.7k GitHub stars. |
 
@@ -152,7 +178,7 @@ monorepo/
 |---|---|
 | **Framework** | Expo (React Native) with Expo Router for typed file-based navigation. EAS Build/Submit for managed iOS/Android deployment. |
 | **Bundler** | Metro (Expo default). Required for React Native module resolution. |
-| **UI Library** | HeroUI Native v1.0.0 (stable March 2026). Built on Tailwind v4 via Uniwind. Same design language and component API as HeroUI web. |
+| **UI Library** | HeroUI Native v1.0.0 (stable March 2026). Built on Tailwind CSS v4.3 via Uniwind. Same design language and component API as HeroUI web. |
 | **Uniwind** | Tailwind CSS for React Native. Enables utility-first styling with same class vocabulary as web. |
 | **Key Dependencies** | `react-native-reanimated`, `react-native-gesture-handler`, `react-native-safe-area-context`, `@gorhom/bottom-sheet`, `react-native-svg`, `tailwind-merge`, `tailwind-variants`. |
 | **Testing** | Vitest (unit/integration for components, hooks, business logic) + Detox (E2E for full native app flows on iOS/Android simulators). |
@@ -201,7 +227,7 @@ monorepo/
 
 ---
 
-## 5. Testing Strategy
+## 6. Testing Strategy
 
 ### 5.1 Coverage Target
 
@@ -307,7 +333,7 @@ export default defineConfig({
 
 ---
 
-## 6. Design System Architecture
+## 7. Design System Architecture
 
 ### 6.1 Token Hierarchy
 
@@ -358,7 +384,7 @@ Core primitives: Stack, Cluster, Sidebar, Switcher, Grid.
 
 ---
 
-## 7. Bundler Matrix
+## 8. Bundler Matrix
 
 | App | Bundler | Config Required |
 |---|---|---|
@@ -381,7 +407,7 @@ Shared packages use `"exports"` field for multi-bundler resolution:
 
 ---
 
-## 8. Cross-Platform Sharing Strategy
+## 9. Cross-Platform Sharing Strategy
 
 | Share Across Platforms | Keep Platform-Specific |
 |---|---|
@@ -396,7 +422,7 @@ Shared packages use `"exports"` field for multi-bundler resolution:
 
 ---
 
-## 9. Developer Tooling
+## 10. Developer Tooling
 
 ### 9.1 Agent Skills
 
@@ -422,7 +448,7 @@ Shared packages use `"exports"` field for multi-bundler resolution:
 
 ---
 
-## 10. Risk Assessment
+## 11. Risk Assessment
 
 | Risk | Severity | Likelihood | Mitigation |
 |---|---|---|---|
@@ -437,7 +463,7 @@ Shared packages use `"exports"` field for multi-bundler resolution:
 
 ---
 
-## 11. Decision Log
+## 12. Decision Log
 
 | Decision | Chosen | Rejected | Rationale |
 |---|---|---|---|
@@ -459,7 +485,7 @@ Shared packages use `"exports"` field for multi-bundler resolution:
 
 ---
 
-## 12. Step-by-Step Setup Guide
+## 13. Step-by-Step Setup Guide
 
 ### Phase 1 — Monorepo Foundation
 
@@ -1472,7 +1498,7 @@ bun run test:coverage  # Should say "FULL TURBO" for all cached packages
 
 ---
 
-## 13. Next Steps
+## 14. Next Steps
 
 1. **Execute Phase 1** — Scaffold monorepo, configure Bun workspaces + Turborepo.
 2. **Execute Phase 2** — Set up Vitest presets, Playwright, and Detox configs.
