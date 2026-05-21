@@ -15,5 +15,6 @@ playwright-report/
 test-results/
 e2e/.auth/
 artifacts/
+*.log
 .DS_Store
 CLAUDE.local.md

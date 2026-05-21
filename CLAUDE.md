@@ -65,7 +65,7 @@ SendMessage({ to: "researcher", summary: "Start", message: "[task context]" })
 - **Neural**: Enabled
 
 ```bash
-npx @claude-flow/cli@latest swarm init --topology hierarchical --max-agents 8 --strategy specialized
+npx ruflo@latest swarm init --topology hierarchical --max-agents 8 --strategy specialized
 ```
 
 ### Agent Routing
@@ -94,14 +94,14 @@ npx @claude-flow/cli@latest swarm init --topology hierarchical --max-agents 8 --
 
 ### Before Any Task
 ```bash
-npx @claude-flow/cli@latest memory search --query "[task keywords]" --namespace patterns
-npx @claude-flow/cli@latest hooks route --task "[task description]"
+npx ruflo@latest memory search --query "[task keywords]" --namespace patterns
+npx ruflo@latest hooks route --task "[task description]"
 ```
 
 ### After Success
 ```bash
-npx @claude-flow/cli@latest memory store --namespace patterns --key "[name]" --value "[what worked]"
-npx @claude-flow/cli@latest hooks post-task --task-id "[id]" --success true --store-results true
+npx ruflo@latest memory store --namespace patterns --key "[name]" --value "[what worked]"
+npx ruflo@latest hooks post-task --task-id "[id]" --success true --store-results true
 ```
 
 ### MCP Tools (use `ToolSearch("keyword")` to discover)
@@ -127,7 +127,7 @@ npx @claude-flow/cli@latest hooks post-task --task-id "[id]" --success true --st
 | `document` | After API changes |
 
 ```bash
-npx @claude-flow/cli@latest hooks worker dispatch --trigger audit
+npx ruflo@latest hooks worker dispatch --trigger audit
 ```
 
 ## Agents
@@ -153,13 +153,13 @@ bun run build && bun run test
 ## CLI Quick Reference
 
 ```bash
-npx @claude-flow/cli@latest init --wizard           # Setup
-npx @claude-flow/cli@latest swarm init --v3-mode     # Start swarm
-npx @claude-flow/cli@latest memory search --query "" # Vector search
-npx @claude-flow/cli@latest hooks route --task ""    # Route to agent
-npx @claude-flow/cli@latest doctor --fix             # Diagnostics
-npx @claude-flow/cli@latest security scan            # Security scan
-npx @claude-flow/cli@latest performance benchmark    # Benchmarks
+npx ruflo@latest init --wizard           # Setup
+npx ruflo@latest swarm init --v3-mode     # Start swarm
+npx ruflo@latest memory search --query "" # Vector search
+npx ruflo@latest hooks route --task ""    # Route to agent
+npx ruflo@latest doctor --fix             # Diagnostics
+npx ruflo@latest security scan            # Security scan
+npx ruflo@latest performance benchmark    # Benchmarks
 ```
 
 26 commands, 140+ subcommands. Use `--help` on any command for details.
@@ -167,9 +167,9 @@ npx @claude-flow/cli@latest performance benchmark    # Benchmarks
 ## Setup
 
 ```bash
-claude mcp add claude-flow -- npx -y @claude-flow/cli@latest
-npx @claude-flow/cli@latest daemon start
-npx @claude-flow/cli@latest doctor --fix
+claude mcp add ruflo -- npx -y ruflo@latest mcp start
+npx ruflo@latest daemon start
+npx ruflo@latest doctor --fix
 ```
 
 **Agent tool** handles execution (agents, files, code, git). **MCP tools** handle coordination (swarm, memory, hooks). **CLI** is the same via Bash.
@@ -203,7 +203,7 @@ Full skills catalog: `.claude/skills/SKILLS_INDEX.md` (329 skills, never auto-lo
 ## Package Manager
 
 Bun exclusively. Never use npm, yarn, or pnpm for install/run/add.
-Exception: `npx` is acceptable for one-off CLI tools (e.g., `npx @claude-flow/cli@latest`).
+Exception: `npx` is acceptable for one-off CLI tools (e.g., `npx ruflo@latest`).
 
 ## Commands
 

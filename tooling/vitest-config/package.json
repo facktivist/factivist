@@ -1,0 +1,29 @@
+{
+  "name": "@factivist/vitest-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "base.ts",
+    "react.ts",
+    "node.ts"
+  ],
+  "exports": {
+    "./base": "./base.ts",
+    "./react": "./react.ts",
+    "./node": "./node.ts"
+  },
+  "dependencies": {
+    "@vitest/coverage-v8": "^2.1.8",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.8"
+  },
+  "peerDependencies": {
+    "@testing-library/jest-dom": "^6.6.3"
+  },
+  "peerDependenciesMeta": {
+    "@testing-library/jest-dom": {
+      "optional": true
+    }
+  }
+}
