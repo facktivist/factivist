@@ -1,0 +1,196 @@
+/*
+ * @factivist/tailwind-config — shared Tailwind v4 + HeroUI v3 preset.
+ *
+ * Consumption (in apps/web/app/globals.css, apps/mobile/global.css, etc.):
+ *   @import "@factivist/tailwind-config";
+ *
+ * Toggle dark mode by adding `class="dark"` on <html> (or rely on the
+ * prefers-color-scheme fallback below). Apps SHOULD NOT redefine the
+ * semantic tokens — extend the primitive scales here instead.
+ *
+ * Brand hue choice: oklch(0.55 0.20 250) — a saturated indigo-blue. Picked
+ * because (1) hue 250 is the WCAG-friendly blue band most legible on both
+ * light and dark surfaces, (2) chroma 0.20 stays inside the sRGB gamut at
+ * L=0.55 so the 500 step renders identically across displays, and (3) it
+ * pairs cleanly with neutral grays on hue 250 for cohesive tinted neutrals.
+ */
+
+@import "tailwindcss";
+
+/* HeroUI v3 plugin + source globs so utilities used inside HeroUI's
+ * distributed components are detected by Tailwind v4's content scanner. */
+@plugin "@heroui/react";
+@source "../../node_modules/@heroui/theme/dist/**/*.{js,mjs}";
+
+/* Class-based dark mode strategy — `.dark` on <html> or <body>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* ─── Primitive color scales (oklch) ─────────────────────────────── */
+
+  /* Neutral gray — slight cool tilt (hue 250) to harmonize with brand */
+  --color-gray-50: oklch(0.985 0.002 250);
+  --color-gray-100: oklch(0.965 0.004 250);
+  --color-gray-200: oklch(0.925 0.006 250);
+  --color-gray-300: oklch(0.870 0.008 250);
+  --color-gray-400: oklch(0.715 0.012 250);
+  --color-gray-500: oklch(0.560 0.014 250);
+  --color-gray-600: oklch(0.445 0.014 250);
+  --color-gray-700: oklch(0.360 0.012 250);
+  --color-gray-800: oklch(0.270 0.010 250);
+  --color-gray-900: oklch(0.190 0.008 250);
+  --color-gray-950: oklch(0.130 0.006 250);
+
+  /* Brand / primary — indigo-blue */
+  --color-brand-50: oklch(0.975 0.015 250);
+  --color-brand-100: oklch(0.940 0.040 250);
+  --color-brand-200: oklch(0.880 0.080 250);
+  --color-brand-300: oklch(0.800 0.130 250);
+  --color-brand-400: oklch(0.680 0.180 250);
+  --color-brand-500: oklch(0.550 0.200 250);
+  --color-brand-600: oklch(0.470 0.190 250);
+  --color-brand-700: oklch(0.395 0.170 250);
+  --color-brand-800: oklch(0.320 0.140 250);
+  --color-brand-900: oklch(0.255 0.110 250);
+  --color-brand-950: oklch(0.180 0.075 250);
+
+  /* Success — green (hue 145) */
+  --color-success-50: oklch(0.975 0.020 145);
+  --color-success-100: oklch(0.945 0.050 145);
+  --color-success-200: oklch(0.890 0.090 145);
+  --color-success-300: oklch(0.815 0.135 145);
+  --color-success-400: oklch(0.720 0.170 145);
+  --color-success-500: oklch(0.620 0.185 145);
+  --color-success-600: oklch(0.515 0.165 145);
+  --color-success-700: oklch(0.420 0.140 145);
+  --color-success-800: oklch(0.340 0.115 145);
+  --color-success-900: oklch(0.275 0.090 145);
+  --color-success-950: oklch(0.190 0.060 145);
+
+  /* Warning — amber (hue 75) */
+  --color-warning-50: oklch(0.985 0.020 75);
+  --color-warning-100: oklch(0.960 0.050 75);
+  --color-warning-200: oklch(0.915 0.095 75);
+  --color-warning-300: oklch(0.855 0.140 75);
+  --color-warning-400: oklch(0.790 0.170 75);
+  --color-warning-500: oklch(0.720 0.180 75);
+  --color-warning-600: oklch(0.610 0.165 75);
+  --color-warning-700: oklch(0.495 0.140 75);
+  --color-warning-800: oklch(0.395 0.115 75);
+  --color-warning-900: oklch(0.315 0.090 75);
+  --color-warning-950: oklch(0.215 0.060 75);
+
+  /* Danger — red (hue 25) */
+  --color-danger-50: oklch(0.975 0.020 25);
+  --color-danger-100: oklch(0.945 0.050 25);
+  --color-danger-200: oklch(0.895 0.095 25);
+  --color-danger-300: oklch(0.825 0.140 25);
+  --color-danger-400: oklch(0.735 0.180 25);
+  --color-danger-500: oklch(0.625 0.215 25);
+  --color-danger-600: oklch(0.530 0.200 25);
+  --color-danger-700: oklch(0.435 0.170 25);
+  --color-danger-800: oklch(0.355 0.140 25);
+  --color-danger-900: oklch(0.285 0.110 25);
+  --color-danger-950: oklch(0.195 0.075 25);
+
+  /* ─── Semantic tokens (light mode defaults) ──────────────────────── */
+  /* Wired to primitives so dark-mode swap below only re-points the alias. */
+
+  --color-background: var(--color-gray-50);
+  --color-foreground: var(--color-gray-950);
+
+  --color-primary: var(--color-brand-500);
+  --color-primary-foreground: var(--color-gray-50);
+
+  --color-secondary: var(--color-gray-200);
+  --color-secondary-foreground: var(--color-gray-900);
+
+  --color-muted: var(--color-gray-100);
+  --color-muted-foreground: var(--color-gray-600);
+
+  --color-accent: var(--color-brand-100);
+  --color-accent-foreground: var(--color-brand-900);
+
+  --color-destructive: var(--color-danger-500);
+  --color-destructive-foreground: var(--color-gray-50);
+
+  --color-border: var(--color-gray-200);
+  --color-input: var(--color-gray-200);
+  --color-ring: var(--color-brand-500);
+
+  /* ─── Typography ─────────────────────────────────────────────────── */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  /* ─── Radii ──────────────────────────────────────────────────────── */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+
+  /* ─── Shadows ────────────────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px 0 oklch(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 oklch(0 0 0 / 0.08), 0 1px 2px -1px oklch(0 0 0 / 0.06);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.10), 0 2px 4px -2px oklch(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.10), 0 4px 6px -4px oklch(0 0 0 / 0.05);
+  --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.10), 0 8px 10px -6px oklch(0 0 0 / 0.04);
+}
+
+/* ─── Dark mode (class-based + prefers-color-scheme fallback) ─────── */
+
+@layer base {
+  .dark {
+    --color-background: var(--color-gray-950);
+    --color-foreground: var(--color-gray-50);
+
+    --color-primary: var(--color-brand-400);
+    --color-primary-foreground: var(--color-gray-950);
+
+    --color-secondary: var(--color-gray-800);
+    --color-secondary-foreground: var(--color-gray-50);
+
+    --color-muted: var(--color-gray-900);
+    --color-muted-foreground: var(--color-gray-400);
+
+    --color-accent: var(--color-brand-900);
+    --color-accent-foreground: var(--color-brand-100);
+
+    --color-destructive: var(--color-danger-400);
+    --color-destructive-foreground: var(--color-gray-950);
+
+    --color-border: var(--color-gray-800);
+    --color-input: var(--color-gray-800);
+    --color-ring: var(--color-brand-400);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not(.light) {
+      --color-background: var(--color-gray-950);
+      --color-foreground: var(--color-gray-50);
+
+      --color-primary: var(--color-brand-400);
+      --color-primary-foreground: var(--color-gray-950);
+
+      --color-secondary: var(--color-gray-800);
+      --color-secondary-foreground: var(--color-gray-50);
+
+      --color-muted: var(--color-gray-900);
+      --color-muted-foreground: var(--color-gray-400);
+
+      --color-accent: var(--color-brand-900);
+      --color-accent-foreground: var(--color-brand-100);
+
+      --color-destructive: var(--color-danger-400);
+      --color-destructive-foreground: var(--color-gray-950);
+
+      --color-border: var(--color-gray-800);
+      --color-input: var(--color-gray-800);
+      --color-ring: var(--color-brand-400);
+    }
+  }
+}

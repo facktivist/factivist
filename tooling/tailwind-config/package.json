@@ -1,0 +1,18 @@
+{
+  "name": "@factivist/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "index.css",
+    "preset.ts"
+  ],
+  "exports": {
+    ".": "./index.css",
+    "./preset": "./preset.ts"
+  },
+  "peerDependencies": {
+    "@heroui/react": "^3.0.0",
+    "tailwindcss": "^4.0.0"
+  }
+}

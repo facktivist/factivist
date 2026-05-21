@@ -1,0 +1,42 @@
+{
+  "name": "@factivist/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./types": {
+      "types": "./src/types/index.ts",
+      "default": "./src/types/index.ts"
+    },
+    "./validators": {
+      "types": "./src/validators/index.ts",
+      "default": "./src/validators/index.ts"
+    },
+    "./constants": {
+      "types": "./src/constants/index.ts",
+      "default": "./src/constants/index.ts"
+    }
+  },
+  "files": ["src"],
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "biome check .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@factivist/tsconfig": "workspace:*",
+    "@factivist/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "^4.1.7",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  }
+}
