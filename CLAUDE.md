@@ -182,7 +182,7 @@ npx ruflo@latest doctor --fix
 
 ```
 apps/
-  web/              → Next.js 15 + HeroUI v3 + Tailwind v4
+  web/              → Next.js 16 + HeroUI v3 + Tailwind CSS v4.3
   api/              → Hono on Bun runtime
   mobile/           → Expo + HeroUI Native + Uniwind
 packages/
@@ -193,7 +193,7 @@ packages/
   db/               → Drizzle ORM schema + Supabase Postgres
 tooling/
   tsconfig/         → base.json, react.json, node.json
-  tailwind-config/  → Shared Tailwind v4 preset + HeroUI plugin
+  tailwind-config/  → Shared Tailwind CSS v4.3 preset + HeroUI plugin
   vitest-config/    → base.ts, react.ts, node.ts (coverage thresholds)
 ```
 
