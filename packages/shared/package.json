@@ -21,7 +21,9 @@
       "default": "./src/constants/index.ts"
     }
   },
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "scripts": {
     "build": "tsc --noEmit",
     "lint": "biome check .",

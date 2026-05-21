@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Hybrid Playwright config — local + TestMu AI cloud projects.
@@ -65,4 +65,4 @@ export default defineConfig({
     port: 3000,
     reuseExistingServer: !process.env.CI,
   },
-});
+})

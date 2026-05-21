@@ -63,7 +63,7 @@
           "comment": "When email was verified"
         },
         "phone_verified_at": {
-          "type": "timestamp", 
+          "type": "timestamp",
           "nullable": true,
           "comment": "When phone was verified"
         },
@@ -79,10 +79,7 @@
       },
       "constraints": {
         "primary_key": ["id"],
-        "unique": [
-          "username",
-          "email"
-        ],
+        "unique": ["username", "email"],
         "foreign_key": [],
         "check": [
           "email LIKE '%@%'",
@@ -268,9 +265,7 @@
             "on_delete": "CASCADE"
           }
         ],
-        "check": [
-          "session_type IN ('web', 'mobile', 'api', 'admin')"
-        ]
+        "check": ["session_type IN ('web', 'mobile', 'api', 'admin')"]
       },
       "indexes": [
         {
@@ -321,9 +316,7 @@
       },
       "constraints": {
         "primary_key": ["id"],
-        "unique": [
-          ["user_id", "preference_key"]
-        ],
+        "unique": [["user_id", "preference_key"]],
         "foreign_key": [
           {
             "columns": ["user_id"],
@@ -345,7 +338,15 @@
   "views": {
     "active_users": {
       "definition": "SELECT u.id, u.username, u.email, u.first_name, u.last_name, u.email_verified_at, u.last_login_at FROM users u WHERE u.is_active = true",
-      "columns": ["id", "username", "email", "first_name", "last_name", "email_verified_at", "last_login_at"]
+      "columns": [
+        "id",
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "email_verified_at",
+        "last_login_at"
+      ]
     },
     "verified_users": {
       "definition": "SELECT u.id, u.username, u.email FROM users u WHERE u.is_active = true AND u.email_verified_at IS NOT NULL",

@@ -13,7 +13,7 @@ const AGENT_CAPABILITIES = {
   'backend-dev': ['api', 'database', 'server', 'authentication'],
   'frontend-dev': ['ui', 'react', 'css', 'components'],
   devops: ['ci-cd', 'docker', 'deployment', 'infrastructure'],
-};
+}
 
 const TASK_PATTERNS = {
   // Code patterns
@@ -27,20 +27,20 @@ const TASK_PATTERNS = {
   'api|endpoint|server|backend|database': 'backend-dev',
   'ui|frontend|component|react|css|style': 'frontend-dev',
   'deploy|docker|ci|cd|pipeline|infrastructure': 'devops',
-};
+}
 
 function routeTask(task) {
-  const taskLower = task.toLowerCase();
+  const taskLower = task.toLowerCase()
 
   // Check patterns
   for (const [pattern, agent] of Object.entries(TASK_PATTERNS)) {
-    const regex = new RegExp(pattern, 'i');
+    const regex = new RegExp(pattern, 'i')
     if (regex.test(taskLower)) {
       return {
         agent,
         confidence: 0.8,
         reason: `Matched pattern: ${pattern}`,
-      };
+      }
     }
   }
 
@@ -49,18 +49,18 @@ function routeTask(task) {
     agent: 'coder',
     confidence: 0.5,
     reason: 'Default routing - no specific pattern matched',
-  };
+  }
 }
 
 // CLI
-const task = process.argv.slice(2).join(' ');
+const task = process.argv.slice(2).join(' ')
 
 if (task) {
-  const result = routeTask(task);
-  console.log(JSON.stringify(result, null, 2));
+  const result = routeTask(task)
+  console.log(JSON.stringify(result, null, 2))
 } else {
-  console.log('Usage: router.js <task description>');
-  console.log('\nAvailable agents:', Object.keys(AGENT_CAPABILITIES).join(', '));
+  console.log('Usage: router.js <task description>')
+  console.log('\nAvailable agents:', Object.keys(AGENT_CAPABILITIES).join(', '))
 }
 
-module.exports = { routeTask, AGENT_CAPABILITIES, TASK_PATTERNS };
+module.exports = { routeTask, AGENT_CAPABILITIES, TASK_PATTERNS }

@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
-import { EMAIL_REGEX, SLUG_REGEX, UUID_V4_REGEX } from '../constants/patterns.ts';
+import { EMAIL_REGEX, SLUG_REGEX, UUID_V4_REGEX } from '../constants/patterns.ts'
 
 /**
  * Branded UUID v4 identifier.
@@ -8,12 +8,9 @@ import { EMAIL_REGEX, SLUG_REGEX, UUID_V4_REGEX } from '../constants/patterns.ts
  * Use this for any internal entity ID (DB row, aggregate root, etc.).
  * Branding prevents accidental mixing of unrelated string IDs at the type level.
  */
-export const idSchema = z
-  .string()
-  .regex(UUID_V4_REGEX, 'Must be a valid UUID v4')
-  .brand<'Id'>();
+export const idSchema = z.string().regex(UUID_V4_REGEX, 'Must be a valid UUID v4').brand<'Id'>()
 
-export type Id = z.infer<typeof idSchema>;
+export type Id = z.infer<typeof idSchema>
 
 /**
  * Email address. Normalized to lowercase + trimmed before validation.
@@ -26,9 +23,9 @@ export const emailSchema = z
   .toLowerCase()
   .email('Must be a valid email address')
   .regex(EMAIL_REGEX, 'Must be a valid email address')
-  .brand<'Email'>();
+  .brand<'Email'>()
 
-export type Email = z.infer<typeof emailSchema>;
+export type Email = z.infer<typeof emailSchema>
 
 /**
  * URL-safe slug: lowercase alphanumerics with single hyphens between groups.
@@ -39,9 +36,9 @@ export const slugSchema = z
   .string()
   .min(1, 'Slug cannot be empty')
   .max(80, 'Slug cannot exceed 80 characters')
-  .regex(SLUG_REGEX, 'Slug must be lowercase alphanumerics separated by single hyphens');
+  .regex(SLUG_REGEX, 'Slug must be lowercase alphanumerics separated by single hyphens')
 
-export type Slug = z.infer<typeof slugSchema>;
+export type Slug = z.infer<typeof slugSchema>
 
 /**
  * ISO-8601 timestamp string. Branded for type-level safety.
@@ -49,14 +46,14 @@ export type Slug = z.infer<typeof slugSchema>;
 export const timestampSchema = z
   .string()
   .datetime({ offset: true, message: 'Must be an ISO-8601 timestamp' })
-  .brand<'Timestamp'>();
+  .brand<'Timestamp'>()
 
-export type Timestamp = z.infer<typeof timestampSchema>;
+export type Timestamp = z.infer<typeof timestampSchema>
 
 /**
  * Coerce an unknown timestamp input to a `Date`. Throws on invalid input.
  */
 export const parseTimestamp = (input: unknown): Date => {
-  const parsed = timestampSchema.parse(input);
-  return new Date(parsed);
-};
+  const parsed = timestampSchema.parse(input)
+  return new Date(parsed)
+}

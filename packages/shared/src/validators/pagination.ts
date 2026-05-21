@@ -1,11 +1,6 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
-import {
-  DEFAULT_PAGE_SIZE,
-  ENVIRONMENTS,
-  MAX_PAGE_SIZE,
-  MIN_PAGE_SIZE,
-} from '../constants/app.ts';
+import { DEFAULT_PAGE_SIZE, ENVIRONMENTS, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from '../constants/app.ts'
 
 /**
  * Pagination query params. All fields optional with sensible defaults.
@@ -23,10 +18,10 @@ export const paginationSchema = z.object({
     .max(MAX_PAGE_SIZE, `Limit must not exceed ${MAX_PAGE_SIZE}`)
     .default(DEFAULT_PAGE_SIZE),
   cursor: z.string().min(1).optional(),
-});
+})
 
-export type PaginationInput = z.input<typeof paginationSchema>;
-export type Pagination = z.output<typeof paginationSchema>;
+export type PaginationInput = z.input<typeof paginationSchema>
+export type Pagination = z.output<typeof paginationSchema>
 
 /** Environment string schema, locked to {@link ENVIRONMENTS}. */
-export const environmentSchema = z.enum(ENVIRONMENTS);
+export const environmentSchema = z.enum(ENVIRONMENTS)

@@ -19,30 +19,9 @@
       "scope_change_volatility": 0.1828476660567787
     },
     "rolling_averages": {
-      "3": [
-        null,
-        null,
-        19.333333333333332,
-        20.666666666666668,
-        19.333333333333332,
-        21.0
-      ],
-      "5": [
-        null,
-        null,
-        19.333333333333332,
-        20.0,
-        19.4,
-        20.6
-      ],
-      "8": [
-        null,
-        null,
-        19.333333333333332,
-        20.0,
-        19.4,
-        20.166666666666668
-      ]
+      "3": [null, null, 19.333333333333332, 20.666666666666668, 19.333333333333332, 21.0],
+      "5": [null, null, 19.333333333333332, 20.0, 19.4, 20.6],
+      "8": [null, null, 19.333333333333332, 20.0, 19.4, 20.166666666666668]
     },
     "volatility": {
       "volatility": "low",
@@ -79,7 +58,5 @@
     "expected_total": 121.0
   },
   "anomalies": [],
-  "recommendations": [
-    "Good velocity stability. Continue current practices."
-  ]
+  "recommendations": ["Good velocity stability. Continue current practices."]
 }

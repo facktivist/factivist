@@ -9,6 +9,6 @@
  *
  * This barrel exists for convenience and tooling that doesn't resolve subpaths.
  */
-export * from './constants/index.ts';
-export * from './types/index.ts';
-export * from './validators/index.ts';
+export * from './constants/index.ts'
+export * from './types/index.ts'
+export * from './validators/index.ts'

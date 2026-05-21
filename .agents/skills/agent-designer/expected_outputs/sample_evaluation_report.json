@@ -155,45 +155,35 @@
       "usage_count": 3,
       "error_rate": 0.333,
       "avg_duration": 126666.67,
-      "affected_workflows": [
-        "web_research"
-      ],
+      "affected_workflows": ["web_research"],
       "retry_count": 2
     },
     "data_analyzer": {
       "usage_count": 2,
       "error_rate": 0.0,
       "avg_duration": 205000.0,
-      "affected_workflows": [
-        "data_analysis"
-      ],
+      "affected_workflows": ["data_analysis"],
       "retry_count": 0
     },
     "document_processor": {
       "usage_count": 2,
       "error_rate": 0.0,
       "avg_duration": 140000.0,
-      "affected_workflows": [
-        "document_processing"
-      ],
+      "affected_workflows": ["document_processing"],
       "retry_count": 1
     },
     "notification_sender": {
       "usage_count": 2,
       "error_rate": 0.5,
       "avg_duration": 18750.0,
-      "affected_workflows": [
-        "notification"
-      ],
+      "affected_workflows": ["notification"],
       "retry_count": 1
     },
     "task_scheduler": {
       "usage_count": 1,
       "error_rate": 0.0,
       "avg_duration": 12000.0,
-      "affected_workflows": [
-        "task_scheduling"
-      ],
+      "affected_workflows": ["task_scheduling"],
       "retry_count": 0
     }
   },
@@ -202,19 +192,9 @@
       "error_type": "timeout",
       "count": 2,
       "percentage": 20.0,
-      "affected_agents": [
-        "research_agent_2",
-        "data_agent_2"
-      ],
-      "affected_task_types": [
-        "web_research",
-        "data_analysis"
-      ],
-      "common_patterns": [
-        "timeout",
-        "exceeded",
-        "limit"
-      ],
+      "affected_agents": ["research_agent_2", "data_agent_2"],
+      "affected_task_types": ["web_research", "data_analysis"],
+      "common_patterns": ["timeout", "exceeded", "limit"],
       "suggested_fixes": [
         "Increase timeout values",
         "Optimize slow operations",
@@ -227,17 +207,9 @@
       "error_type": "authentication",
       "count": 1,
       "percentage": 10.0,
-      "affected_agents": [
-        "communication_agent_2"
-      ],
-      "affected_task_types": [
-        "notification"
-      ],
-      "common_patterns": [
-        "authentication",
-        "failed",
-        "invalid"
-      ],
+      "affected_agents": ["communication_agent_2"],
+      "affected_task_types": ["notification"],
+      "common_patterns": ["authentication", "failed", "invalid"],
       "suggested_fixes": [
         "Check credential rotation",
         "Implement token refresh logic",
@@ -250,17 +222,9 @@
       "error_type": "validation",
       "count": 1,
       "percentage": 10.0,
-      "affected_agents": [
-        "document_agent_1"
-      ],
-      "affected_task_types": [
-        "document_processing"
-      ],
-      "common_patterns": [
-        "validation",
-        "failed",
-        "missing"
-      ],
+      "affected_agents": ["document_agent_1"],
+      "affected_task_types": ["document_processing"],
+      "common_patterns": ["validation", "failed", "missing"],
       "suggested_fixes": [
         "Strengthen input validation",
         "Add data sanitization",
@@ -280,9 +244,7 @@
         "reliability_impact": 1.0,
         "retry_overhead": 1000
       },
-      "affected_workflows": [
-        "notification"
-      ],
+      "affected_workflows": ["notification"],
       "optimization_suggestions": [
         "Review tool implementation",
         "Add better error handling for tool",
@@ -303,9 +265,7 @@
         "reliability_impact": 1.0,
         "retry_overhead": 2000
       },
-      "affected_workflows": [
-        "web_research"
-      ],
+      "affected_workflows": ["web_research"],
       "optimization_suggestions": [
         "Review tool implementation",
         "Add better error handling for tool",
@@ -337,14 +297,8 @@
         "Add comprehensive monitoring and alerting",
         "Implement graceful degradation patterns"
       ],
-      "risks": [
-        "Temporary increase in complexity",
-        "Potential initial performance overhead"
-      ],
-      "prerequisites": [
-        "Error analysis completion",
-        "Monitoring infrastructure"
-      ]
+      "risks": ["Temporary increase in complexity", "Potential initial performance overhead"],
+      "prerequisites": ["Error analysis completion", "Monitoring infrastructure"]
     },
     {
       "category": "performance",
@@ -363,14 +317,8 @@
         "Add caching for expensive operations",
         "Optimize API calls and reduce round trips"
       ],
-      "risks": [
-        "Increased system complexity",
-        "Potential resource usage increase"
-      ],
-      "prerequisites": [
-        "Performance profiling tools",
-        "Caching infrastructure"
-      ]
+      "risks": ["Increased system complexity", "Potential resource usage increase"],
+      "prerequisites": ["Performance profiling tools", "Caching infrastructure"]
     },
     {
       "category": "cost",
@@ -390,13 +338,8 @@
         "Use smaller models for simple tasks",
         "Implement token usage monitoring and alerts"
       ],
-      "risks": [
-        "Potential quality reduction with smaller models"
-      ],
-      "prerequisites": [
-        "Token usage analysis",
-        "Caching infrastructure"
-      ]
+      "risks": ["Potential quality reduction with smaller models"],
+      "prerequisites": ["Token usage analysis", "Caching infrastructure"]
     },
     {
       "category": "reliability",
@@ -415,13 +358,8 @@
         "Add retry logic with exponential backoff",
         "Parallelize independent operations"
       ],
-      "risks": [
-        "May require significant code changes"
-      ],
-      "prerequisites": [
-        "Root cause analysis",
-        "Testing framework"
-      ]
+      "risks": ["May require significant code changes"],
+      "prerequisites": ["Root cause analysis", "Testing framework"]
     },
     {
       "category": "reliability",
@@ -440,13 +378,8 @@
         "Add authentication retry",
         "Verify permission scopes"
       ],
-      "risks": [
-        "May require significant code changes"
-      ],
-      "prerequisites": [
-        "Root cause analysis",
-        "Testing framework"
-      ]
+      "risks": ["May require significant code changes"],
+      "prerequisites": ["Root cause analysis", "Testing framework"]
     },
     {
       "category": "performance",
@@ -465,14 +398,8 @@
         "Implement tool fallbacks",
         "Consider alternative tools"
       ],
-      "risks": [
-        "System downtime during implementation",
-        "Potential cascade effects"
-      ],
-      "prerequisites": [
-        "Impact assessment",
-        "Rollback plan"
-      ]
+      "risks": ["System downtime during implementation", "Potential cascade effects"],
+      "prerequisites": ["Impact assessment", "Rollback plan"]
     }
   ],
   "trends_analysis": {
@@ -513,26 +440,11 @@
     },
     "cost_per_token": 0.00002,
     "top_cost_drivers": [
-      [
-        "document_processing",
-        0.346
-      ],
-      [
-        "data_analysis",
-        0.275
-      ],
-      [
-        "web_research",
-        0.245
-      ],
-      [
-        "notification",
-        0.011
-      ],
-      [
-        "task_scheduling",
-        0.01
-      ]
+      ["document_processing", 0.346],
+      ["data_analysis", 0.275],
+      ["web_research", 0.245],
+      ["notification", 0.011],
+      ["task_scheduling", 0.01]
     ]
   },
   "sla_compliance": {

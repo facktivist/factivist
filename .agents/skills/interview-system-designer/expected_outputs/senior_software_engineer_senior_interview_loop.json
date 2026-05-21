@@ -15,11 +15,7 @@
         "Evaluate problem-solving approach",
         "Screen for basic technical competency"
       ],
-      "question_types": [
-        "coding_problems",
-        "technical_concepts",
-        "experience_questions"
-      ],
+      "question_types": ["coding_problems", "technical_concepts", "experience_questions"],
       "evaluation_criteria": [
         "technical_accuracy",
         "problem_solving_process",
@@ -43,11 +39,7 @@
         "Assess code quality and testing",
         "Review debugging approach"
       ],
-      "question_types": [
-        "complex_coding_problems",
-        "code_review",
-        "testing_strategy"
-      ],
+      "question_types": ["complex_coding_problems", "code_review", "testing_strategy"],
       "evaluation_criteria": [
         "code_quality",
         "testing_approach",
@@ -72,11 +64,7 @@
         "Evaluate scalability considerations",
         "Review trade-off analysis"
       ],
-      "question_types": [
-        "system_architecture",
-        "scalability_design",
-        "trade_off_analysis"
-      ],
+      "question_types": ["system_architecture", "scalability_design", "trade_off_analysis"],
       "evaluation_criteria": [
         "architectural_thinking",
         "scalability_awareness",
@@ -100,16 +88,8 @@
         "Evaluate past experiences",
         "Review leadership examples"
       ],
-      "question_types": [
-        "star_method_questions",
-        "situational_scenarios",
-        "values_alignment"
-      ],
-      "evaluation_criteria": [
-        "communication_skills",
-        "leadership_examples",
-        "cultural_alignment"
-      ],
+      "question_types": ["star_method_questions", "situational_scenarios", "values_alignment"],
+      "evaluation_criteria": ["communication_skills", "leadership_examples", "cultural_alignment"],
       "order": 4,
       "focus_areas": [
         "cultural_fit",
@@ -128,16 +108,8 @@
         "Assess technical decision making",
         "Review cross-team collaboration"
       ],
-      "question_types": [
-        "leadership_scenarios",
-        "technical_decisions",
-        "mentoring_examples"
-      ],
-      "evaluation_criteria": [
-        "leadership_potential",
-        "technical_judgment",
-        "influence_skills"
-      ],
+      "question_types": ["leadership_scenarios", "technical_decisions", "mentoring_examples"],
+      "evaluation_criteria": ["leadership_potential", "technical_judgment", "influence_skills"],
       "order": 5,
       "focus_areas": [
         "leadership",
@@ -301,118 +273,51 @@
       }
     ],
     "overall_recommendation": {
-      "options": [
-        "Strong Hire",
-        "Hire",
-        "No Hire",
-        "Strong No Hire"
-      ],
+      "options": ["Strong Hire", "Hire", "No Hire", "Strong No Hire"],
       "criteria": "Based on weighted average and minimum thresholds"
     },
     "calibration_notes": {
       "required": true,
       "min_length": 100,
-      "sections": [
-        "strengths",
-        "areas_for_development",
-        "specific_examples"
-      ]
+      "sections": ["strengths", "areas_for_development", "specific_examples"]
     }
   },
   "interviewer_requirements": {
     "round_1_technical_phone_screen": {
-      "required_skills": [
-        "technical_assessment",
-        "coding_evaluation"
-      ],
-      "preferred_experience": [
-        "same_domain",
-        "senior_level"
-      ],
+      "required_skills": ["technical_assessment", "coding_evaluation"],
+      "preferred_experience": ["same_domain", "senior_level"],
       "calibration_level": "standard",
-      "suggested_interviewers": [
-        "senior_engineer",
-        "tech_lead"
-      ]
+      "suggested_interviewers": ["senior_engineer", "tech_lead"]
     },
     "round_2_coding_deep_dive": {
-      "required_skills": [
-        "advanced_technical",
-        "code_quality_assessment"
-      ],
-      "preferred_experience": [
-        "senior_engineer",
-        "system_design"
-      ],
+      "required_skills": ["advanced_technical", "code_quality_assessment"],
+      "preferred_experience": ["senior_engineer", "system_design"],
       "calibration_level": "high",
-      "suggested_interviewers": [
-        "senior_engineer",
-        "staff_engineer"
-      ]
+      "suggested_interviewers": ["senior_engineer", "staff_engineer"]
     },
     "round_3_system_design": {
-      "required_skills": [
-        "architecture_design",
-        "scalability_assessment"
-      ],
-      "preferred_experience": [
-        "senior_architect",
-        "large_scale_systems"
-      ],
+      "required_skills": ["architecture_design", "scalability_assessment"],
+      "preferred_experience": ["senior_architect", "large_scale_systems"],
       "calibration_level": "high",
-      "suggested_interviewers": [
-        "senior_architect",
-        "staff_engineer"
-      ]
+      "suggested_interviewers": ["senior_architect", "staff_engineer"]
     },
     "round_4_behavioral": {
-      "required_skills": [
-        "behavioral_interviewing",
-        "competency_assessment"
-      ],
-      "preferred_experience": [
-        "hiring_manager",
-        "people_leadership"
-      ],
+      "required_skills": ["behavioral_interviewing", "competency_assessment"],
+      "preferred_experience": ["hiring_manager", "people_leadership"],
       "calibration_level": "standard",
-      "suggested_interviewers": [
-        "hiring_manager",
-        "people_manager"
-      ]
+      "suggested_interviewers": ["hiring_manager", "people_manager"]
     },
     "round_5_technical_leadership": {
-      "required_skills": [
-        "leadership_assessment",
-        "technical_mentoring"
-      ],
-      "preferred_experience": [
-        "engineering_manager",
-        "tech_lead"
-      ],
+      "required_skills": ["leadership_assessment", "technical_mentoring"],
+      "preferred_experience": ["engineering_manager", "tech_lead"],
       "calibration_level": "high",
-      "suggested_interviewers": [
-        "engineering_manager",
-        "senior_staff"
-      ]
+      "suggested_interviewers": ["engineering_manager", "senior_staff"]
     }
   },
   "competency_framework": {
-    "required": [
-      "system_architecture",
-      "technical_leadership",
-      "mentoring",
-      "cross_team_collab"
-    ],
-    "preferred": [
-      "technology_evaluation",
-      "process_improvement",
-      "hiring_contribution"
-    ],
-    "focus_areas": [
-      "technical_leadership",
-      "system_architecture",
-      "people_development"
-    ]
+    "required": ["system_architecture", "technical_leadership", "mentoring", "cross_team_collab"],
+    "preferred": ["technology_evaluation", "process_improvement", "hiring_contribution"],
+    "focus_areas": ["technical_leadership", "system_architecture", "people_development"]
   },
   "calibration_notes": {
     "hiring_bar_notes": "Calibrated for senior level software engineer role",

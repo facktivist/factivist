@@ -5,20 +5,20 @@
  */
 
 /** Public-facing application name. */
-export const APP_NAME = 'factivist' as const;
+export const APP_NAME = 'factivist' as const
 
 /** Default number of items per paginated page. */
-export const DEFAULT_PAGE_SIZE = 20 as const;
+export const DEFAULT_PAGE_SIZE = 20 as const
 
 /** Maximum number of items per paginated page. */
-export const MAX_PAGE_SIZE = 100 as const;
+export const MAX_PAGE_SIZE = 100 as const
 
 /** Minimum number of items per paginated page. */
-export const MIN_PAGE_SIZE = 1 as const;
+export const MIN_PAGE_SIZE = 1 as const
 
 /** Supported runtime environments. */
-export const ENVIRONMENTS = ['development', 'staging', 'production', 'test'] as const;
-export type Environment = (typeof ENVIRONMENTS)[number];
+export const ENVIRONMENTS = ['development', 'staging', 'production', 'test'] as const
+export type Environment = (typeof ENVIRONMENTS)[number]
 
 /** HTTP status codes commonly returned by the Factivist API. */
 export const HTTP_STATUS = {
@@ -33,9 +33,9 @@ export const HTTP_STATUS = {
   UNPROCESSABLE_ENTITY: 422,
   TOO_MANY_REQUESTS: 429,
   INTERNAL_SERVER_ERROR: 500,
-} as const;
+} as const
 
-export type HttpStatus = (typeof HTTP_STATUS)[keyof typeof HTTP_STATUS];
+export type HttpStatus = (typeof HTTP_STATUS)[keyof typeof HTTP_STATUS]
 
 /**
  * Type guard: is the value a known HTTP status code?
@@ -44,9 +44,9 @@ export type HttpStatus = (typeof HTTP_STATUS)[keyof typeof HTTP_STATUS];
  * the discriminated set defined in {@link HTTP_STATUS}.
  */
 export const isHttpStatus = (value: unknown): value is HttpStatus => {
-  if (typeof value !== 'number') return false;
+  if (typeof value !== 'number') return false
   for (const code of Object.values(HTTP_STATUS)) {
-    if (code === value) return true;
+    if (code === value) return true
   }
-  return false;
-};
+  return false
+}

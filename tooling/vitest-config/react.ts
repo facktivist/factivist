@@ -1,6 +1,6 @@
-import { defineConfig, mergeConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config'
 
-import { baseConfig } from './base.ts';
+import { baseConfig } from './base.ts'
 
 /**
  * React-flavored Vitest configuration.
@@ -18,6 +18,6 @@ export const reactConfig = mergeConfig(
       setupFiles: ['@testing-library/jest-dom/vitest'],
     },
   }),
-);
+)
 
-export default reactConfig;
+export default reactConfig
