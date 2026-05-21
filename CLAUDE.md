@@ -147,7 +147,7 @@ Any string works as a custom agent type.
 - ALWAYS verify build succeeds before committing
 
 ```bash
-npm run build && npm test
+bun run build && bun run test
 ```
 
 ## CLI Quick Reference
@@ -173,3 +173,128 @@ npx @claude-flow/cli@latest doctor --fix
 ```
 
 **Agent tool** handles execution (agents, files, code, git). **MCP tools** handle coordination (swarm, memory, hooks). **CLI** is the same via Bash.
+
+---
+
+# ─── PROJECT CONTEXT ───
+
+## Monorepo Structure
+
+```
+apps/
+  web/              → Next.js 15 + HeroUI v3 + Tailwind v4
+  api/              → Hono on Bun runtime
+  mobile/           → Expo + HeroUI Native + Uniwind
+packages/
+  ui/theme/         → Primitive + semantic design tokens (oklch)
+  ui/web/           → HeroUI v3 component wrappers
+  ui/native/        → HeroUI Native component wrappers
+  shared/           → Types, Zod validators, constants (zero deps except Zod)
+  db/               → Drizzle ORM schema + Supabase Postgres
+tooling/
+  tsconfig/         → base.json, react.json, node.json
+  tailwind-config/  → Shared Tailwind v4 preset + HeroUI plugin
+  vitest-config/    → base.ts, react.ts, node.ts (coverage thresholds)
+```
+
+Each app and package has its own CLAUDE.md with domain-specific skills and rules.
+Full skills catalog: `.claude/skills/SKILLS_INDEX.md` (329 skills, never auto-loaded).
+
+## Package Manager
+
+Bun exclusively. Never use npm, yarn, or pnpm for install/run/add.
+Exception: `npx` is acceptable for one-off CLI tools (e.g., `npx @claude-flow/cli@latest`).
+
+## Commands
+
+| Action | Command |
+|--------|---------|
+| Install | `bun install` |
+| Dev (all) | `bun run dev` |
+| Build (all) | `bun run build` |
+| Test | `bun run test` |
+| Test + coverage | `bun run test:coverage` |
+| Test E2E web | `cd apps/web && bun run test:e2e` |
+| Test E2E mobile | `cd apps/mobile && bun run test:e2e:ios` |
+| Lint | `bun run lint` |
+| Format | `bunx @biomejs/biome format --write .` |
+| Full check | `bun run check` (lint → test:coverage → build) |
+| DB generate | `bun run db:generate` |
+| DB migrate | `bun run db:migrate` |
+
+## Testing — ENFORCED
+
+| Metric | Threshold |
+|--------|-----------|
+| Lines | ≥ 95% |
+| Functions | ≥ 95% |
+| Statements | ≥ 95% |
+| Branches | ≥ 90% |
+
+- **Vitest** for unit + integration. **Playwright** for web E2E. **Detox** for mobile E2E.
+- Test files: `*.test.ts` in `__tests__/`. E2E files: `*.spec.ts` in `e2e/`.
+- Every new feature MUST include tests. CI fails below threshold.
+
+## Code Style
+
+- TypeScript strict mode. No `any`. No `@ts-ignore`.
+- Biome for linting + formatting. Conventional Commits.
+- Feature-based file structure inside apps, not type-based.
+
+## Architecture Rules
+
+- Zod schemas in `packages/shared/` — validate on client and server
+- Drizzle ORM only. No raw SQL. No Prisma.
+- TanStack Query for server state. Zustand for client state. React Hook Form + Zod for forms.
+- HeroUI compound components (dot notation). Semantic variants only. oklch tokens.
+- Server Components by default in Next.js. `"use client"` only when needed.
+- Supabase custom domains REQUIRED for all API endpoints (India ISP mitigation)
+- All packages use `"exports"` field for multi-bundler resolution
+
+## Agent Routing for This Project
+
+| Task | Agents | Notes |
+|------|--------|-------|
+| New feature | architect → coder → tester → reviewer | Full pipeline |
+| New API route | coder → tester | Include `app.request()` integration test |
+| New component | coder → tester | Include Testing Library render test |
+| Schema change | architect → coder → tester | Must include migration + seed update |
+| Refactor | architect → coder → reviewer | Must maintain 95% coverage |
+| Cross-package | architect → coder → tester → reviewer | Fan-out if independent |
+
+## Core Skills (always loaded)
+
+@skills/bun
+@skills/turborepo
+@skills/hono
+@skills/drizzle-best-practices
+@skills/supabase-postgres-best-practices
+@skills/supabase
+@skills/zod
+@skills/biome-developer
+@skills/tailwind-4-docs
+@skills/monorepo-navigator
+@skills/tdd-guide
+@skills/coverage
+
+Domain-specific skills are declared in each package's CLAUDE.md.
+For skill discovery, consult `.claude/skills/SKILLS_INDEX.md`.
+
+## Dependency Graph
+
+```
+tooling/* ─────────────────┐
+packages/shared ───────────┤
+                           ▼
+                    packages/db
+                           │
+              ┌────────────┼────────────┐
+              ▼            ▼            ▼
+          apps/api    packages/ui   (parallel)
+              │            │
+              ▼            ▼
+          apps/web ◄── packages/ui/web
+          apps/mobile ◄── packages/ui/native
+```
+
+Agents MUST respect this graph. Never import from apps/ into packages/. Never import from one app into another.
