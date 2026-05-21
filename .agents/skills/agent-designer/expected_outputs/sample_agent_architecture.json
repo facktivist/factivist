@@ -13,12 +13,7 @@
           "quality_assurance",
           "result_aggregation"
         ],
-        "capabilities": [
-          "planning",
-          "coordination",
-          "evaluation",
-          "decision_making"
-        ],
+        "capabilities": ["planning", "coordination", "evaluation", "decision_making"],
         "tools": [
           {
             "name": "file_manager",
@@ -45,10 +40,7 @@
                 }
               }
             },
-            "capabilities": [
-              "file_operations",
-              "data_management"
-            ],
+            "capabilities": ["file_operations", "data_management"],
             "reliability": "high",
             "latency": "low"
           },
@@ -77,19 +69,12 @@
                 }
               }
             },
-            "capabilities": [
-              "data_analysis",
-              "statistics",
-              "visualization"
-            ],
+            "capabilities": ["data_analysis", "statistics", "visualization"],
             "reliability": "high",
             "latency": "medium"
           }
         ],
-        "communication_interfaces": [
-          "user_interface",
-          "agent_messaging"
-        ],
+        "communication_interfaces": ["user_interface", "agent_messaging"],
         "constraints": {
           "max_concurrent_supervisions": 5,
           "decision_timeout": "30s"
@@ -109,11 +94,7 @@
           "Conduct multi-source web research on specified topics",
           "Handle real-time information updates"
         ],
-        "capabilities": [
-          "research_expertise",
-          "specialized_tools",
-          "domain_knowledge"
-        ],
+        "capabilities": ["research_expertise", "specialized_tools", "domain_knowledge"],
         "tools": [
           {
             "name": "web_search",
@@ -134,10 +115,7 @@
                 }
               }
             },
-            "capabilities": [
-              "research",
-              "information_gathering"
-            ],
+            "capabilities": ["research", "information_gathering"],
             "reliability": "high",
             "latency": "medium"
           },
@@ -166,18 +144,12 @@
                 }
               }
             },
-            "capabilities": [
-              "data_analysis",
-              "statistics",
-              "visualization"
-            ],
+            "capabilities": ["data_analysis", "statistics", "visualization"],
             "reliability": "high",
             "latency": "medium"
           }
         ],
-        "communication_interfaces": [
-          "supervisor_messaging"
-        ],
+        "communication_interfaces": ["supervisor_messaging"],
         "constraints": {
           "domain_scope": "research",
           "task_queue_size": 10
@@ -187,9 +159,7 @@
           "maintain domain expertise",
           "provide quality output"
         ],
-        "dependencies": [
-          "supervisor_agent"
-        ]
+        "dependencies": ["supervisor_agent"]
       },
       {
         "name": "data_specialist",
@@ -200,11 +170,7 @@
           "Perform data processing and statistical analysis",
           "Generate visualizations and charts from data"
         ],
-        "capabilities": [
-          "data_expertise",
-          "specialized_tools",
-          "domain_knowledge"
-        ],
+        "capabilities": ["data_expertise", "specialized_tools", "domain_knowledge"],
         "tools": [
           {
             "name": "data_analyzer",
@@ -231,11 +197,7 @@
                 }
               }
             },
-            "capabilities": [
-              "data_analysis",
-              "statistics",
-              "visualization"
-            ],
+            "capabilities": ["data_analysis", "statistics", "visualization"],
             "reliability": "high",
             "latency": "medium"
           },
@@ -264,17 +226,12 @@
                 }
               }
             },
-            "capabilities": [
-              "file_operations",
-              "data_management"
-            ],
+            "capabilities": ["file_operations", "data_management"],
             "reliability": "high",
             "latency": "low"
           }
         ],
-        "communication_interfaces": [
-          "supervisor_messaging"
-        ],
+        "communication_interfaces": ["supervisor_messaging"],
         "constraints": {
           "domain_scope": "data",
           "task_queue_size": 10
@@ -284,9 +241,7 @@
           "maintain domain expertise",
           "provide quality output"
         ],
-        "dependencies": [
-          "supervisor_agent"
-        ]
+        "dependencies": ["supervisor_agent"]
       }
     ],
     "communication_topology": [
@@ -353,19 +308,13 @@
     ],
     "scaling_strategy": {
       "horizontal_scaling": true,
-      "auto_scaling_triggers": [
-        "cpu > 80%",
-        "queue_depth > 100"
-      ],
+      "auto_scaling_triggers": ["cpu > 80%", "queue_depth > 100"],
       "max_instances_per_agent": 5
     },
     "failure_handling": {
       "retry_policy": "exponential_backoff",
       "circuit_breaker": true,
-      "fallback_strategies": [
-        "graceful_degradation",
-        "human_escalation"
-      ]
+      "fallback_strategies": ["graceful_degradation", "human_escalation"]
     }
   },
   "mermaid_diagram": "graph TD\n    supervisor_agent[Task Coordinator and Quality Controller]:::coordinator\n    research_specialist[Research Specialist]:::specialist\n    data_specialist[Data Specialist]:::specialist\n    supervisor_agent --> research_specialist\n    research_specialist --> supervisor_agent\n    supervisor_agent --> data_specialist\n    data_specialist --> supervisor_agent\n\n    classDef coordinator fill:#e1f5fe,stroke:#01579b,stroke-width:2px\n    classDef specialist fill:#f3e5f5,stroke:#4a148c,stroke-width:2px\n    classDef interface fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px\n    classDef monitor fill:#fff3e0,stroke:#e65100,stroke-width:2px\n    class supervisor_agent coordinator\n    class research_specialist specialist\n    class data_specialist specialist",

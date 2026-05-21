@@ -1,6 +1,6 @@
-import { defineConfig, mergeConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config'
 
-import { baseConfig } from './base.ts';
+import { baseConfig } from './base.ts'
 
 /**
  * Node-flavored Vitest configuration.
@@ -16,6 +16,6 @@ export const nodeConfig = mergeConfig(
       environment: 'node',
     },
   }),
-);
+)
 
-export default nodeConfig;
+export default nodeConfig

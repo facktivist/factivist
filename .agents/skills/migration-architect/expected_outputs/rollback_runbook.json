@@ -30,10 +30,7 @@
             "SELECT COUNT(DISTINCT {primary_key}) FROM {table_name};",
             "SELECT MAX({timestamp_column}) FROM {table_name};"
           ],
-          "success_criteria": [
-            "cleanup fully rolled back",
-            "All validation checks pass"
-          ],
+          "success_criteria": ["cleanup fully rolled back", "All validation checks pass"],
           "failure_escalation": "Investigate cleanup rollback failures",
           "rollback_order": 99
         }
@@ -82,10 +79,7 @@
             "SELECT COUNT(DISTINCT {primary_key}) FROM {table_name};",
             "SELECT MAX({timestamp_column}) FROM {table_name};"
           ],
-          "success_criteria": [
-            "contract fully rolled back",
-            "All validation checks pass"
-          ],
+          "success_criteria": ["contract fully rolled back", "All validation checks pass"],
           "failure_escalation": "Investigate contract rollback failures",
           "rollback_order": 99
         }
@@ -134,10 +128,7 @@
             "SELECT COUNT(DISTINCT {primary_key}) FROM {table_name};",
             "SELECT MAX({timestamp_column}) FROM {table_name};"
           ],
-          "success_criteria": [
-            "migrate fully rolled back",
-            "All validation checks pass"
-          ],
+          "success_criteria": ["migrate fully rolled back", "All validation checks pass"],
           "failure_escalation": "Investigate migrate rollback failures",
           "rollback_order": 99
         }
@@ -186,10 +177,7 @@
             "SELECT COUNT(DISTINCT {primary_key}) FROM {table_name};",
             "SELECT MAX({timestamp_column}) FROM {table_name};"
           ],
-          "success_criteria": [
-            "expand fully rolled back",
-            "All validation checks pass"
-          ],
+          "success_criteria": ["expand fully rolled back", "All validation checks pass"],
           "failure_escalation": "Investigate expand rollback failures",
           "rollback_order": 99
         }
@@ -234,9 +222,7 @@
           "validation_commands": [
             "SELECT COUNT(*) FROM information_schema.tables WHERE table_name LIKE '%migration%';"
           ],
-          "success_criteria": [
-            "No migration artifacts remain"
-          ],
+          "success_criteria": ["No migration artifacts remain"],
           "failure_escalation": "Manual cleanup required",
           "rollback_order": 1
         },
@@ -247,9 +233,7 @@
           "script_type": "manual",
           "script_content": "Execute validation checklist for this phase",
           "estimated_duration_minutes": 10,
-          "dependencies": [
-            "rb_schema_4_01"
-          ],
+          "dependencies": ["rb_schema_4_01"],
           "validation_commands": [
             "SELECT COUNT(*) FROM {table_name};",
             "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = '{table_name}';",
@@ -257,10 +241,7 @@
             "SELECT COUNT(DISTINCT {primary_key}) FROM {table_name};",
             "SELECT MAX({timestamp_column}) FROM {table_name};"
           ],
-          "success_criteria": [
-            "preparation fully rolled back",
-            "All validation checks pass"
-          ],
+          "success_criteria": ["preparation fully rolled back", "All validation checks pass"],
           "failure_escalation": "Investigate preparation rollback failures",
           "rollback_order": 99
         }
@@ -295,10 +276,7 @@
       },
       "evaluation_window_minutes": 5,
       "auto_execute": true,
-      "escalation_contacts": [
-        "on_call_engineer",
-        "migration_lead"
-      ]
+      "escalation_contacts": ["on_call_engineer", "migration_lead"]
     },
     {
       "trigger_id": "response_time_degradation",
@@ -312,10 +290,7 @@
       },
       "evaluation_window_minutes": 10,
       "auto_execute": false,
-      "escalation_contacts": [
-        "performance_team",
-        "migration_lead"
-      ]
+      "escalation_contacts": ["performance_team", "migration_lead"]
     },
     {
       "trigger_id": "availability_drop",
@@ -329,10 +304,7 @@
       },
       "evaluation_window_minutes": 2,
       "auto_execute": true,
-      "escalation_contacts": [
-        "sre_team",
-        "incident_commander"
-      ]
+      "escalation_contacts": ["sre_team", "incident_commander"]
     },
     {
       "trigger_id": "data_integrity_failure",
@@ -346,10 +318,7 @@
       },
       "evaluation_window_minutes": 1,
       "auto_execute": true,
-      "escalation_contacts": [
-        "dba_team",
-        "data_team"
-      ]
+      "escalation_contacts": ["dba_team", "data_team"]
     },
     {
       "trigger_id": "migration_progress_stalled",
@@ -363,10 +332,7 @@
       },
       "evaluation_window_minutes": 30,
       "auto_execute": false,
-      "escalation_contacts": [
-        "migration_team",
-        "dba_team"
-      ]
+      "escalation_contacts": ["migration_team", "dba_team"]
     }
   ],
   "data_recovery_plan": {
@@ -384,10 +350,7 @@
       "SELECT SUM(amount) FROM financial_transactions WHERE date = CURRENT_DATE;"
     ],
     "estimated_recovery_time_minutes": 45,
-    "recovery_dependencies": [
-      "database_instance_running",
-      "backup_file_accessible"
-    ]
+    "recovery_dependencies": ["database_instance_running", "backup_file_accessible"]
   },
   "communication_templates": [
     {
@@ -396,10 +359,7 @@
       "subject": "ROLLBACK INITIATED: {migration_name}",
       "body": "Team,\n\nWe have initiated rollback for migration: {migration_name}\nRollback ID: {rollback_id}\nStart Time: {start_time}\nEstimated Duration: {estimated_duration}\n\nReason: {rollback_reason}\n\nCurrent Status: Rolling back phase {current_phase}\n\nNext Updates: Every 15 minutes or upon phase completion\n\nActions Required:\n- Monitor system health dashboards\n- Stand by for escalation if needed\n- Do not make manual changes during rollback\n\nIncident Commander: {incident_commander}\n",
       "urgency": "medium",
-      "delivery_methods": [
-        "email",
-        "slack"
-      ]
+      "delivery_methods": ["email", "slack"]
     },
     {
       "template_type": "rollback_start",
@@ -407,9 +367,7 @@
       "subject": "System Rollback In Progress - {system_name}",
       "body": "Business Stakeholders,\n\nWe are currently performing a planned rollback of the {system_name} migration due to {rollback_reason}.\n\nImpact: {business_impact}\nExpected Resolution: {estimated_completion_time}\nAffected Services: {affected_services}\n\nWe will provide updates every 30 minutes.\n\nContact: {business_contact}\n",
       "urgency": "medium",
-      "delivery_methods": [
-        "email"
-      ]
+      "delivery_methods": ["email"]
     },
     {
       "template_type": "rollback_start",
@@ -417,9 +375,7 @@
       "subject": "EXEC ALERT: Critical System Rollback - {system_name}",
       "body": "Executive Team,\n\nA critical rollback is in progress for {system_name}.\n\nSummary:\n- Rollback Reason: {rollback_reason}\n- Business Impact: {business_impact}\n- Expected Resolution: {estimated_completion_time}\n- Customer Impact: {customer_impact}\n\nWe are following established procedures and will update hourly.\n\nEscalation: {escalation_contact}\n",
       "urgency": "high",
-      "delivery_methods": [
-        "email"
-      ]
+      "delivery_methods": ["email"]
     },
     {
       "template_type": "rollback_complete",
@@ -427,10 +383,7 @@
       "subject": "ROLLBACK COMPLETED: {migration_name}",
       "body": "Team,\n\nRollback has been successfully completed for migration: {migration_name}\n\nSummary:\n- Start Time: {start_time}\n- End Time: {end_time}\n- Duration: {actual_duration}\n- Phases Completed: {completed_phases}\n\nValidation Results:\n{validation_results}\n\nSystem Status: {system_status}\n\nNext Steps:\n- Continue monitoring for 24 hours\n- Post-rollback review scheduled for {review_date}\n- Root cause analysis to begin\n\nAll clear to resume normal operations.\n\nIncident Commander: {incident_commander}\n",
       "urgency": "medium",
-      "delivery_methods": [
-        "email",
-        "slack"
-      ]
+      "delivery_methods": ["email", "slack"]
     },
     {
       "template_type": "emergency_escalation",
@@ -438,68 +391,33 @@
       "subject": "CRITICAL: Rollback Emergency - {migration_name}",
       "body": "CRITICAL SITUATION - IMMEDIATE ATTENTION REQUIRED\n\nMigration: {migration_name}\nIssue: Rollback procedure has encountered critical failures\n\nCurrent Status: {current_status}\nFailed Components: {failed_components}\nBusiness Impact: {business_impact}\nCustomer Impact: {customer_impact}\n\nImmediate Actions:\n1. Emergency response team activated\n2. {emergency_action_1}\n3. {emergency_action_2}\n\nWar Room: {war_room_location}\nBridge Line: {conference_bridge}\n\nNext Update: {next_update_time}\n\nIncident Commander: {incident_commander}\nExecutive On-Call: {executive_on_call}\n",
       "urgency": "emergency",
-      "delivery_methods": [
-        "email",
-        "sms",
-        "phone_call"
-      ]
+      "delivery_methods": ["email", "sms", "phone_call"]
     }
   ],
   "escalation_matrix": {
     "level_1": {
       "trigger": "Single component failure",
       "response_time_minutes": 5,
-      "contacts": [
-        "on_call_engineer",
-        "migration_lead"
-      ],
-      "actions": [
-        "Investigate issue",
-        "Attempt automated remediation",
-        "Monitor closely"
-      ]
+      "contacts": ["on_call_engineer", "migration_lead"],
+      "actions": ["Investigate issue", "Attempt automated remediation", "Monitor closely"]
     },
     "level_2": {
       "trigger": "Multiple component failures or single critical failure",
       "response_time_minutes": 2,
-      "contacts": [
-        "senior_engineer",
-        "team_lead",
-        "devops_lead"
-      ],
-      "actions": [
-        "Initiate rollback",
-        "Establish war room",
-        "Notify stakeholders"
-      ]
+      "contacts": ["senior_engineer", "team_lead", "devops_lead"],
+      "actions": ["Initiate rollback", "Establish war room", "Notify stakeholders"]
     },
     "level_3": {
       "trigger": "System-wide failure or data corruption",
       "response_time_minutes": 1,
-      "contacts": [
-        "engineering_manager",
-        "cto",
-        "incident_commander"
-      ],
-      "actions": [
-        "Emergency rollback",
-        "All hands on deck",
-        "Executive notification"
-      ]
+      "contacts": ["engineering_manager", "cto", "incident_commander"],
+      "actions": ["Emergency rollback", "All hands on deck", "Executive notification"]
     },
     "emergency": {
       "trigger": "Business-critical failure with customer impact",
       "response_time_minutes": 0,
-      "contacts": [
-        "ceo",
-        "cto",
-        "head_of_operations"
-      ],
-      "actions": [
-        "Emergency procedures",
-        "Customer communication",
-        "Media preparation if needed"
-      ]
+      "contacts": ["ceo", "cto", "head_of_operations"],
+      "actions": ["Emergency procedures", "Customer communication", "Media preparation if needed"]
     }
   },
   "validation_checklist": [

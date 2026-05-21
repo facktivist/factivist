@@ -1,2 +1,2 @@
-export * from './app.ts';
-export * from './patterns.ts';
+export * from './app.ts'
+export * from './patterns.ts'

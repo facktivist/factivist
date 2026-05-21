@@ -12,7 +12,13 @@
         "enterprise_readiness": 95.0
       },
       "weighted_total": 85.5,
-      "strengths": ["scalability", "ecosystem", "documentation", "community_support", "enterprise_readiness"],
+      "strengths": [
+        "scalability",
+        "ecosystem",
+        "documentation",
+        "community_support",
+        "enterprise_readiness"
+      ],
       "weaknesses": ["learning_curve"]
     },
     "MongoDB": {

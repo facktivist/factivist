@@ -15,18 +15,18 @@
  *   npx playwright test --project="chrome:latest:Windows 11@lambdatest" # cloud
  */
 
-import { test as base } from '@playwright/test';
-import { chromium } from 'playwright';
-import { execSync } from 'child_process';
+import { test as base } from '@playwright/test'
+import { execSync } from 'child_process'
+import { chromium } from 'playwright'
 
-const pwVersion = execSync('npx playwright --version').toString().trim().split(' ')[1];
+const pwVersion = execSync('npx playwright --version').toString().trim().split(' ')[1]
 
 export const test = base.extend<{}>({
   page: async ({}, use, testInfo) => {
-    const projectName = testInfo.project.name;
+    const projectName = testInfo.project.name
 
     if (projectName.includes('@lambdatest')) {
-      const parts = projectName.split('@lambdatest')[0].split(':');
+      const parts = projectName.split('@lambdatest')[0].split(':')
       const capabilities = {
         browserName: parts[0] || 'Chrome',
         browserVersion: parts[1] || 'latest',
@@ -41,42 +41,42 @@ export const test = base.extend<{}>({
           console: true,
           playwrightClientVersion: pwVersion,
         },
-      };
+      }
 
       const browser = await chromium.connect({
         wsEndpoint: `wss://cdp.lambdatest.com/playwright?capabilities=${encodeURIComponent(
-          JSON.stringify(capabilities)
+          JSON.stringify(capabilities),
         )}`,
-      });
-      const context = await browser.newContext(testInfo.project.use);
-      const ltPage = await context.newPage();
+      })
+      const context = await browser.newContext(testInfo.project.use)
+      const ltPage = await context.newPage()
 
-      await use(ltPage);
+      await use(ltPage)
 
       // Auto-report test status
-      const status = testInfo.status === 'passed' ? 'passed' : 'failed';
-      const remark = testInfo.error?.message || 'OK';
+      const status = testInfo.status === 'passed' ? 'passed' : 'failed'
+      const remark = testInfo.error?.message || 'OK'
       await ltPage.evaluate(
         (_: any) => {},
         `lambdatest_action: ${JSON.stringify({
           action: 'setTestStatus',
           arguments: { status, remark },
-        })}`
-      );
+        })}`,
+      )
 
-      await ltPage.close();
-      await context.close();
-      await browser.close();
+      await ltPage.close()
+      await context.close()
+      await browser.close()
     } else {
       // Local execution — default Playwright behavior
-      const browser = await chromium.launch();
-      const context = await browser.newContext();
-      const page = await context.newPage();
-      await use(page);
-      await context.close();
-      await browser.close();
+      const browser = await chromium.launch()
+      const context = await browser.newContext()
+      const page = await context.newPage()
+      await use(page)
+      await context.close()
+      await browser.close()
     }
   },
-});
+})
 
-export { expect } from '@playwright/test';
+export { expect } from '@playwright/test'

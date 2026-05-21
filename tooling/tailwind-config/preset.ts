@@ -13,17 +13,17 @@
  * live in index.css — do not duplicate them here.
  */
 
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss'
 
 const preset = {
-  darkMode: ["class"],
+  darkMode: ['class'],
   content: [
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "../../packages/ui/**/src/**/*.{ts,tsx}",
-    "../../node_modules/@heroui/theme/dist/**/*.{js,mjs}",
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    '../../packages/ui/**/src/**/*.{ts,tsx}',
+    '../../node_modules/@heroui/theme/dist/**/*.{js,mjs}',
   ],
-} satisfies Partial<Config>;
+} satisfies Partial<Config>
 
-export default preset;
+export default preset

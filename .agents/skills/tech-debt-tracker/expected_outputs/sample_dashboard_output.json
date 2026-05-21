@@ -13,9 +13,7 @@
     "overall_status": "excellent",
     "health_score": 87.3,
     "status_message": "Code quality is excellent with minimal technical debt.",
-    "key_insights": [
-      "Good progress on debt reduction"
-    ],
+    "key_insights": ["Good progress on debt reduction"],
     "total_debt_items": 22,
     "estimated_effort_hours": 193.5,
     "high_priority_items": 6,
@@ -37,10 +35,7 @@
       "change_rate": 3.7,
       "correlation_strength": 0.0,
       "forecast_next_period": 91.0,
-      "confidence_interval": [
-        91.0,
-        91.0
-      ]
+      "confidence_interval": [91.0, 91.0]
     },
     "debt_density": {
       "metric_name": "debt_density",
@@ -48,10 +43,7 @@
       "change_rate": -0.31,
       "correlation_strength": 0.0,
       "forecast_next_period": 0.5,
-      "confidence_interval": [
-        0.5,
-        0.5
-      ]
+      "confidence_interval": [0.5, 0.5]
     },
     "velocity_impact": {
       "metric_name": "velocity_impact",
@@ -59,10 +51,7 @@
       "change_rate": -2.9,
       "correlation_strength": 0.0,
       "forecast_next_period": 9.4,
-      "confidence_interval": [
-        9.4,
-        9.4
-      ]
+      "confidence_interval": [9.4, 9.4]
     },
     "quality_score": {
       "metric_name": "quality_score",
@@ -70,10 +59,7 @@
       "change_rate": -3.9,
       "correlation_strength": 0.0,
       "forecast_next_period": 77.9,
-      "confidence_interval": [
-        77.9,
-        77.9
-      ]
+      "confidence_interval": [77.9, 77.9]
     },
     "technical_risk_score": {
       "metric_name": "technical_risk_score",
@@ -81,10 +67,7 @@
       "change_rate": -47.5,
       "correlation_strength": 0.0,
       "forecast_next_period": -9.3,
-      "confidence_interval": [
-        -9.3,
-        -9.3
-      ]
+      "confidence_interval": [-9.3, -9.3]
     }
   },
   "debt_velocity": [

@@ -1,0 +1,44 @@
+{
+  "name": "@factivist/ui-native",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./components": {
+      "types": "./src/components/index.ts",
+      "default": "./src/components/index.ts"
+    },
+    "./hooks": {
+      "types": "./src/hooks/index.ts",
+      "default": "./src/hooks/index.ts"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "biome check .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "heroui-native": "*",
+    "react": "^19.0.0",
+    "react-native": "^0.76.0"
+  },
+  "devDependencies": {
+    "@factivist/tsconfig": "workspace:*",
+    "@factivist/ui-theme": "workspace:*",
+    "@factivist/vitest-config": "workspace:*",
+    "@types/react": "^19.0.0",
+    "@vitest/coverage-v8": "^4.1.7",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  }
+}

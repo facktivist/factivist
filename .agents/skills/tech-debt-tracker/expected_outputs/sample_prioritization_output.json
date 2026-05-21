@@ -42,9 +42,7 @@
       },
       "cost_of_delay": 2.1,
       "category": "other",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 4.8
     },
     {
@@ -82,9 +80,7 @@
       },
       "cost_of_delay": 0.16,
       "category": "code_quality",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 4.8
     },
     {
@@ -121,9 +117,7 @@
       },
       "cost_of_delay": 2.1,
       "category": "maintenance",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 4.8
     },
     {
@@ -161,9 +155,7 @@
       },
       "cost_of_delay": 7.01,
       "category": "other",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 4.72
     },
     {
@@ -201,9 +193,7 @@
       },
       "cost_of_delay": 7.01,
       "category": "other",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 4.72
     },
     {
@@ -241,9 +231,7 @@
       },
       "cost_of_delay": 7.01,
       "category": "other",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 4.72
     },
     {
@@ -254,12 +242,7 @@
       "line_number": 45,
       "severity": "medium",
       "metadata": {
-        "values": [
-          "0.08",
-          "0.085",
-          "0.0625",
-          "0.06"
-        ],
+        "values": ["0.08", "0.085", "0.0625", "0.06"],
         "context": "tax_calculation"
       },
       "detected_date": "2024-02-10T10:30:00",
@@ -286,9 +269,7 @@
       },
       "cost_of_delay": 7.01,
       "category": "other",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 4.72
     },
     {
@@ -327,9 +308,7 @@
       },
       "cost_of_delay": 7.01,
       "category": "other",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 4.72
     },
     {
@@ -367,9 +346,7 @@
       },
       "cost_of_delay": 7.01,
       "category": "other",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 4.72
     },
     {
@@ -408,11 +385,7 @@
       },
       "cost_of_delay": 19.48,
       "category": "code_quality",
-      "impact_tags": [
-        "velocity-blocker",
-        "quality-risk",
-        "quick-win"
-      ],
+      "impact_tags": ["velocity-blocker", "quality-risk", "quick-win"],
       "priority_score": 4.26
     },
     {
@@ -449,9 +422,7 @@
       },
       "cost_of_delay": 0.35,
       "category": "code_quality",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 4.1
     },
     {
@@ -489,11 +460,7 @@
       },
       "cost_of_delay": 14.73,
       "category": "other",
-      "impact_tags": [
-        "velocity-blocker",
-        "quality-risk",
-        "quick-win"
-      ],
+      "impact_tags": ["velocity-blocker", "quality-risk", "quick-win"],
       "priority_score": 3.73
     },
     {
@@ -505,10 +472,7 @@
       "severity": "high",
       "metadata": {
         "api_endpoint": "stripe",
-        "error_scenarios": [
-          "network_failure",
-          "invalid_response"
-        ]
+        "error_scenarios": ["network_failure", "invalid_response"]
       },
       "detected_date": "2024-02-10T10:30:00",
       "status": "identified",
@@ -534,11 +498,7 @@
       },
       "cost_of_delay": 14.73,
       "category": "other",
-      "impact_tags": [
-        "velocity-blocker",
-        "quality-risk",
-        "quick-win"
-      ],
+      "impact_tags": ["velocity-blocker", "quality-risk", "quick-win"],
       "priority_score": 3.73
     },
     {
@@ -552,10 +512,7 @@
         "package": "jquery",
         "current_version": "2.1.4",
         "latest_version": "3.6.4",
-        "vulnerabilities": [
-          "CVE-2020-11022",
-          "CVE-2020-11023"
-        ]
+        "vulnerabilities": ["CVE-2020-11022", "CVE-2020-11023"]
       },
       "detected_date": "2024-02-10T10:30:00",
       "status": "identified",
@@ -581,11 +538,7 @@
       },
       "cost_of_delay": 14.73,
       "category": "other",
-      "impact_tags": [
-        "velocity-blocker",
-        "quality-risk",
-        "quick-win"
-      ],
+      "impact_tags": ["velocity-blocker", "quality-risk", "quick-win"],
       "priority_score": 3.73
     },
     {
@@ -623,11 +576,7 @@
       },
       "cost_of_delay": 25.26,
       "category": "other",
-      "impact_tags": [
-        "velocity-blocker",
-        "quality-risk",
-        "quick-win"
-      ],
+      "impact_tags": ["velocity-blocker", "quality-risk", "quick-win"],
       "priority_score": 3.24
     },
     {
@@ -664,9 +613,7 @@
       },
       "cost_of_delay": 0.11,
       "category": "maintenance",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 3.1
     },
     {
@@ -678,10 +625,7 @@
       "severity": "medium",
       "metadata": {
         "duplicate_count": 3,
-        "other_files": [
-          "src/auth.py",
-          "src/frontend.js"
-        ]
+        "other_files": ["src/auth.py", "src/frontend.js"]
       },
       "detected_date": "2024-02-10T10:30:00",
       "status": "identified",
@@ -707,9 +651,7 @@
       },
       "cost_of_delay": 12.69,
       "category": "code_quality",
-      "impact_tags": [
-        "quick-win"
-      ],
+      "impact_tags": ["quick-win"],
       "priority_score": 2.39
     },
     {
@@ -721,10 +663,7 @@
       "severity": "high",
       "metadata": {
         "coverage": 0,
-        "critical_paths": [
-          "process_payment",
-          "refund_payment"
-        ],
+        "critical_paths": ["process_payment", "refund_payment"],
         "risk_level": "high"
       },
       "detected_date": "2024-02-10T10:30:00",
@@ -796,12 +735,7 @@
       },
       "cost_of_delay": 42.36,
       "category": "code_quality",
-      "impact_tags": [
-        "revenue-impact",
-        "velocity-blocker",
-        "quality-risk",
-        "quick-win"
-      ],
+      "impact_tags": ["revenue-impact", "velocity-blocker", "quality-risk", "quick-win"],
       "priority_score": 1.65
     },
     {
@@ -894,9 +828,7 @@
             },
             "cost_of_delay": 2.1,
             "category": "other",
-            "impact_tags": [
-              "quick-win"
-            ],
+            "impact_tags": ["quick-win"],
             "priority_score": 4.8
           },
           {
@@ -934,9 +866,7 @@
             },
             "cost_of_delay": 0.16,
             "category": "code_quality",
-            "impact_tags": [
-              "quick-win"
-            ],
+            "impact_tags": ["quick-win"],
             "priority_score": 4.8
           },
           {
@@ -973,9 +903,7 @@
             },
             "cost_of_delay": 2.1,
             "category": "maintenance",
-            "impact_tags": [
-              "quick-win"
-            ],
+            "impact_tags": ["quick-win"],
             "priority_score": 4.8
           }
         ],
@@ -1020,9 +948,7 @@
             },
             "cost_of_delay": 7.01,
             "category": "other",
-            "impact_tags": [
-              "quick-win"
-            ],
+            "impact_tags": ["quick-win"],
             "priority_score": 4.72
           }
         ],
@@ -1067,9 +993,7 @@
             },
             "cost_of_delay": 7.01,
             "category": "other",
-            "impact_tags": [
-              "quick-win"
-            ],
+            "impact_tags": ["quick-win"],
             "priority_score": 4.72
           }
         ],
@@ -1114,9 +1038,7 @@
             },
             "cost_of_delay": 7.01,
             "category": "other",
-            "impact_tags": [
-              "quick-win"
-            ],
+            "impact_tags": ["quick-win"],
             "priority_score": 4.72
           }
         ],
@@ -1134,12 +1056,7 @@
             "line_number": 45,
             "severity": "medium",
             "metadata": {
-              "values": [
-                "0.08",
-                "0.085",
-                "0.0625",
-                "0.06"
-              ],
+              "values": ["0.08", "0.085", "0.0625", "0.06"],
               "context": "tax_calculation"
             },
             "detected_date": "2024-02-10T10:30:00",
@@ -1166,9 +1083,7 @@
             },
             "cost_of_delay": 7.01,
             "category": "other",
-            "impact_tags": [
-              "quick-win"
-            ],
+            "impact_tags": ["quick-win"],
             "priority_score": 4.72
           }
         ],
@@ -1214,9 +1129,7 @@
             },
             "cost_of_delay": 7.01,
             "category": "other",
-            "impact_tags": [
-              "quick-win"
-            ],
+            "impact_tags": ["quick-win"],
             "priority_score": 4.72
           }
         ],
@@ -1254,20 +1167,7 @@
     "quick_wins_count": 5,
     "total_cost_of_delay": 303.6,
     "average_daily_interest_rate": 4.69,
-    "top_categories_by_effort": [
-      [
-        "other",
-        130.0
-      ],
-      [
-        "code_quality",
-        61.625
-      ],
-      [
-        "security",
-        44.0
-      ]
-    ]
+    "top_categories_by_effort": [["other", 130.0], ["code_quality", 61.625], ["security", 44.0]]
   },
   "charts_data": {
     "priority_effort_scatter": [
