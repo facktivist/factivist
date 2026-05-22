@@ -75,9 +75,11 @@ describe('imports internals', () => {
       ],
     })
     const { packages } = await discoverPackages(root)
-    const files = await discoverFiles(root, packages[0]!)
+    const [pkg] = packages
+    if (!pkg) throw new Error('expected one discovered package')
+    const files = await discoverFiles(root, pkg)
     const fileIds = new Set(files.map((f) => f.id))
-    const entry = await _internals.resolvePackageEntry(root, packages[0]!, fileIds)
+    const entry = await _internals.resolvePackageEntry(root, pkg, fileIds)
     expect(entry).toBe('p/one/src/index.ts')
   })
 
@@ -106,15 +108,13 @@ describe('imports internals', () => {
     const filesAll = (await Promise.all(packages.map((p) => discoverFiles(root, p)))).flat()
     const fileIds = new Set(filesAll.map((f) => f.id))
     const byName = Object.fromEntries(packages.map((p) => [p.name, p]))
-    expect(await _internals.resolvePackageEntry(root, byName['@x/m']!, fileIds)).toBe(
-      'p/m/src/m.ts',
-    )
-    expect(await _internals.resolvePackageEntry(root, byName['@x/d']!, fileIds)).toBe(
-      'p/d/src/d.ts',
-    )
-    expect(await _internals.resolvePackageEntry(root, byName['@x/t']!, fileIds)).toBe(
-      'p/t/src/t.ts',
-    )
+    const m = byName['@x/m']
+    const d = byName['@x/d']
+    const t = byName['@x/t']
+    if (!m || !d || !t) throw new Error('expected @x/m, @x/d, @x/t to be discovered')
+    expect(await _internals.resolvePackageEntry(root, m, fileIds)).toBe('p/m/src/m.ts')
+    expect(await _internals.resolvePackageEntry(root, d, fileIds)).toBe('p/d/src/d.ts')
+    expect(await _internals.resolvePackageEntry(root, t, fileIds)).toBe('p/t/src/t.ts')
   })
 
   it('resolvePackageEntry returns undefined on missing manifest', async () => {

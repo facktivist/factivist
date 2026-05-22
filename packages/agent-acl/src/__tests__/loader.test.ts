@@ -10,7 +10,7 @@ describe('loadAcl', () => {
     const index = await loadAcl(root)
     expect(index.layers).toHaveLength(1)
     expect(index.coordinator).toBe('coordinator')
-    expect(Object.keys(index.layers[0]?.file.agents).sort()).toEqual([
+    expect(Object.keys(index.layers[0]?.file.agents ?? {}).sort()).toEqual([
       'coordinator',
       'reader',
       'web-agent',
