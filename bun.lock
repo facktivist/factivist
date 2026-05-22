@@ -278,6 +278,9 @@
       ],
     },
   },
+  "trustedDependencies": [
+    "kuzu",
+  ],
   "overrides": {
     "react-native": "^0.85.3",
   },

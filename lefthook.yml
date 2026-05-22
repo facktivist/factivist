@@ -36,14 +36,14 @@ post-commit:
     # block the commit — we only emit a warning so the developer can re-run
     # `bun run graph:ingest` manually if they care.
     codegraph-refresh:
-      run: cd packages/codegraph && bun run src/cli.ts ingest || true
+      run: bun run packages/codegraph/src/cli.ts ingest || true
 
 pre-merge-commit:
   commands:
     full-check:
       run: bun run check
     package-cycles:
-      run: 'cd packages/codegraph && bun run src/cli.ts ingest && bun run src/cli.ts query "MATCH path = (a:Package)-[:DEPENDS_ON*2..6]->(a) RETURN count(path) AS cycles" | grep -q ''"cycles": 0'''
+      run: 'bun run packages/codegraph/src/cli.ts ingest && bun run packages/codegraph/src/cli.ts query "MATCH path = (a:Package)-[:DEPENDS_ON*2..6]->(a) RETURN count(path) AS cycles" | grep -q ''"cycles": 0'''
 
 # Migration commands are not git hooks but should also flow through the
 # guardrail layer. Run from CI / dev scripts via:
