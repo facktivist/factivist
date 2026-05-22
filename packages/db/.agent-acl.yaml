@@ -1,0 +1,8 @@
+# packages/db overlay — gates the migration directories explicitly.
+# `db-agent` may write src/ but never the materialized drizzle/ output;
+# migrations require a coordinator-led review.
+version: 1
+agents:
+  db-agent:
+    deny:
+      - "packages/db/drizzle/**"

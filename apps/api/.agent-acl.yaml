@@ -1,0 +1,5 @@
+# apps/api overlay — currently no additions beyond the root scope.
+version: 1
+agents:
+  api-agent:
+    description: Hono API on Bun. See root for the full scope.

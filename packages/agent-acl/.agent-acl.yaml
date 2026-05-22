@@ -1,0 +1,8 @@
+# packages/agent-acl overlay — the ACL package itself.
+# Changes here are sensitive (they shape every other agent's scope) so we
+# require coordinator review on writes; no agent has direct write to this
+# package outside of the coordinator.
+version: 1
+agents:
+  coordinator:
+    description: Only the coordinator may edit ACL declarations directly.

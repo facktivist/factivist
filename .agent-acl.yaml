@@ -1,0 +1,105 @@
+# Root ACL: declares every agent identity and its baseline read scope.
+# Per-package overlays in packages/*/.agent-acl.yaml and apps/*/.agent-acl.yaml
+# may ADD more rules. Removing rights requires editing THIS file.
+#
+# All globs are workspace-relative. `**` matches across directories;
+# `*` matches within a single segment. See packages/agent-acl/README.md.
+
+version: 1
+coordinator: coordinator
+
+agents:
+  coordinator:
+    description: Top-level orchestrator. Reads everything, can dispatch any worker.
+    read: "*"
+    write: "*"
+    exec: "*"
+    # Even the coordinator never touches the secret file.
+    deny:
+      - ".env"
+
+  web-agent:
+    description: Frontend (Next.js) — apps/web only, with shared package read.
+    read:
+      - "apps/web/**"
+      - "packages/shared/**"
+      - "packages/ui/**"
+      - "tooling/**"
+    write:
+      - "apps/web/**"
+    exec:
+      - "apps/web/**"
+    deny: [".env", "**/secrets/**"]
+
+  api-agent:
+    description: Backend (Hono) — apps/api, with db + shared read.
+    read:
+      - "apps/api/**"
+      - "packages/api/**"
+      - "packages/db/**"
+      - "packages/shared/**"
+      - "tooling/**"
+    write:
+      - "apps/api/**"
+    exec:
+      - "apps/api/**"
+    deny: [".env", "**/secrets/**"]
+
+  mobile-agent:
+    description: React Native mobile — apps/mobile + shared/ui/native read.
+    read:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - "packages/ui/native/**"
+      - "packages/ui/theme/**"
+      - "tooling/**"
+    write:
+      - "apps/mobile/**"
+    exec:
+      - "apps/mobile/**"
+    deny: [".env", "**/secrets/**"]
+
+  db-agent:
+    description: Drizzle schemas and AGE migrations. Migrations require consensus.
+    read:
+      - "packages/db/**"
+      - "packages/shared/**"
+      - "tooling/**"
+    write:
+      - "packages/db/src/**"
+    # AGE migrations and the drizzle/ snapshots are intentionally NOT in write
+    # — they go through a coordinator-approved migration PR, never agent edits.
+    exec:
+      - "packages/db/**"
+    deny: [".env"]
+
+  codegraph-agent:
+    description: Code graph maintenance — packages/codegraph + ingest scripts.
+    read: "*"
+    write:
+      - "packages/codegraph/**"
+    exec:
+      - "packages/codegraph/**"
+    deny: [".env"]
+
+  guardrails-agent:
+    description: Guardrail authoring — packages/guardrails.
+    read: "*"
+    write:
+      - "packages/guardrails/**"
+      - "lefthook.yml"
+      - "docs/guardrails.md"
+    exec:
+      - "packages/guardrails/**"
+    deny: [".env"]
+
+  domain-kg-agent:
+    description: AGE domain KG ingestion. Read everything, write nowhere on disk.
+    read: "*"
+    # Domain KG writes happen via the database client, not file edits.
+    deny: [".env"]
+
+  security-auditor:
+    description: Read-only auditor. Reports findings; never writes.
+    read: "*"
+    deny: [".env", "**/secrets/**"]
