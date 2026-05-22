@@ -11,7 +11,8 @@
     "tooling/*"
   ],
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=!@factivist/mobile",
+    "dev:mobile": "turbo run dev --filter=@factivist/mobile",
     "build": "turbo run build",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
