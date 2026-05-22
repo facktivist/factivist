@@ -1,0 +1,52 @@
+# Local development services.
+#
+# Up:    docker compose up -d postgres
+# Down:  docker compose down
+# Tools: docker compose --profile tools up -d kuzu-explorer
+#
+# Only AGE-enabled Postgres is required for day-to-day work. Bun runs apps
+# natively (web/api/mobile), Kuzu is embedded in `packages/codegraph`, and
+# the explorer is opt-in via the `tools` profile so it doesn't start on
+# `docker compose up`.
+
+services:
+  postgres:
+    image: apache/age:release_PG16_1.6.0
+    container_name: factivist-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-factivist}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-factivist_local}
+      POSTGRES_DB: ${POSTGRES_DB:-factivist}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # Healthcheck targets the default DB; the migrator handles the actual
+      # schema bootstrap once the container is healthy.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-factivist} -d ${POSTGRES_DB:-factivist}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # Opt-in: `docker compose --profile tools up kuzu-explorer`
+  # The explorer mounts the host's `.codegraph` directory so it picks up
+  # whatever the latest `bun run graph:ingest` wrote.
+  kuzu-explorer:
+    image: kuzudb/explorer:latest
+    container_name: factivist-kuzu-explorer
+    profiles: ["tools"]
+    restart: unless-stopped
+    ports:
+      - "${KUZU_EXPLORER_PORT:-8000}:8000"
+    volumes:
+      - ./.codegraph:/database:ro
+    environment:
+      KUZU_PATH: /database/graph.kuzu
+      MODE: READ_ONLY
+
+volumes:
+  postgres-data:
+    name: factivist-postgres-data

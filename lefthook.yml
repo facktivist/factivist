@@ -1,0 +1,54 @@
+# Lefthook config — wires @factivist/guardrails to git hooks.
+#
+# Install once with: `bunx lefthook install`. After that, each hook runs the
+# guardrails CLI (which lives in `packages/guardrails`) against the staged
+# files. Production hooks default to fail-closed; pass BYPASS_GUARDRAILS env
+# vars to bypass with audit (see packages/guardrails/CLAUDE.md).
+#
+# Per the project's Bun-exclusive rule, everything here invokes via `bun run`.
+
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      run: bunx @biomejs/biome check --staged --no-errors-on-unmatched
+    guardrails-secret-leak:
+      glob: "*.{ts,tsx,sql,env*,json,yml,yaml,md}"
+      run: cd packages/guardrails && bun run src/cli.ts check secret-leak --staged-files {staged_files}
+    guardrails-cross-app:
+      glob: "{apps,packages}/**/*.{ts,tsx}"
+      run: cd packages/guardrails && bun run src/cli.ts check cross-app-import --staged-files {staged_files}
+    guardrails-age-ddl:
+      glob: "*.{ts,tsx,sql}"
+      run: cd packages/guardrails && bun run src/cli.ts check age-ddl-outside-migration --staged-files {staged_files}
+
+pre-push:
+  parallel: false
+  commands:
+    typecheck:
+      run: bun run lint
+    test-affected:
+      run: bunx turbo run test --filter='[HEAD^1]'
+
+post-commit:
+  commands:
+    # Refresh the code KG against the latest commit. Failures here must not
+    # block the commit — we only emit a warning so the developer can re-run
+    # `bun run graph:ingest` manually if they care.
+    codegraph-refresh:
+      run: cd packages/codegraph && bun run src/cli.ts ingest || true
+
+pre-merge-commit:
+  commands:
+    full-check:
+      run: bun run check
+    package-cycles:
+      run: 'cd packages/codegraph && bun run src/cli.ts ingest && bun run src/cli.ts query "MATCH path = (a:Package)-[:DEPENDS_ON*2..6]->(a) RETURN count(path) AS cycles" | grep -q ''"cycles": 0'''
+
+# Migration commands are not git hooks but should also flow through the
+# guardrail layer. Run from CI / dev scripts via:
+#   bunx lefthook run db-migrate
+db-migrate:
+  commands:
+    port-check:
+      run: cd packages/guardrails && bun run src/cli.ts check migration-port

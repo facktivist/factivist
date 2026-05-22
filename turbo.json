@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["tsconfig.json", "biome.json"],
-  "globalEnv": ["NODE_ENV"],
+  "globalEnv": ["NODE_ENV", "DATABASE_URL"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -31,9 +31,21 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
+    "@factivist/guardrails#build": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "@factivist/agent-acl#build": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
     "graph:ingest": {
       "cache": false,
       "outputs": [".codegraph/**"]
+    },
+    "graph:export:obsidian": {
+      "cache": false,
+      "outputs": [".codegraph/vault/**"]
     },
     "db:migrate:age": {
       "cache": false,
