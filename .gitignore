@@ -24,3 +24,10 @@ next-env.d.ts
 CLAUDE.local.md
 .claude-flow/
 .codegraph/
+
+# Local agent / vector / memory state — never commit
+.swarm/
+.agents/
+.claude/memory.db
+.claude/memory.db-*
+ruvector.db
