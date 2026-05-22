@@ -37,3 +37,13 @@
 @skills/detox-skill
 @skills/vitest
 @skills/app-store-optimization
+@skills/argent-android-emulator-setup
+@skills/argent-create-flow
+@skills/argent-device-interact
+@skills/argent-ios-simulator-setup
+@skills/argent-metro-debugger
+@skills/argent-native-profiler
+@skills/argent-react-native-app-workflow
+@skills/argent-react-native-optimization
+@skills/argent-react-native-profiler
+@skills/argent-test-ui-flow

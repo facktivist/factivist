@@ -168,9 +168,13 @@
       "Bash(node .claude/*)",
       "mcp__claude-flow__:*",
       "Read(./.env.example)",
-      "Write(./.env.example)"
+      "Write(./.env.example)",
+      "mcp__argent"
     ],
-    "deny": ["Read(./.env)", "Write(./.env)"]
+    "deny": [
+      "Read(./.env)",
+      "Write(./.env)"
+    ]
   },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
@@ -235,7 +239,11 @@
     },
     "daemon": {
       "autoStart": false,
-      "workers": ["map", "audit", "optimize"],
+      "workers": [
+        "map",
+        "audit",
+        "optimize"
+      ],
       "schedules": {
         "audit": {
           "interval": "4h",
@@ -250,7 +258,11 @@
     "learning": {
       "enabled": true,
       "autoTrain": true,
-      "patterns": ["coordination", "optimization", "prediction"],
+      "patterns": [
+        "coordination",
+        "optimization",
+        "prediction"
+      ],
       "retention": {
         "shortTerm": "24h",
         "longTerm": "30d"

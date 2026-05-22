@@ -49,5 +49,9 @@
   },
   "trustedDependencies": [
     "kuzu"
-  ]
+  ],
+  "dependencies": {
+    "@tanstack/ai": "^0.21.2",
+    "@tanstack/ai-openai": "^0.10.0"
+  }
 }
