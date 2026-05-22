@@ -32,5 +32,5 @@ config.resolver.nodeModulesPaths = [
 config.resolver.disableHierarchicalLookup = true
 
 module.exports = withUniwindConfig(config, {
-  input: './global.css',
+  cssEntryFile: './global.css',
 })
