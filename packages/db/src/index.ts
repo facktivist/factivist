@@ -10,6 +10,13 @@
  * This barrel exists for convenience and tooling that doesn't resolve subpaths.
  */
 
+export {
+  type CypherColumn,
+  ensureAgeSession,
+  openAgeClient,
+  runCypher,
+} from './age.ts'
 export { createClient, type Database, db } from './client.ts'
+export { applyAgeMigrations, type MigrationOutcome } from './migrate-age.ts'
 export * from './schema/index.ts'
 export type { NewUser, User } from './types.ts'

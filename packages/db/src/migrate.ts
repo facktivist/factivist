@@ -23,8 +23,11 @@ const run = async (): Promise<void> => {
   await sql.end()
 }
 
+/* v8 ignore start */
 if (import.meta.main) {
   await run()
 }
+
+/* v8 ignore stop */
 
 export { run }
