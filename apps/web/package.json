@@ -1,0 +1,46 @@
+{
+  "name": "@factivist/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@factivist/shared": "workspace:*",
+    "@factivist/ui-theme": "workspace:*",
+    "@factivist/ui-web": "workspace:*",
+    "@heroui/react": "~3.0.0",
+    "@tanstack/react-query": "latest",
+    "@tanstack/react-query-devtools": "latest",
+    "next": "16.2.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zustand": "latest"
+  },
+  "devDependencies": {
+    "@factivist/tailwind-config": "workspace:*",
+    "@factivist/tsconfig": "workspace:*",
+    "@factivist/vitest-config": "workspace:*",
+    "@playwright/test": "latest",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "latest",
+    "@types/node": "^24.12.4",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitest/coverage-v8": "^4.1.7",
+    "jsdom": "^29.1.1",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  }
+}
