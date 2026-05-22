@@ -27,6 +27,18 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
+    "@factivist/codegraph#build": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "graph:ingest": {
+      "cache": false,
+      "outputs": [".codegraph/**"]
+    },
+    "db:migrate:age": {
+      "cache": false,
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true
