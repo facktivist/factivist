@@ -20,7 +20,13 @@
       "!**/android/app/build",
       "!**/playwright-report",
       "!**/test-results",
-      "!**/artifacts"
+      "!**/artifacts",
+      "!**/drizzle/meta",
+      "!**/.agents",
+      "!**/.claude",
+      "!**/.claude-flow",
+      "!**/.swarm",
+      "!**/.cursor"
     ]
   },
   "formatter": {
@@ -51,6 +57,13 @@
       "semicolons": "asNeeded",
       "arrowParentheses": "always",
       "trailingCommas": "all"
+    }
+  },
+  "css": {
+    "parser": {
+      "cssModules": false,
+      "allowWrongLineComments": false,
+      "tailwindDirectives": true
     }
   }
 }

@@ -6,7 +6,7 @@
 
 ## Rules
 - Expo Router for typed file-based navigation.
-- HeroUI Native + Uniwind for styling. oklch tokens from @repo/ui/theme.
+- HeroUI Native + Uniwind for styling. oklch tokens from @factivist/ui-theme.
 - SafeAreaView + ScrollView wrapper on every screen.
 - @gorhom/bottom-sheet for contextual actions, not full-screen navigations.
 - Metro bundler (Expo default, required).

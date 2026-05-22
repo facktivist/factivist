@@ -8,6 +8,8 @@ coverage/
 !.env.example
 .turbo/
 .expo/
+apps/mobile/ios/
+apps/mobile/android/
 ios/build/
 android/build/
 android/app/build/
@@ -16,5 +18,8 @@ test-results/
 e2e/.auth/
 artifacts/
 *.log
+*.tsbuildinfo
+next-env.d.ts
 .DS_Store
 CLAUDE.local.md
+.claude-flow/

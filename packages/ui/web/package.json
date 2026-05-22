@@ -28,7 +28,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@heroui/react": "^3.0.0",
+    "@heroui/react": "~3.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -36,7 +36,7 @@
     "@factivist/tsconfig": "workspace:*",
     "@factivist/ui-theme": "workspace:*",
     "@factivist/vitest-config": "workspace:*",
-    "@heroui/react": "^3.0.0",
+    "@heroui/react": "~3.0.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/node": "^24.12.4",
