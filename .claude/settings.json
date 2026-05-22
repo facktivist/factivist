@@ -166,9 +166,11 @@
       "Bash(npx @claude-flow*)",
       "Bash(npx claude-flow*)",
       "Bash(node .claude/*)",
-      "mcp__claude-flow__:*"
+      "mcp__claude-flow__:*",
+      "Read(./.env.example)",
+      "Write(./.env.example)"
     ],
-    "deny": ["Read(./.env)", "Read(./.env.*)"]
+    "deny": ["Read(./.env)", "Write(./.env)"]
   },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
