@@ -8,7 +8,7 @@
  */
 
 import type { GraphHandle } from '../client.ts'
-import type { ContainsEdge, DefinesEdge, FileNode, GraphSnapshot, PackageNode } from '../types.ts'
+import type { ContainsEdge, DefinesEdge, FileNode, GraphSnapshot } from '../types.ts'
 
 import { discoverFiles } from './files.ts'
 import { discoverImports } from './imports.ts'

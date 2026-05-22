@@ -11,9 +11,11 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 
 import { openGraph } from './client.ts'
-import { type IngestStats, ingest } from './ingest/index.ts'
+import { buildVault, writeVault } from './export/obsidian.ts'
+import { buildSnapshot, type IngestStats, ingest } from './ingest/index.ts'
 
 export const DEFAULT_DB = '.codegraph/graph.kuzu'
+export const DEFAULT_VAULT = '.codegraph/vault'
 
 export const formatStats = (stats: IngestStats): string =>
   `Ingested ${stats.packages} packages, ${stats.files} files, ` +
@@ -38,6 +40,21 @@ export const cmdQuery = async (dbPath: string, cypher: string): Promise<unknown[
     handle.close()
   }
 }
+
+export interface ExportStats {
+  files: number
+  vaultRoot: string
+}
+
+export const cmdExportObsidian = async (root: string, vaultRoot: string): Promise<ExportStats> => {
+  const snapshot = await buildSnapshot(root)
+  const vault = buildVault(snapshot)
+  await writeVault(vaultRoot, vault, { clean: true })
+  return { files: vault.length, vaultRoot }
+}
+
+export const formatExportStats = (stats: ExportStats): string =>
+  `Wrote ${stats.files} markdown files to ${stats.vaultRoot}\n`
 
 export interface CliIO {
   argv: string[]
@@ -71,7 +88,13 @@ export const runCli = async (io: CliIO): Promise<number> => {
     io.stdout.write(`${JSON.stringify(rows, null, 2)}\n`)
     return 0
   }
-  io.stderr.write('Usage: bun run graph:ingest | bun run graph:query "<cypher>"\n')
+  if (cmd === 'export:obsidian') {
+    const vaultRoot = io.env.CODEGRAPH_VAULT ?? resolve(io.cwd, DEFAULT_VAULT)
+    const stats = await cmdExportObsidian(io.cwd, vaultRoot)
+    io.stdout.write(formatExportStats(stats))
+    return 0
+  }
+  io.stderr.write('Usage: bun run graph:ingest | graph:query "<cypher>" | graph:export:obsidian\n')
   return 2
 }
 

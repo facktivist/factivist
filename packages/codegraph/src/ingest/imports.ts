@@ -18,7 +18,7 @@
  * (input file path → list of specifiers) stays the same.
  */
 
-import { readFile, stat } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 
 import type { FileNode, ImportEdge, PackageNode } from '../types.ts'

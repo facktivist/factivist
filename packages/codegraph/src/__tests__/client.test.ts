@@ -7,7 +7,6 @@ const buildFakeKuzu = () => {
   const statements: string[] = []
   let closed = false
   const FakeConnection = class {
-    constructor(_db: unknown) {}
     async query(cypher: string) {
       statements.push(cypher)
       return { getAll: async () => [] }
@@ -48,7 +47,6 @@ describe('openGraph', () => {
       }
     }
     const FakeConn = class {
-      constructor(_db: unknown) {}
       async query() {
         return { getAll: async () => [] }
       }
