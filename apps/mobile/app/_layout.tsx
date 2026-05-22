@@ -1,0 +1,32 @@
+import { Stack } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { HeroUINativeProvider } from 'heroui-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+
+import '../global.css'
+
+/**
+ * Root layout for the Expo Router stack.
+ *
+ * Wraps the navigation tree in the providers HeroUI Native requires:
+ *   - GestureHandlerRootView → gesture-handler + Reanimated worklets
+ *   - SafeAreaProvider       → notch / dynamic-island padding via useSafeAreaInsets
+ *   - HeroUINativeProvider   → theme + portal host for Dialog/BottomSheet
+ *
+ * Screens are declared in `app/` and registered automatically by file path.
+ */
+export default function RootLayout() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <HeroUINativeProvider>
+          <StatusBar style="auto" />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+          </Stack>
+        </HeroUINativeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  )
+}
