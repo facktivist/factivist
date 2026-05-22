@@ -1,0 +1,5 @@
+# packages/guardrails overlay — guardrails-agent owns this directory.
+version: 1
+agents:
+  guardrails-agent:
+    description: Owns built-in guardrails, bypass policy, audit transport.

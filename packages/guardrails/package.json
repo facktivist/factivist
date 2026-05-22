@@ -1,0 +1,51 @@
+{
+  "name": "@factivist/guardrails",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./check": {
+      "types": "./src/check.ts",
+      "default": "./src/check.ts"
+    },
+    "./bypass": {
+      "types": "./src/bypass.ts",
+      "default": "./src/bypass.ts"
+    },
+    "./audit": {
+      "types": "./src/audit.ts",
+      "default": "./src/audit.ts"
+    },
+    "./registry": {
+      "types": "./src/registry/index.ts",
+      "default": "./src/registry/index.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "biome check .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "guardrails": "bun run src/cli.ts"
+  },
+  "devDependencies": {
+    "@factivist/tsconfig": "workspace:*",
+    "@factivist/vitest-config": "workspace:*",
+    "@types/node": "^24.12.4",
+    "@vitest/coverage-v8": "^4.1.7",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  }
+}
