@@ -53,6 +53,10 @@
     "db:migrate": {
       "cache": false,
       "outputs": []
+    },
+    "db:seed": {
+      "cache": false,
+      "outputs": []
     }
   }
 }

@@ -17,10 +17,12 @@
 
 @import "tailwindcss";
 
-/* HeroUI v3 plugin + source globs so utilities used inside HeroUI's
- * distributed components are detected by Tailwind v4's content scanner. */
-@plugin "@heroui/react";
-@source "../../node_modules/@heroui/theme/dist/**/*.{js,mjs}";
+/* HeroUI v3 ships a prebuilt stylesheet (Tailwind v4 CSS-first). Import it
+ * here so consumers get button/card/etc. base styles without re-declaring.
+ * The package does NOT export a Tailwind plugin in v3 — using
+ * `@plugin "@heroui/react"` will fail at build time. */
+@import "@heroui/react/styles";
+@source "../../node_modules/@heroui/react/dist/**/*.{js,mjs}";
 
 /* Class-based dark mode strategy — `.dark` on <html> or <body>. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -32,65 +34,65 @@
   --color-gray-50: oklch(0.985 0.002 250);
   --color-gray-100: oklch(0.965 0.004 250);
   --color-gray-200: oklch(0.925 0.006 250);
-  --color-gray-300: oklch(0.870 0.008 250);
+  --color-gray-300: oklch(0.87 0.008 250);
   --color-gray-400: oklch(0.715 0.012 250);
-  --color-gray-500: oklch(0.560 0.014 250);
+  --color-gray-500: oklch(0.56 0.014 250);
   --color-gray-600: oklch(0.445 0.014 250);
-  --color-gray-700: oklch(0.360 0.012 250);
-  --color-gray-800: oklch(0.270 0.010 250);
-  --color-gray-900: oklch(0.190 0.008 250);
-  --color-gray-950: oklch(0.130 0.006 250);
+  --color-gray-700: oklch(0.36 0.012 250);
+  --color-gray-800: oklch(0.27 0.01 250);
+  --color-gray-900: oklch(0.19 0.008 250);
+  --color-gray-950: oklch(0.13 0.006 250);
 
   /* Brand / primary — indigo-blue */
   --color-brand-50: oklch(0.975 0.015 250);
-  --color-brand-100: oklch(0.940 0.040 250);
-  --color-brand-200: oklch(0.880 0.080 250);
-  --color-brand-300: oklch(0.800 0.130 250);
-  --color-brand-400: oklch(0.680 0.180 250);
-  --color-brand-500: oklch(0.550 0.200 250);
-  --color-brand-600: oklch(0.470 0.190 250);
-  --color-brand-700: oklch(0.395 0.170 250);
-  --color-brand-800: oklch(0.320 0.140 250);
-  --color-brand-900: oklch(0.255 0.110 250);
-  --color-brand-950: oklch(0.180 0.075 250);
+  --color-brand-100: oklch(0.94 0.04 250);
+  --color-brand-200: oklch(0.88 0.08 250);
+  --color-brand-300: oklch(0.8 0.13 250);
+  --color-brand-400: oklch(0.68 0.18 250);
+  --color-brand-500: oklch(0.55 0.2 250);
+  --color-brand-600: oklch(0.47 0.19 250);
+  --color-brand-700: oklch(0.395 0.17 250);
+  --color-brand-800: oklch(0.32 0.14 250);
+  --color-brand-900: oklch(0.255 0.11 250);
+  --color-brand-950: oklch(0.18 0.075 250);
 
   /* Success — green (hue 145) */
-  --color-success-50: oklch(0.975 0.020 145);
-  --color-success-100: oklch(0.945 0.050 145);
-  --color-success-200: oklch(0.890 0.090 145);
+  --color-success-50: oklch(0.975 0.02 145);
+  --color-success-100: oklch(0.945 0.05 145);
+  --color-success-200: oklch(0.89 0.09 145);
   --color-success-300: oklch(0.815 0.135 145);
-  --color-success-400: oklch(0.720 0.170 145);
-  --color-success-500: oklch(0.620 0.185 145);
+  --color-success-400: oklch(0.72 0.17 145);
+  --color-success-500: oklch(0.62 0.185 145);
   --color-success-600: oklch(0.515 0.165 145);
-  --color-success-700: oklch(0.420 0.140 145);
-  --color-success-800: oklch(0.340 0.115 145);
-  --color-success-900: oklch(0.275 0.090 145);
-  --color-success-950: oklch(0.190 0.060 145);
+  --color-success-700: oklch(0.42 0.14 145);
+  --color-success-800: oklch(0.34 0.115 145);
+  --color-success-900: oklch(0.275 0.09 145);
+  --color-success-950: oklch(0.19 0.06 145);
 
   /* Warning — amber (hue 75) */
-  --color-warning-50: oklch(0.985 0.020 75);
-  --color-warning-100: oklch(0.960 0.050 75);
+  --color-warning-50: oklch(0.985 0.02 75);
+  --color-warning-100: oklch(0.96 0.05 75);
   --color-warning-200: oklch(0.915 0.095 75);
-  --color-warning-300: oklch(0.855 0.140 75);
-  --color-warning-400: oklch(0.790 0.170 75);
-  --color-warning-500: oklch(0.720 0.180 75);
-  --color-warning-600: oklch(0.610 0.165 75);
-  --color-warning-700: oklch(0.495 0.140 75);
+  --color-warning-300: oklch(0.855 0.14 75);
+  --color-warning-400: oklch(0.79 0.17 75);
+  --color-warning-500: oklch(0.72 0.18 75);
+  --color-warning-600: oklch(0.61 0.165 75);
+  --color-warning-700: oklch(0.495 0.14 75);
   --color-warning-800: oklch(0.395 0.115 75);
-  --color-warning-900: oklch(0.315 0.090 75);
-  --color-warning-950: oklch(0.215 0.060 75);
+  --color-warning-900: oklch(0.315 0.09 75);
+  --color-warning-950: oklch(0.215 0.06 75);
 
   /* Danger — red (hue 25) */
-  --color-danger-50: oklch(0.975 0.020 25);
-  --color-danger-100: oklch(0.945 0.050 25);
+  --color-danger-50: oklch(0.975 0.02 25);
+  --color-danger-100: oklch(0.945 0.05 25);
   --color-danger-200: oklch(0.895 0.095 25);
-  --color-danger-300: oklch(0.825 0.140 25);
-  --color-danger-400: oklch(0.735 0.180 25);
+  --color-danger-300: oklch(0.825 0.14 25);
+  --color-danger-400: oklch(0.735 0.18 25);
   --color-danger-500: oklch(0.625 0.215 25);
-  --color-danger-600: oklch(0.530 0.200 25);
-  --color-danger-700: oklch(0.435 0.170 25);
-  --color-danger-800: oklch(0.355 0.140 25);
-  --color-danger-900: oklch(0.285 0.110 25);
+  --color-danger-600: oklch(0.53 0.2 25);
+  --color-danger-700: oklch(0.435 0.17 25);
+  --color-danger-800: oklch(0.355 0.14 25);
+  --color-danger-900: oklch(0.285 0.11 25);
   --color-danger-950: oklch(0.195 0.075 25);
 
   /* ─── Semantic tokens (light mode defaults) ──────────────────────── */
@@ -119,10 +121,10 @@
   --color-ring: var(--color-brand-500);
 
   /* ─── Typography ─────────────────────────────────────────────────── */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", monospace;
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
   /* ─── Radii ──────────────────────────────────────────────────────── */
   --radius-xs: 0.125rem;
@@ -136,9 +138,9 @@
   /* ─── Shadows ────────────────────────────────────────────────────── */
   --shadow-xs: 0 1px 2px 0 oklch(0 0 0 / 0.05);
   --shadow-sm: 0 1px 3px 0 oklch(0 0 0 / 0.08), 0 1px 2px -1px oklch(0 0 0 / 0.06);
-  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.10), 0 2px 4px -2px oklch(0 0 0 / 0.06);
-  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.10), 0 4px 6px -4px oklch(0 0 0 / 0.05);
-  --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.10), 0 8px 10px -6px oklch(0 0 0 / 0.04);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.05);
+  --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.1), 0 8px 10px -6px oklch(0 0 0 / 0.04);
 }
 
 /* ─── Dark mode (class-based + prefers-color-scheme fallback) ─────── */

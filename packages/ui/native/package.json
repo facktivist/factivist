@@ -28,7 +28,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "heroui-native": "*",
+    "heroui-native": "~1.0.3",
     "react": "^19.0.0",
     "react-native": "^0.85.3"
   },

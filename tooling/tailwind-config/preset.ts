@@ -6,7 +6,8 @@
  *
  *     @import "@factivist/tailwind-config";
  *
- * which loads ./index.css and registers the HeroUI plugin via `@plugin`.
+ * which loads ./index.css and pulls in HeroUI v3's prebuilt stylesheet
+ * (HeroUI v3 ships CSS, not a Tailwind plugin).
  *
  * This file only declares the `content` globs and dark-mode strategy so
  * mobile/legacy bundlers can resolve a config object. All design tokens
@@ -22,7 +23,7 @@ const preset = {
     './src/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
     '../../packages/ui/**/src/**/*.{ts,tsx}',
-    '../../node_modules/@heroui/theme/dist/**/*.{js,mjs}',
+    '../../node_modules/@heroui/react/dist/**/*.{js,mjs}',
   ],
 } satisfies Partial<Config>
 
