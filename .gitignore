@@ -31,3 +31,5 @@ CLAUDE.local.md
 .claude/memory.db
 .claude/memory.db-*
 ruvector.db
+*.rvf
+*.rvf.lock
