@@ -6,7 +6,6 @@ const corsOrigin = process.env.CORS_ORIGIN
 const app = createApp({ corsOrigin })
 
 if (import.meta.main) {
-  // biome-ignore lint/suspicious/noConsole: server bootstrap log
   console.log(`API listening on :${port}`)
 }
 
