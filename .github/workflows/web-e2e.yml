@@ -1,0 +1,72 @@
+name: web-e2e
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - 'packages/ui/web/**'
+      - 'packages/ui/theme/**'
+      - 'packages/shared/**'
+      - 'tooling/tailwind-config/**'
+      - '.github/workflows/web-e2e.yml'
+      - 'bun.lock'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+
+concurrency:
+  group: web-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: Playwright (Chromium + WebKit + Mobile)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: playwright-${{ runner.os }}-
+
+      - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        working-directory: apps/web
+        run: bunx playwright install --with-deps chromium firefox webkit
+
+      - name: Install Playwright system deps (cache hit path)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        working-directory: apps/web
+        run: bunx playwright install-deps
+
+      - name: Build web (so dev server is fast on cold start)
+        run: bun run build --filter=@factivist/web
+
+      - name: Run Playwright tests
+        working-directory: apps/web
+        run: bun run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          if-no-files-found: ignore
+          retention-days: 7

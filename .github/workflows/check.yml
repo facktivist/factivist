@@ -1,0 +1,59 @@
+name: check
+
+on:
+  pull_request:
+    paths-ignore:
+      - 'apps/mobile/**'
+      - 'apps/mobile/CLAUDE.md'
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'apps/mobile/**'
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: lint + test:coverage + build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Test + coverage (enforces 95/95/95/90 thresholds)
+        run: bun run test:coverage
+
+      - name: Build
+        run: bun run build
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            apps/*/coverage
+            packages/**/coverage
+          if-no-files-found: ignore
+          retention-days: 7
