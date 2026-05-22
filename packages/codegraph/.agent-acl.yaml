@@ -1,0 +1,5 @@
+# packages/codegraph overlay — codegraph-agent owns this directory.
+version: 1
+agents:
+  codegraph-agent:
+    description: Owns ingest, query, bridge, and Obsidian export.

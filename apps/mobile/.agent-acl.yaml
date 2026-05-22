@@ -1,0 +1,8 @@
+# apps/mobile overlay — Expo project. Deny the platform build outputs from
+# being accidentally edited.
+version: 1
+agents:
+  mobile-agent:
+    deny:
+      - "apps/mobile/ios/**"
+      - "apps/mobile/android/**"

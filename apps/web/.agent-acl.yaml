@@ -1,0 +1,9 @@
+# apps/web overlay — adds permissions specific to this app.
+# Inherits everything from the root file; additions only.
+
+version: 1
+agents:
+  web-agent:
+    # Allow the agent to touch its own .next cache for build-related debugging.
+    read:
+      - "apps/web/.next/**"
