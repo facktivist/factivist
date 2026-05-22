@@ -24,6 +24,7 @@ export {
   symbolUrn,
 } from './bridge/index.ts'
 export { type GraphConnection, type GraphHandle, openGraph, openInMemoryGraph } from './client.ts'
+export { buildVault, type VaultFile, writeVault } from './export/obsidian.ts'
 export { buildSnapshot, type IngestStats, ingest, writeSnapshot } from './ingest/index.ts'
 export {
   blastRadius,
