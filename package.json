@@ -8,7 +8,8 @@
     "apps/*",
     "packages/*",
     "packages/ui/*",
-    "tooling/*"
+    "tooling/*",
+    "scripts"
   ],
   "scripts": {
     "dev": "turbo run dev --filter=!@factivist/mobile",
@@ -35,6 +36,7 @@
     "lefthook": "^2.1.8",
     "turbo": "^2.9.14",
     "typescript": "^6.0.3",
+    "viem": "^2.50.4",
     "vitest": "^4.1.7"
   },
   "peerDependencies": {
