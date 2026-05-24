@@ -12,6 +12,16 @@ import {
   readStdin,
 } from '../llm-cost-logger.ts'
 
+function getModelPricing(model: keyof typeof MODEL_PRICING) {
+  const price = MODEL_PRICING[model]
+
+  if (!price) {
+    throw new Error(`Missing pricing for ${model}`)
+  }
+
+  return price
+}
+
 describe('parseArgs', () => {
   it('parses --flag value pairs', () => {
     const out = parseArgs(['--agent', 'planner', '--prompt-tokens', '123'])
@@ -120,7 +130,7 @@ describe('flagsToPayload', () => {
 
 describe('computeCostUsd', () => {
   it('computes Opus pricing using input + output + cacheRead rates', () => {
-    const price = MODEL_PRICING['claude-opus-4-7']!
+    const price = getModelPricing('claude-opus-4-7')
     const result = computeCostUsd('claude-opus-4-7', 1_000_000, 1_000_000, 1_000_000)
     expect(result).toBe(
       Math.round((price.input + price.output + (price.cacheRead ?? price.input)) * 1_000_000) /
