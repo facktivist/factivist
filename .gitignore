@@ -36,3 +36,11 @@ ruvector.db
 
 # TypeScript build cache
 *.tsbuildinfo
+
+# Civic reference datasets — stored in Supabase Storage, seeded via Drizzle migration.
+# Never commit (5–50 MB each). See docs/data-points/README.md.
+docs/data-points/*.topo.json
+docs/data-points/*.geojson
+docs/data-points/*.csv
+docs/data-points/*.tsv
+docs/data-points/*.parquet
