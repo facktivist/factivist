@@ -471,11 +471,15 @@ Per ticket:
 | Complaint API | `apps/api/__tests__/complaint/*.test.ts` | 15 |
 | Discovery / FTS | `apps/api/__tests__/discovery/*.test.ts` | 8 |
 | Moderation queue | `apps/api/__tests__/moderation/*.test.ts` | 8 |
-| Web E2E | `apps/web/e2e/*.spec.ts` — onboarding, submit, browse, comment, flag | 5 |
-| Mobile E2E (iOS) | `apps/mobile/e2e/*.spec.ts` via Detox | 5 |
+| Web E2E | `apps/web/e2e/*.spec.ts` — onboarding, submit (complaint), browse, flag, tab-parity (ADR-0019) | 5 |
+| Mobile E2E (iOS) | `apps/mobile/e2e/*.spec.ts` via Detox + Argent MCP | 5 |
 | Mobile E2E (Android) | same files, Detox android config | 5 |
-| Contract glue | `packages/contracts/test/CitizenVerifier.t.ts` | 10 |
+| Contract glue | `packages/contracts/test/CitizenVerifier.t.ts` | **DEFERRED to Phase 9** ([[s1-zkp-findings]] OQ-1 — upstream Polygon deployment) |
 | Schema / Zod | `packages/shared/__tests__/*.test.ts` | 20 |
+
+**Phase 6 amendments** (per qa-lead gap analysis 2026-05-24):
+- Row 5 swapped `comment` → `tab-parity (ADR-0019)`. Comments table is out of S1 scope ([[s1-phase-5-done]] wave-4 nice-to-have #5).
+- Row 8 (Contract glue) moved to Phase 9 — `packages/contracts/` doesn't exist and the upstream `CitizenVerifier` deployment doesn't exist yet. See `docs/action-plans/season-1/phase-9-deferred.md` §1.
 
 ### 6.5 Verification with Argent for mobile
 

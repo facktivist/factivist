@@ -1,5 +1,5 @@
 /**
- * Deanonymisation adversarial e2e — Phase 5 Pipeline C.
+ * Phase 6 §6.4 — "flag" web E2E slot (adversarial moderator surface).
  *
  * From an authenticated moderator session, exhaust every path a hostile
  * operator might use to leak a citizen `nullifier` out of the admin
@@ -10,13 +10,21 @@
  * (base64 JSON envelope) before navigating — the same shape the
  * `getServerSession()` resolver accepts in dev/Playwright.
  *
- * ## Why this is gated, not skipped
+ * ## Phase 6 update — webServer orchestration
  *
- * Playwright runs the configured `webServer` (`bun run dev`) which
- * requires the API at `localhost:3001` to be reachable. CI runs both;
- * locally you may need `bun run dev` in `apps/api` alongside. If the
- * dev server is unreachable the test gracefully reports `skip` rather
- * than failing — see the `try { await page.goto(...) }` guard.
+ * The Phase 5 version of this file used `try { goto } catch { skip }`
+ * to gracefully no-op when the dev servers were not running. Phase 6
+ * configures `playwright.config.ts.webServer` to boot both the API
+ * (port 3001) and web (port 3000) before specs run, so a navigation
+ * failure now signals a real regression. We surface the navigation
+ * outcome via `test.info().annotations` so CI sees the failure with
+ * full context instead of a silent skip.
+ *
+ * ## Anonymity contract (ADR-0010)
+ *
+ * E2E specs MUST NOT log proof inputs, nullifiers, or PII. Body bytes
+ * captured below are scanned with the PII regex and never echoed via
+ * `console.log` — they only feed the assertion.
  */
 
 import { expect, test } from '@playwright/test'
@@ -42,7 +50,7 @@ const seedSession = async (context: import('@playwright/test').BrowserContext) =
 }
 
 test.describe('Admin deanonymisation attack matrix', () => {
-  test('queue page DOM + network response carry NO nullifier', async ({ context, page }) => {
+  test('queue page DOM + network response carry NO nullifier', async ({ context, page }, info) => {
     await seedSession(context)
 
     const responses: string[] = []
@@ -56,11 +64,11 @@ test.describe('Admin deanonymisation attack matrix', () => {
       }
     })
 
-    try {
-      await page.goto('/admin/moderation', { waitUntil: 'domcontentloaded', timeout: 10_000 })
-    } catch {
-      test.skip(true, 'web/api dev servers unreachable — see e2e prerequisites')
-    }
+    const nav = await page.goto('/admin/moderation', { waitUntil: 'domcontentloaded' })
+    info.annotations.push({
+      type: 'nav-status',
+      description: `/admin/moderation → ${nav?.status() ?? 'no-response'}`,
+    })
 
     const html = await page.content()
     expect(html, 'DOM must not contain a nullifier').not.toMatch(PII_PATTERN)
@@ -69,7 +77,7 @@ test.describe('Admin deanonymisation attack matrix', () => {
     }
   })
 
-  test('case detail page DOM + network carries NO nullifier', async ({ context, page }) => {
+  test('case detail page DOM + network carries NO nullifier', async ({ context, page }, info) => {
     await seedSession(context)
 
     const responses: string[] = []
@@ -83,14 +91,13 @@ test.describe('Admin deanonymisation attack matrix', () => {
       }
     })
 
-    try {
-      await page.goto('/admin/moderation/mq_test_seed_id', {
-        waitUntil: 'domcontentloaded',
-        timeout: 10_000,
-      })
-    } catch {
-      test.skip(true, 'web/api dev servers unreachable — see e2e prerequisites')
-    }
+    const nav = await page.goto('/admin/moderation/mq_test_seed_id', {
+      waitUntil: 'domcontentloaded',
+    })
+    info.annotations.push({
+      type: 'nav-status',
+      description: `/admin/moderation/:id → ${nav?.status() ?? 'no-response'}`,
+    })
 
     const html = await page.content()
     expect(html).not.toMatch(PII_PATTERN)
@@ -102,14 +109,9 @@ test.describe('Admin deanonymisation attack matrix', () => {
   test('query-string injection `?include=nullifier` is ignored', async ({ context, page }) => {
     await seedSession(context)
 
-    try {
-      await page.goto('/admin/moderation?include=nullifier&fields=*&select=nullifier_ref', {
-        waitUntil: 'domcontentloaded',
-        timeout: 10_000,
-      })
-    } catch {
-      test.skip(true, 'web/api dev servers unreachable')
-    }
+    await page.goto('/admin/moderation?include=nullifier&fields=*&select=nullifier_ref', {
+      waitUntil: 'domcontentloaded',
+    })
 
     const html = await page.content()
     expect(html, 'query-string injection must not leak a nullifier').not.toMatch(PII_PATTERN)
@@ -128,14 +130,9 @@ test.describe('Admin deanonymisation attack matrix', () => {
       await route.continue({ headers })
     })
 
-    try {
-      await page.goto('/admin/moderation', {
-        waitUntil: 'domcontentloaded',
-        timeout: 10_000,
-      })
-    } catch {
-      test.skip(true, 'web/api dev servers unreachable')
-    }
+    await page.goto('/admin/moderation', {
+      waitUntil: 'domcontentloaded',
+    })
 
     const html = await page.content()
     expect(html, 'header injection must not leak a nullifier').not.toMatch(PII_PATTERN)
@@ -147,14 +144,9 @@ test.describe('Admin deanonymisation attack matrix', () => {
   }) => {
     await seedSession(context)
 
-    try {
-      await page.goto('/admin/moderation', {
-        waitUntil: 'domcontentloaded',
-        timeout: 10_000,
-      })
-    } catch {
-      test.skip(true, 'web/api dev servers unreachable')
-    }
+    await page.goto('/admin/moderation', {
+      waitUntil: 'domcontentloaded',
+    })
 
     const body = await page.evaluate(async () => {
       try {
