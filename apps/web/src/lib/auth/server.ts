@@ -125,10 +125,12 @@ export const getServerSession = async (): Promise<ServerSession | null> => {
       const cookieStore = await cookies()
       const supabase = createServerClient(url, anonKey, {
         cookies: {
+          /* v8 ignore next 2 — invoked internally by @supabase/ssr; covered by integration paths, not unit mocks */
           getAll: () => cookieStore.getAll().map((c) => ({ name: c.name, value: c.value })),
           // Server Components cannot mutate cookies — the auth callback
           // route is responsible for that. We provide a no-op so
           // @supabase/ssr does not throw when it tries to refresh.
+          /* v8 ignore next 3 */
           setAll: () => {
             /* intentional no-op in Server Components */
           },

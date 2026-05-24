@@ -331,11 +331,11 @@ export const apiClient = {
   /**
    * Browse the append-only audit log. RBAC: admin only.
    *
-   * NOTE: The underlying `GET /admin/audit-log` endpoint is on the
-   * Pipeline C backend wave-2 roadmap; calls today resolve against the
-   * declared path so the surface is forward-compatible. The Audit page
-   * renders a graceful empty state when the call 404s (see
-   * `apps/web/src/app/admin/audit/page.tsx`).
+   * Backed by `GET /admin/audit-log` (wave 3 — see
+   * `apps/api/src/routes/admin/audit.ts`). The handler enforces ts DESC
+   * ordering + page/pageSize pagination + the documented filter set
+   * (from / to / actor / action / targetKind). The response keys match
+   * `ApiAuditLogPage` exactly.
    */
   listAuditLog: (
     token: string | null,
@@ -358,9 +358,10 @@ export const apiClient = {
   /**
    * Browse open grievances. RBAC: admin only.
    *
-   * NOTE: `GET /admin/grievances` is on the Pipeline C backend wave-2
-   * roadmap. The Grievance Inbox renders a graceful empty state when
-   * the call 404s.
+   * Backed by `GET /admin/grievances` (wave 3 — see
+   * `apps/api/src/routes/admin/grievances.ts`). Returns only the
+   * operational metadata; complainant name + email live in the audit
+   * log rationale per ADR-0014 + ADR-0016 minimisation.
    */
   listGrievances: (token: string | null, init?: RequestInit): Promise<ApiGrievancePage> =>
     request<ApiGrievancePage>('/admin/grievances', {

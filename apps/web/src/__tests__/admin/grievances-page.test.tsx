@@ -54,20 +54,24 @@ describe('GrievancesPage', () => {
     listMock.mockResolvedValueOnce({ items: [] })
     const { default: Page } = await import('../../app/admin/grievances/page.tsx')
     const tree = await Page()
-    const { getByTestId } = render(tree)
+    const { getByTestId, queryByTestId } = render(tree)
     expect(getByTestId('grievance-empty')).toBeInTheDocument()
     expect(getByTestId('grievance-count').textContent).toContain('0')
+    // Wave 3: the "endpoint not yet live" degradation banner is GONE.
+    expect(queryByTestId('grievance-warning')).toBeNull()
   })
 
   it('renders one row per grievance with an SLA badge', async () => {
     listMock.mockResolvedValueOnce({ items: [makeRow(), makeRow({ id: 'mq_g2' })] })
     const { default: Page } = await import('../../app/admin/grievances/page.tsx')
     const tree = await Page()
-    const { getAllByTestId, getByTestId } = render(tree)
+    const { getAllByTestId, getByTestId, queryByTestId } = render(tree)
     expect(getByTestId('grievance-table')).toBeInTheDocument()
     expect(getAllByTestId('grievance-row')).toHaveLength(2)
     expect(getAllByTestId('sla-countdown-badge')).toHaveLength(2)
     expect(getByTestId('grievance-count').textContent).toContain('2')
+    // No degradation banner when real data flows.
+    expect(queryByTestId('grievance-warning')).toBeNull()
   })
 
   it('does NOT surface complainant name / email anywhere on the page', async () => {
@@ -91,12 +95,17 @@ describe('GrievancesPage', () => {
     expect(container.innerHTML).not.toContain('journo@example.com')
   })
 
-  it('shows the not-yet-live warning when the API 404s', async () => {
-    listMock.mockRejectedValueOnce(new ApiError('not found', 404))
+  it('treats a 404 as a generic error (the wave-2 not-yet-live banner is gone)', async () => {
+    // Wave 3 shipped `GET /admin/grievances` so a 404 now indicates a
+    // routing regression, not a missing endpoint. The page surfaces it
+    // through the generic error path; the "not yet live" banner is gone.
+    listMock.mockRejectedValueOnce(new ApiError('API 404 on /admin/grievances', 404))
     const { default: Page } = await import('../../app/admin/grievances/page.tsx')
     const tree = await Page()
     const { getByTestId } = render(tree)
-    expect(getByTestId('grievance-warning').textContent).toMatch(/not yet live/i)
+    const warning = getByTestId('grievance-warning').textContent ?? ''
+    expect(warning).not.toMatch(/not yet live/i)
+    expect(warning).toMatch(/404/)
   })
 
   it('shows the unauthorised warning when the API 401s', async () => {
@@ -113,5 +122,25 @@ describe('GrievancesPage', () => {
     const tree = await Page()
     const { getByTestId } = render(tree)
     expect(getByTestId('grievance-warning').textContent).toContain('boom')
+  })
+
+  describe('token forwarding', () => {
+    it('forwards session.token as the first argument to listGrievances', async () => {
+      sessionRef.current = { userId: 'usr_admin', role: 'admin', token: 'jwt-grv' }
+      listMock.mockResolvedValueOnce({ items: [] })
+      const { default: Page } = await import('../../app/admin/grievances/page.tsx')
+      await Page()
+      expect(listMock).toHaveBeenCalledWith('jwt-grv', { cache: 'no-store' })
+    })
+
+    it('passes null when session.token is null and still renders the empty state', async () => {
+      sessionRef.current = { userId: 'usr_admin', role: 'admin', token: null }
+      listMock.mockResolvedValueOnce({ items: [] })
+      const { default: Page } = await import('../../app/admin/grievances/page.tsx')
+      const tree = await Page()
+      const { getByTestId } = render(tree)
+      expect(listMock).toHaveBeenCalledWith(null, { cache: 'no-store' })
+      expect(getByTestId('grievance-empty')).toBeInTheDocument()
+    })
   })
 })

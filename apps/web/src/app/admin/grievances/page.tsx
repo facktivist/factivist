@@ -1,9 +1,12 @@
 /**
  * Grievance inbox page — Phase 5 Pipeline C.
  *
- * Server Component. `GET /admin/grievances` is on the wave-2 backend
- * roadmap; until it ships, a 404 from the API resolves into an empty
- * inbox state.
+ * Server Component. `GET /admin/grievances` shipped in wave 3 (see
+ * `apps/api/src/routes/admin/grievances.ts`). 401 remains a graceful
+ * warning so an admin without a valid session sees a stable message;
+ * other errors surface a generic banner. The wave-2 "not yet live"
+ * 404 degradation path is gone — a 404 now indicates a routing
+ * regression and is treated as any other error.
  */
 
 import { GrievanceInbox } from '../../../features/admin/GrievanceInbox.tsx'
@@ -28,9 +31,7 @@ export default async function GrievancesPage() {
   try {
     page = await apiClient.listGrievances(token, { cache: 'no-store' })
   } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      warning = 'Grievance inbox endpoint is not yet live in this environment.'
-    } else if (err instanceof ApiError && err.status === 401) {
+    if (err instanceof ApiError && err.status === 401) {
       warning = 'You are not authorised to view the grievance inbox.'
     } else {
       warning = err instanceof Error ? err.message : 'Unexpected error loading the grievance inbox.'

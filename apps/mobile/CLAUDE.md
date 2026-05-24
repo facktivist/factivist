@@ -12,6 +12,18 @@
 - Metro bundler (Expo default, required).
 - Detox for E2E in `e2e/`. Vitest + Testing Library RN in `__tests__/`.
 
+## Permissions (S1)
+Configured in `app.json` plugins block. Locked by `src/__tests__/app-config.test.ts`.
+
+- **expo-camera** — `cameraPermission`: "Factivist needs camera access so you can attach evidence photos to your civic complaint. Nothing uploads until you submit."
+  - iOS: injects `NSCameraUsageDescription` into Info.plist
+  - Android: auto-injects `android.permission.CAMERA`
+- **expo-image-picker** — `photosPermission`: "Factivist needs photo library access so you can attach evidence photos from your gallery."
+  - iOS: injects `NSPhotoLibraryUsageDescription` into Info.plist
+  - Android: auto-injects `READ_MEDIA_IMAGES` (API 33+) / `READ_EXTERNAL_STORAGE` (API ≤32)
+
+No manual `android.permissions` override — Expo's plugin auto-injection is the source of truth. To verify after a config change: `bunx expo prebuild --clean` then inspect `ios/Factivist/Info.plist` + `android/app/src/main/AndroidManifest.xml`.
+
 ## Skills
 @skills/heroui-native
 @skills/uniwind

@@ -4,10 +4,12 @@
  * Server Component. Renders the append-only audit log with a date-range
  * filter (plain HTML `<form method="get">` so it works without JS).
  *
- * The backing `GET /admin/audit-log` endpoint is on the wave-2 roadmap;
- * a 404 from the API resolves into an empty page rather than an
- * exception so operators can navigate the shell before the endpoint is
- * live.
+ * The backing `GET /admin/audit-log` endpoint shipped in wave 3 (see
+ * `apps/api/src/routes/admin/audit.ts`); 401 is still rendered as a
+ * warning so an admin who lost their session sees a stable message
+ * instead of a thrown error, and unknown failures surface a generic
+ * banner. The wave-2 "not yet live" 404 path is gone — a 404 now
+ * indicates a routing regression and is treated as any other error.
  */
 
 import { AuditLogTable } from '../../../features/admin/AuditLogTable.tsx'
@@ -59,10 +61,7 @@ export default async function AuditPage({ searchParams }: PageProps) {
       { cache: 'no-store' },
     )
   } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      // Endpoint not yet shipped — degrade gracefully.
-      warning = 'Audit log endpoint is not yet live in this environment.'
-    } else if (err instanceof ApiError && err.status === 401) {
+    if (err instanceof ApiError && err.status === 401) {
       warning = 'You are not authorised to view the audit log.'
     } else {
       warning = err instanceof Error ? err.message : 'Unexpected error loading the audit log.'

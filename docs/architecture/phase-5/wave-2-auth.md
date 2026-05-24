@@ -159,16 +159,118 @@ SQL for setting the role claim.
     key purely to call `auth.getUser(token)`. It NEVER ships to the
     web app. The web app holds the anon key only.
 
-## Open items (wave 2C / wave 3)
+## Wave 3A — Auth callback + login page (shipped 2026-05-24)
+
+Wave 2C / Open Item **A3** is now closed. The repo carries:
+
+  - `apps/web/src/app/auth/callback/route.ts` — Next.js Route Handler at
+    `GET /auth/callback?code=<pkce>[&next=<safe-path>]`. Exchanges the
+    PKCE code via `@supabase/ssr`'s `exchangeCodeForSession`, which
+    persists the SSR session cookie through the cookie bridge
+    (`cookieStore.set` for each entry returned in `setAll`).
+  - `apps/web/src/app/login/page.tsx` — Server Component magic-link
+    surface. Reads `?error=<code>` query params and renders one of four
+    banners (`invalid_code`, `auth_failed`, `misconfigured`, `expired`).
+  - `apps/web/src/features/auth/loginActions.ts` — Server Action
+    `sendMagicLink(formData)` calling `signInWithOtp({ email, options:
+    { emailRedirectTo: getAuthCallbackUrl() } })`.
+  - `apps/web/src/features/auth/LoginForm.tsx` — client island with a
+    labelled email input, named submit button, and `role="alert"` /
+    `role="status"` feedback regions.
+  - `apps/web/src/lib/config.ts` — `getSiteUrl()` / `getAuthCallbackUrl()`
+    centralising the canonical origin (env: `NEXT_PUBLIC_SITE_URL`).
+
+### End-to-end login flow
+
+```
+┌──────────────┐
+│ Operator     │
+│ visits       │
+│ /login       │
+└──────┬───────┘
+       │ types email, submits
+       ▼
+┌──────────────────────────────┐    (1) POST  /login   (RSC action)
+│  sendMagicLink(formData)     │  ───────────────────────────────►
+│  apps/web/.../loginActions   │                  ┌──────────────┐
+│                              │  signInWithOtp() │ Supabase     │
+│                              │ ───────────────► │ Auth         │
+│                              │ ◄─────────────── │ (sends mail) │
+└──────┬───────────────────────┘   { error: null} └──────────────┘
+       │
+       ▼
+┌──────────────────────────────┐
+│ "Check your inbox" banner    │
+└──────────────────────────────┘
+
+       Operator clicks the link in the email:
+       https://factivist.app/auth/callback?code=<pkce>
+
+┌──────────────────────────────────────────────────────────────┐
+│ GET /auth/callback?code=…&next=/admin/moderation             │
+│   apps/web/.../auth/callback/route.ts                        │
+│                                                              │
+│   1. validate `next` is a safe relative path                 │
+│   2. createServerClient(SUPABASE_URL, ANON_KEY, cookies)     │
+│   3. supabase.auth.exchangeCodeForSession(code)              │
+│        ↳ sets `sb-…-auth-token` cookie via setAll bridge     │
+│   4. 307 → next (or `/login?error=…` on failure)             │
+└──────┬───────────────────────────────────────────────────────┘
+       │
+       ▼
+┌──────────────────────────────┐  (RSC request carries the cookie)
+│ /admin/moderation            │
+│   admin layout calls         │
+│   getServerSession()         │
+│   → reads cookie via         │
+│     @supabase/ssr            │
+└──────────────────────────────┘
+```
+
+### Callback URL contract
+
+  - The callback URL MUST be allow-listed in the Supabase Dashboard:
+    Authentication → URL Configuration → Redirect URLs.
+  - For local dev: `http://localhost:3000/auth/callback`.
+  - For staging / production: `https://<canonical-host>/auth/callback`,
+    where `<canonical-host>` matches `NEXT_PUBLIC_SITE_URL` (ADR-0009 /
+    ADR-0023 require the custom-domain origin in production).
+  - The Server Action and the Route Handler read the host from
+    `getSiteUrl()` so the dashboard config + the redirect target are
+    kept in lockstep.
+
+### Open-redirect defence
+
+The `next` query param on `/auth/callback` is operator-controllable. The
+route enforces:
+
+  - `next` must start with exactly one `/`.
+  - `next` must not start with `//` (protocol-relative).
+  - `next` must not start with `/\` (backslash-bypass).
+  - Anything else falls back to `/`.
+
+Verified by `apps/web/src/app/auth/callback/__tests__/route.test.ts` —
+absolute URLs (`https://evil.com`), protocol-relative URLs (`//evil.com`),
+backslash-prefixed URLs (`/\evil.com`), and empty strings are all
+silently coerced to `/`.
+
+### Secrets discipline
+
+The route handler and Server Action both follow the same rules:
+
+  - The PKCE `code` is NEVER logged on any console channel.
+  - Supabase response bodies are NEVER logged — only `error.message`.
+  - The resulting `session.access_token` never appears in logs.
+
+The callback test suite spies on `console.log/info/warn/error/debug` and
+asserts the code value is absent from every captured argument.
+
+## Open items (wave 3 and beyond)
 
   - **A1 — Server-side prove path.** The admin shell fetch wrapper that
     forwards `session.token` to the Hono API as
     `Authorization: Bearer <token>` is still wave-1's `x-factivist-token`
     header. Wire it to real `Authorization` once the fetch wrapper lands.
-  - **A3 — Signed session cookie.** `@supabase/ssr` already does this
-    for us, but the Supabase auth callback ROUTE (`/auth/callback`)
-    that consumes the magic-link code is not yet in the repo. Wave 2C
-    must ship it before the first real operator logs in.
   - **JWKS local verifier.** Swap `auth.getUser(token)` for a local
     JWKS verifier once admin traffic crosses ~10 RPS. Tracked because
     `getUser` adds one Supabase round-trip per admin request.
@@ -176,3 +278,10 @@ SQL for setting the role claim.
     `audit_log` with `actor = factivist.actor.id`. Once real Supabase
     user IDs land in production, confirm the audit-log sweep
     (`scripts/audit-log-sweep.ts`) treats them as the canonical actor.
+  - **Expired-link UX.** The callback currently maps every
+    `exchangeCodeForSession` error to `auth_failed`. A follow-up can
+    parse the message and route the `expired` banner separately so the
+    operator sees actionable copy.
+  - **OAuth providers.** Out of scope for S1 (operator-only). If the ops
+    team ever wants Google sign-in for moderators, add a second branch
+    to `LoginForm` and a matching `signInWithOAuth` Server Action.

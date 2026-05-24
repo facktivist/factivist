@@ -1,30 +1,40 @@
+import { S1_CATEGORIES } from '@factivist/db/seed/categories'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * `GET /categories` — read-only 35-row taxonomy.
+ *
+ * The drizzle client is mocked: the seed itself is exercised in
+ * `packages/db/src/seed/__tests__/categories.test.ts`. Here we only need
+ * to prove the route is shape-correct and surfaces seeded rows in the
+ * order drizzle yields. The "post-seed" case is asserted by handing the
+ * route the same `S1_CATEGORIES` payload the seed would produce.
  */
 
-const rowQueue: unknown[][] = []
-
-const makeSelectChain = () => {
-  const chain: Record<string, unknown> = {}
-  chain.from = vi.fn(() => chain)
-  chain.orderBy = vi.fn(() => chain)
-  // biome-ignore lint/suspicious/noThenProperty: drizzle query builder is a thenable; tests must mimic that shape
-  chain.then = (resolve: (v: unknown) => unknown) => {
-    const rows = rowQueue.shift() ?? []
-    return Promise.resolve(rows).then(resolve)
+// `vi.mock` is hoisted; mock state lives in a `vi.hoisted` block so the
+// factory can close over it without tripping the "cannot access before
+// initialization" guard that fires when ESM imports above evaluate first.
+const mocks = vi.hoisted(() => {
+  const rowQueue: unknown[][] = []
+  const makeSelectChain = () => {
+    const chain: Record<string, unknown> = {}
+    chain.from = vi.fn(() => chain)
+    chain.orderBy = vi.fn(() => chain)
+    // biome-ignore lint/suspicious/noThenProperty: drizzle query builder is a thenable; tests must mimic that shape
+    chain.then = (resolve: (v: unknown) => unknown) => {
+      const rows = rowQueue.shift() ?? []
+      return Promise.resolve(rows).then(resolve)
+    }
+    return chain
   }
-  return chain
-}
-
-const dbInstance = {
-  select: vi.fn(() => makeSelectChain()),
-}
-const createClientMock = vi.fn(() => dbInstance)
+  const dbInstance = { select: vi.fn(() => makeSelectChain()) }
+  const createClientMock = vi.fn(() => dbInstance)
+  return { rowQueue, dbInstance, createClientMock }
+})
+const { rowQueue, dbInstance } = mocks
 
 vi.mock('@factivist/db/client', () => ({
-  createClient: createClientMock,
+  createClient: mocks.createClientMock,
 }))
 
 describe('GET /categories', () => {
@@ -68,5 +78,20 @@ describe('GET /categories', () => {
     const res = await createApp().request('/categories')
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual([])
+  })
+
+  it('returns all 35 seeded categories in sortOrder', async () => {
+    // Mirror what the categories seed lands: `{ slug, label }` rows in
+    // ascending sortOrder. The route projects exactly these two columns,
+    // so the payload + ordering MUST round-trip 1:1.
+    const seededShape = S1_CATEGORIES.map((r) => ({ slug: r.slug, label: r.label }))
+    rowQueue.push(seededShape)
+
+    const { createApp } = await import('../../app.ts')
+    const res = await createApp().request('/categories')
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { slug: string; label: string }[]
+    expect(body.length).toBe(35)
+    expect(body).toEqual(seededShape)
   })
 })

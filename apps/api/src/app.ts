@@ -3,7 +3,9 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 
 import { supabaseAuthMiddleware } from './lib/supabase-auth.ts'
+import { adminAuditRoute } from './routes/admin/audit.ts'
 import { adminGrievanceRoute } from './routes/admin/grievance.ts'
+import { adminGrievancesRoute } from './routes/admin/grievances.ts'
 import { adminModerationRoute } from './routes/admin/moderation.ts'
 import { categoriesRoute } from './routes/categories.ts'
 import { complaintRoute } from './routes/complaint.ts'
@@ -51,6 +53,8 @@ export function createApp(env?: AppEnv) {
     .route('/', uploadsRoute)
     .route('/', adminModerationRoute)
     .route('/', adminGrievanceRoute)
+    .route('/', adminGrievancesRoute)
+    .route('/', adminAuditRoute)
 
   return app
 }

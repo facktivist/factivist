@@ -57,8 +57,27 @@ describe('AuditPage', () => {
     listMock.mockResolvedValueOnce({ items: [], page: 1, pageSize: 50, hasNext: false })
     const { default: Page } = await import('../../app/admin/audit/page.tsx')
     const tree = await Page({ searchParams: Promise.resolve({}) })
-    const { getByTestId } = render(tree)
+    const { getByTestId, queryByTestId } = render(tree)
     expect(getByTestId('audit-empty')).toBeInTheDocument()
+    // Wave 3: the "endpoint not yet live" degradation banner is GONE
+    // because GET /admin/audit-log shipped.
+    expect(queryByTestId('audit-warning')).toBeNull()
+  })
+
+  it('renders real audit-log rows when the API returns data (no degradation banner)', async () => {
+    listMock.mockResolvedValueOnce({
+      items: [makeEntry(), makeEntry({ id: 'al_2', action: 'grievance.acknowledge' })],
+      page: 1,
+      pageSize: 50,
+      hasNext: false,
+    })
+    const { default: Page } = await import('../../app/admin/audit/page.tsx')
+    const tree = await Page({ searchParams: Promise.resolve({}) })
+    const { getByTestId, queryByTestId, getAllByTestId } = render(tree)
+    expect(getByTestId('audit-table')).toBeInTheDocument()
+    expect(getAllByTestId('audit-row')).toHaveLength(2)
+    expect(queryByTestId('audit-warning')).toBeNull()
+    expect(queryByTestId('audit-empty')).toBeNull()
   })
 
   it('forwards `from`, `to`, and `page` from URL params to the API', async () => {
@@ -138,12 +157,17 @@ describe('AuditPage', () => {
     expect(getByTestId('audit-actor-role').textContent?.toLowerCase()).toBe('operator')
   })
 
-  it('renders the not-yet-live warning when the API 404s', async () => {
-    listMock.mockRejectedValueOnce(new ApiError('not found', 404))
+  it('treats a 404 as a generic error (the wave-2 not-yet-live banner is gone)', async () => {
+    // Wave 3 shipped `GET /admin/audit-log` so a 404 now indicates a
+    // routing regression, not a missing endpoint. The page surfaces it
+    // through the generic error path; the "not yet live" banner is gone.
+    listMock.mockRejectedValueOnce(new ApiError('API 404 on /admin/audit-log', 404))
     const { default: Page } = await import('../../app/admin/audit/page.tsx')
     const tree = await Page({ searchParams: Promise.resolve({}) })
     const { getByTestId } = render(tree)
-    expect(getByTestId('audit-warning').textContent).toMatch(/not yet live/i)
+    const warning = getByTestId('audit-warning').textContent ?? ''
+    expect(warning).not.toMatch(/not yet live/i)
+    expect(warning).toMatch(/404/)
   })
 
   it('renders the unauthorised warning when the API 401s', async () => {
@@ -160,6 +184,27 @@ describe('AuditPage', () => {
     const tree = await Page({ searchParams: Promise.resolve({}) })
     const { getByTestId } = render(tree)
     expect(getByTestId('audit-warning').textContent).toContain('boom')
+  })
+
+  describe('token forwarding', () => {
+    it('forwards session.token as the first argument to listAuditLog', async () => {
+      sessionRef.current = { userId: 'usr_admin', role: 'admin', token: 'jwt-aud' }
+      listMock.mockResolvedValueOnce({ items: [], page: 1, pageSize: 50, hasNext: false })
+      const { default: Page } = await import('../../app/admin/audit/page.tsx')
+      await Page({ searchParams: Promise.resolve({}) })
+      expect(listMock.mock.calls[0][0]).toBe('jwt-aud')
+    })
+
+    it('passes null when session.token is null (e.g. malformed session)', async () => {
+      sessionRef.current = { userId: 'usr_admin', role: 'admin', token: null }
+      listMock.mockResolvedValueOnce({ items: [], page: 1, pageSize: 50, hasNext: false })
+      const { default: Page } = await import('../../app/admin/audit/page.tsx')
+      const tree = await Page({ searchParams: Promise.resolve({}) })
+      // Still renders rather than throws.
+      const { getByTestId } = render(tree)
+      expect(getByTestId('audit-empty')).toBeInTheDocument()
+      expect(listMock.mock.calls[0][0]).toBeNull()
+    })
   })
 
   it('renders pagination prev/next when applicable', async () => {

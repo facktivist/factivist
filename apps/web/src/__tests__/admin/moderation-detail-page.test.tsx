@@ -168,4 +168,26 @@ describe('ModerationCasePage', () => {
     expect(props.caseId).toBe(item.id)
     expect(typeof props.action).toBe('function')
   })
+
+  describe('token forwarding', () => {
+    it('forwards session.token as the first argument to listModerationQueue', async () => {
+      sessionRef.current = { userId: 'usr_admin', role: 'admin', token: 'jwt-mod-detail' }
+      listMock.mockResolvedValueOnce({ items: [item] })
+      getMock.mockResolvedValueOnce(complaint)
+      const { default: Page } = await import('../../app/admin/moderation/[id]/page.tsx')
+      await Page({ params: Promise.resolve({ id: item.id }) })
+      expect(listMock.mock.calls[0][0]).toBe('jwt-mod-detail')
+    })
+
+    it('passes null when session.token is null and still resolves the case', async () => {
+      sessionRef.current = { userId: 'usr_admin', role: 'admin', token: null }
+      listMock.mockResolvedValueOnce({ items: [item] })
+      getMock.mockResolvedValueOnce(complaint)
+      const { default: Page } = await import('../../app/admin/moderation/[id]/page.tsx')
+      const tree = await Page({ params: Promise.resolve({ id: item.id }) })
+      const { getByTestId } = render(tree)
+      expect(listMock.mock.calls[0][0]).toBeNull()
+      expect(getByTestId('case-meta')).toBeInTheDocument()
+    })
+  })
 })

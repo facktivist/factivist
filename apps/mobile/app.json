@@ -27,7 +27,23 @@
     "web": {
       "bundler": "metro"
     },
-    "plugins": ["expo-router", "expo-splash-screen", "@config-plugins/detox"],
+    "plugins": [
+      "expo-router",
+      "expo-splash-screen",
+      "@config-plugins/detox",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Factivist needs camera access so you can attach evidence photos to your civic complaint. Nothing uploads until you submit."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Factivist needs photo library access so you can attach evidence photos from your gallery."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

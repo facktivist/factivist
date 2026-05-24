@@ -266,6 +266,12 @@ describe('apps/web/src/lib/api/client', () => {
       const init = fetchMock.mock.calls[0][1] as RequestInit
       const headers = init.headers as Record<string, string>
       expect(headers.Authorization).toBe('Bearer tok-abc')
+      // Wave-2 invariant: production requests carry the real Supabase
+      // JWT, never the test-mode escape-hatch headers.
+      const headerKeys = Object.keys(headers).map((k) => k.toLowerCase())
+      expect(headerKeys).not.toContain('x-factivist-token')
+      expect(headerKeys).not.toContain('x-factivist-role')
+      expect(headerKeys).not.toContain('x-factivist-actor-id')
     })
 
     it('omits Authorization header when token is null', async () => {
@@ -311,6 +317,23 @@ describe('apps/web/src/lib/api/client', () => {
       const url = fetchMock.mock.calls[0][0] as string
       expect(url).toContain('/admin/moderation/with%20spaces/decide')
     })
+
+    it('forwards Bearer token and NEVER emits x-factivist-token', async () => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ item: validQueueItem }))
+      await apiClient.decideModeration('tok-dm', 'mq_11111111-1111-4111-8111-111111111111', {
+        decision: 'approve',
+        rationale: 'ok',
+      })
+      const init = fetchMock.mock.calls[0][1] as RequestInit
+      const headers = init.headers as Record<string, string>
+      expect(headers.Authorization).toBe('Bearer tok-dm')
+      // Anonymity / wave-2 invariant: the test-mode escape hatch header
+      // MUST NEVER appear on a production request, regardless of casing.
+      const headerKeys = Object.keys(headers).map((k) => k.toLowerCase())
+      expect(headerKeys).not.toContain('x-factivist-token')
+      expect(headerKeys).not.toContain('x-factivist-role')
+      expect(headerKeys).not.toContain('x-factivist-actor-id')
+    })
   })
 
   describe('listAuditLog', () => {
@@ -342,6 +365,30 @@ describe('apps/web/src/lib/api/client', () => {
       const url = fetchMock.mock.calls[0][0] as string
       expect(url).toContain('/admin/audit-log?')
     })
+
+    it('forwards Bearer token and NEVER emits x-factivist-token', async () => {
+      fetchMock.mockResolvedValue(
+        mockJsonResponse({ items: [], page: 1, pageSize: 20, hasNext: false }),
+      )
+      await apiClient.listAuditLog('tok-al')
+      const init = fetchMock.mock.calls[0][1] as RequestInit
+      const headers = init.headers as Record<string, string>
+      expect(headers.Authorization).toBe('Bearer tok-al')
+      const headerKeys = Object.keys(headers).map((k) => k.toLowerCase())
+      expect(headerKeys).not.toContain('x-factivist-token')
+      expect(headerKeys).not.toContain('x-factivist-role')
+      expect(headerKeys).not.toContain('x-factivist-actor-id')
+    })
+
+    it('omits Authorization header when token is null', async () => {
+      fetchMock.mockResolvedValue(
+        mockJsonResponse({ items: [], page: 1, pageSize: 20, hasNext: false }),
+      )
+      await apiClient.listAuditLog(null)
+      const init = fetchMock.mock.calls[0][1] as RequestInit
+      const headers = init.headers as Record<string, string>
+      expect(headers.Authorization).toBeUndefined()
+    })
   })
 
   describe('listGrievances', () => {
@@ -352,6 +399,18 @@ describe('apps/web/src/lib/api/client', () => {
       const init = fetchMock.mock.calls[0][1] as RequestInit
       const headers = init.headers as Record<string, string>
       expect(headers.Authorization).toBe('Bearer tok-g')
+      const headerKeys = Object.keys(headers).map((k) => k.toLowerCase())
+      expect(headerKeys).not.toContain('x-factivist-token')
+      expect(headerKeys).not.toContain('x-factivist-role')
+      expect(headerKeys).not.toContain('x-factivist-actor-id')
+    })
+
+    it('omits Authorization header when token is null', async () => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ items: [] }))
+      await apiClient.listGrievances(null)
+      const init = fetchMock.mock.calls[0][1] as RequestInit
+      const headers = init.headers as Record<string, string>
+      expect(headers.Authorization).toBeUndefined()
     })
   })
 
