@@ -1,0 +1,196 @@
+{
+  "$schema": "./a11y-baseline.schema.json",
+  "wcagLevel": "AA",
+  "wcagVersion": "2.2",
+  "failOn": ["serious", "critical"],
+  "snapshotDir": "scripts/a11y/baseline",
+  "outDir": "scripts/a11y/out",
+  "viewport": { "width": 1280, "height": 800 },
+  "axeRunOptions": {
+    "runOnly": {
+      "type": "tag",
+      "values": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]
+    },
+    "resultTypes": ["violations", "incomplete"]
+  },
+  "surfaces": [
+    {
+      "id": "01-onboarding",
+      "title": "Onboarding + anoncitizen ZKP verification",
+      "url": "http://localhost:3000/onboarding",
+      "mustPass": [
+        "color-contrast",
+        "label",
+        "button-name",
+        "link-name",
+        "aria-required-attr",
+        "aria-valid-attr-value",
+        "focus-order-semantics",
+        "region",
+        "heading-order",
+        "landmark-one-main",
+        "page-has-heading-one"
+      ],
+      "disabled": []
+    },
+    {
+      "id": "02-composer",
+      "title": "Complaint composer",
+      "url": "http://localhost:3000/complaints/new",
+      "mustPass": [
+        "label",
+        "color-contrast",
+        "aria-required-attr",
+        "aria-valid-attr-value",
+        "aria-allowed-attr",
+        "button-name",
+        "link-name",
+        "image-alt",
+        "input-button-name",
+        "region",
+        "heading-order",
+        "landmark-one-main",
+        "page-has-heading-one",
+        "nested-interactive",
+        "listitem",
+        "list"
+      ],
+      "disabled": []
+    },
+    {
+      "id": "03-complaint-detail",
+      "title": "Complaint detail",
+      "url": "http://localhost:3000/complaints/preview",
+      "mustPass": [
+        "color-contrast",
+        "image-alt",
+        "button-name",
+        "link-name",
+        "landmark-one-main",
+        "page-has-heading-one",
+        "heading-order",
+        "region",
+        "dialog-name"
+      ],
+      "disabled": []
+    },
+    {
+      "id": "04-browse",
+      "title": "Browse / filter",
+      "url": "http://localhost:3000/browse",
+      "mustPass": [
+        "color-contrast",
+        "aria-valid-attr-value",
+        "aria-allowed-role",
+        "landmark-one-main",
+        "page-has-heading-one",
+        "heading-order",
+        "link-name",
+        "button-name",
+        "region"
+      ],
+      "disabled": []
+    },
+    {
+      "id": "05-search",
+      "title": "Search results",
+      "url": "http://localhost:3000/search?q=preview",
+      "mustPass": [
+        "color-contrast",
+        "label",
+        "input-button-name",
+        "landmark-one-main",
+        "page-has-heading-one",
+        "heading-order",
+        "link-name",
+        "region"
+      ],
+      "disabled": []
+    },
+    {
+      "id": "06-profile",
+      "title": "Citizen profile",
+      "url": "http://localhost:3000/c/anon-preview",
+      "mustPass": [
+        "color-contrast",
+        "aria-allowed-role",
+        "aria-required-children",
+        "aria-required-parent",
+        "landmark-one-main",
+        "page-has-heading-one",
+        "heading-order",
+        "link-name",
+        "region"
+      ],
+      "disabled": []
+    },
+    {
+      "id": "07-moderation-queue",
+      "title": "Moderation queue (admin)",
+      "url": "http://localhost:3000/admin/moderation",
+      "mustPass": [
+        "color-contrast",
+        "label",
+        "aria-allowed-role",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-valid-attr-value",
+        "button-name",
+        "link-name",
+        "dialog-name",
+        "landmark-one-main",
+        "page-has-heading-one",
+        "heading-order",
+        "region",
+        "td-headers-attr",
+        "th-has-data-cells",
+        "table-fake-caption",
+        "empty-table-header"
+      ],
+      "disabled": []
+    },
+    {
+      "id": "08-legal",
+      "title": "Static legal pages",
+      "url": "http://localhost:3000/legal/zkp-explainer",
+      "mustPass": [
+        "color-contrast",
+        "link-name",
+        "landmark-one-main",
+        "page-has-heading-one",
+        "heading-order",
+        "region",
+        "document-title",
+        "html-has-lang",
+        "html-lang-valid"
+      ],
+      "disabled": [
+        {
+          "ruleId": "frame-title",
+          "appliesToUrl": "http://localhost:3000/legal/grievance",
+          "reason": "Third-party static-site iframe preview, owner does not control frame title. Tracked for S2."
+        }
+      ]
+    },
+    {
+      "id": "09-app-shell",
+      "title": "Web PWA offline shell",
+      "url": "http://localhost:3000/offline",
+      "mustPass": [
+        "color-contrast",
+        "aria-allowed-attr",
+        "aria-valid-attr-value",
+        "region",
+        "landmark-one-main"
+      ],
+      "disabled": [
+        {
+          "ruleId": "aria-hidden-focus",
+          "appliesToUrl": "http://localhost:3000/offline",
+          "reason": "Skeleton placeholders intentionally hidden from screen readers via aria-hidden + importantForAccessibility=no-hide-descendants on mobile parity."
+        }
+      ]
+    }
+  ]
+}

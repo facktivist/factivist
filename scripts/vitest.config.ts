@@ -24,6 +24,7 @@ export default mergeConfig(
           '**/__tests__/**',
           'vitest.config.ts',
           'polygon-gas/**',
+          'a11y/**',
         ],
       },
     },
