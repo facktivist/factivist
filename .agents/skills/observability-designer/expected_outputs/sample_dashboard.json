@@ -89,20 +89,13 @@
             "name": "login_flow",
             "url": "/auth/login",
             "frequency": "1m",
-            "locations": [
-              "us-east",
-              "eu-west",
-              "ap-south"
-            ]
+            "locations": ["us-east", "eu-west", "ap-south"]
           },
           {
             "name": "checkout_flow",
             "url": "/billing/checkout",
             "frequency": "5m",
-            "locations": [
-              "us-east",
-              "eu-west"
-            ]
+            "locations": ["us-east", "eu-west"]
           }
         ],
         "rum": {
@@ -110,28 +103,15 @@
           "sampling_rate": 0.1
         }
       },
-      "compliance_requirements": [
-        "GDPR",
-        "CCPA"
-      ],
-      "tags": [
-        "frontend",
-        "customer-facing",
-        "billing",
-        "high-traffic"
-      ]
+      "compliance_requirements": ["GDPR", "CCPA"],
+      "tags": ["frontend", "customer-facing", "billing", "high-traffic"]
     },
     "target_role": "sre",
     "generated_at": "2026-02-16T14:02:03.421248Z",
     "version": "1.0"
   },
   "configuration": {
-    "time_ranges": [
-      "1h",
-      "6h",
-      "1d",
-      "7d"
-    ],
+    "time_ranges": ["1h", "6h", "1d", "7d"],
     "default_time_range": "6h",
     "refresh_interval": "30s",
     "timezone": "UTC",
@@ -148,43 +128,25 @@
         "title": "Service Overview",
         "collapsed": false,
         "y_position": 0,
-        "panels": [
-          "service_status",
-          "slo_summary",
-          "error_budget"
-        ]
+        "panels": ["service_status", "slo_summary", "error_budget"]
       },
       {
         "title": "Golden Signals",
         "collapsed": false,
         "y_position": 8,
-        "panels": [
-          "latency",
-          "traffic",
-          "errors",
-          "saturation"
-        ]
+        "panels": ["latency", "traffic", "errors", "saturation"]
       },
       {
         "title": "Resource Utilization",
         "collapsed": false,
         "y_position": 16,
-        "panels": [
-          "cpu_usage",
-          "memory_usage",
-          "network_io",
-          "disk_io"
-        ]
+        "panels": ["cpu_usage", "memory_usage", "network_io", "disk_io"]
       },
       {
         "title": "Dependencies & Downstream",
         "collapsed": true,
         "y_position": 24,
-        "panels": [
-          "dependency_status",
-          "downstream_latency",
-          "circuit_breakers"
-        ]
+        "panels": ["dependency_status", "downstream_latency", "circuit_breakers"]
       }
     ]
   },
@@ -761,12 +723,7 @@
         "title": "Active Alerts",
         "type": "table",
         "query": "ALERTS{service=\"customer-portal\",alertstate=\"firing\"}",
-        "columns": [
-          "alertname",
-          "severity",
-          "instance",
-          "description"
-        ]
+        "columns": ["alertname", "severity", "instance", "description"]
       }
     ]
   },
@@ -775,37 +732,25 @@
       "from": "service_status",
       "to": "detailed_health_dashboard",
       "url": "/d/service-health/customer-portal-health",
-      "params": [
-        "var-service",
-        "var-environment"
-      ]
+      "params": ["var-service", "var-environment"]
     },
     "error_investigation": {
       "from": "errors",
       "to": "error_details_dashboard",
       "url": "/d/errors/customer-portal-errors",
-      "params": [
-        "var-service",
-        "var-time_range"
-      ]
+      "params": ["var-service", "var-time_range"]
     },
     "latency_analysis": {
       "from": "latency",
       "to": "trace_analysis_dashboard",
       "url": "/d/traces/customer-portal-traces",
-      "params": [
-        "var-service",
-        "var-handler"
-      ]
+      "params": ["var-service", "var-handler"]
     },
     "capacity_planning": {
       "from": "saturation",
       "to": "capacity_dashboard",
       "url": "/d/capacity/customer-portal-capacity",
-      "params": [
-        "var-service",
-        "var-time_range"
-      ]
+      "params": ["var-service", "var-time_range"]
     }
   }
 }

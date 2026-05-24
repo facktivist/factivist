@@ -17,10 +17,7 @@
       "new_value": "phone IS NULL OR LENGTH(phone) >= 10",
       "impact": "New check constraint may reject existing data",
       "suggested_migration": "Validate existing data complies with new constraint",
-      "affected_operations": [
-        "INSERT",
-        "UPDATE"
-      ]
+      "affected_operations": ["INSERT", "UPDATE"]
     },
     {
       "type": "check_added",
@@ -31,10 +28,7 @@
       "new_value": "bio IS NULL OR LENGTH(bio) <= 2000",
       "impact": "New check constraint may reject existing data",
       "suggested_migration": "Validate existing data complies with new constraint",
-      "affected_operations": [
-        "INSERT",
-        "UPDATE"
-      ]
+      "affected_operations": ["INSERT", "UPDATE"]
     },
     {
       "type": "check_added",
@@ -45,10 +39,7 @@
       "new_value": "language IN ('en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'ko', 'zh')",
       "impact": "New check constraint may reject existing data",
       "suggested_migration": "Validate existing data complies with new constraint",
-      "affected_operations": [
-        "INSERT",
-        "UPDATE"
-      ]
+      "affected_operations": ["INSERT", "UPDATE"]
     },
     {
       "type": "check_added",
@@ -59,10 +50,7 @@
       "new_value": "session_type IN ('web', 'mobile', 'api', 'admin')",
       "impact": "New check constraint may reject existing data",
       "suggested_migration": "Validate existing data complies with new constraint",
-      "affected_operations": [
-        "INSERT",
-        "UPDATE"
-      ]
+      "affected_operations": ["INSERT", "UPDATE"]
     }
   ],
   "migration_scripts": [
@@ -175,11 +163,7 @@
     "overall_risk": "medium",
     "deployment_risk": "safe_independent_deployment",
     "rollback_complexity": "low",
-    "testing_requirements": [
-      "integration_testing",
-      "regression_testing",
-      "data_migration_testing"
-    ]
+    "testing_requirements": ["integration_testing", "regression_testing", "data_migration_testing"]
   },
   "recommendations": [
     "Conduct thorough testing with realistic data volumes",

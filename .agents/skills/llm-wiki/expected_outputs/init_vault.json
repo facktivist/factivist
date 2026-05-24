@@ -4,13 +4,7 @@
   "topic": "LLM interpretability",
   "tool": "all",
   "date": "2026-04-11",
-  "installed_files": [
-    "CLAUDE.md",
-    "AGENTS.md",
-    ".cursorrules",
-    "wiki/index.md",
-    "wiki/log.md"
-  ],
+  "installed_files": ["CLAUDE.md", "AGENTS.md", ".cursorrules", "wiki/index.md", "wiki/log.md"],
   "page_templates_copied": 5,
   "layers": {
     "raw": "your sources — immutable",

@@ -21,44 +21,16 @@
         "*.map"
       ],
       "file_extensions": {
-        "python": [
-          ".py"
-        ],
-        "javascript": [
-          ".js",
-          ".jsx",
-          ".ts",
-          ".tsx"
-        ],
-        "java": [
-          ".java"
-        ],
-        "csharp": [
-          ".cs"
-        ],
-        "cpp": [
-          ".cpp",
-          ".cc",
-          ".cxx",
-          ".c",
-          ".h",
-          ".hpp"
-        ],
-        "ruby": [
-          ".rb"
-        ],
-        "php": [
-          ".php"
-        ],
-        "go": [
-          ".go"
-        ],
-        "rust": [
-          ".rs"
-        ],
-        "kotlin": [
-          ".kt"
-        ]
+        "python": [".py"],
+        "javascript": [".js", ".jsx", ".ts", ".tsx"],
+        "java": [".java"],
+        "csharp": [".cs"],
+        "cpp": [".cpp", ".cc", ".cxx", ".c", ".h", ".hpp"],
+        "ruby": [".rb"],
+        "php": [".php"],
+        "go": [".go"],
+        "rust": [".rs"],
+        "kotlin": [".kt"]
       },
       "comment_patterns": {
         "todo": "(?i)(TODO|FIXME|HACK|XXX|BUG)[\\s:]*(.+)",
