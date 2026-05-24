@@ -17,6 +17,7 @@
     "@factivist/shared": "workspace:*",
     "@factivist/ui-theme": "workspace:*",
     "@factivist/ui-web": "workspace:*",
+    "@factivist/zkp-client": "workspace:*",
     "@heroui/react": "~3.0.0",
     "@tanstack/react-query": "latest",
     "@tanstack/react-query-devtools": "latest",

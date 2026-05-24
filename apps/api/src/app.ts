@@ -2,8 +2,16 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 
+import { adminGrievanceRoute } from './routes/admin/grievance.ts'
+import { adminModerationRoute } from './routes/admin/moderation.ts'
+import { categoriesRoute } from './routes/categories.ts'
+import { complaintRoute } from './routes/complaint.ts'
+import { constituencyRoute } from './routes/constituency.ts'
 import { dbRoute } from './routes/db.ts'
+import { discoveryRoute } from './routes/discovery.ts'
 import { healthRoute } from './routes/health.ts'
+import { identityRoute } from './routes/identity.ts'
+import { uploadsRoute } from './routes/uploads.ts'
 
 export interface AppEnv {
   /** Allowed CORS origin. Defaults to '*' when omitted. */
@@ -30,6 +38,14 @@ export function createApp(env?: AppEnv) {
     )
     .route('/', healthRoute)
     .route('/', dbRoute)
+    .route('/', identityRoute)
+    .route('/', categoriesRoute)
+    .route('/', constituencyRoute)
+    .route('/', discoveryRoute)
+    .route('/', complaintRoute)
+    .route('/', uploadsRoute)
+    .route('/', adminModerationRoute)
+    .route('/', adminGrievanceRoute)
 
   return app
 }

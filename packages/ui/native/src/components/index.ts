@@ -14,6 +14,8 @@
 export type {
   ButtonRootProps,
   CardRootProps,
+  InputProps,
+  TextAreaProps,
   TextFieldRootProps,
 } from 'heroui-native'
-export { Button, Card, TextField } from 'heroui-native'
+export { Button, Card, Input, TextArea, TextField } from 'heroui-native'

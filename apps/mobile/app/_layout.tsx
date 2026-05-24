@@ -4,6 +4,7 @@ import { HeroUINativeProvider } from 'heroui-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+import { Providers } from '../src/lib/providers.tsx'
 import '../global.css'
 
 /**
@@ -21,10 +22,15 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <HeroUINativeProvider>
-          <StatusBar style="auto" />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-          </Stack>
+          <Providers>
+            <StatusBar style="auto" />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="compose" options={{ headerShown: false }} />
+              <Stack.Screen name="complaint" />
+            </Stack>
+          </Providers>
         </HeroUINativeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

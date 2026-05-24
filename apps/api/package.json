@@ -28,9 +28,11 @@
   "dependencies": {
     "@factivist/db": "workspace:*",
     "@factivist/shared": "workspace:*",
+    "@factivist/zkp-client": "workspace:*",
     "@hono/zod-validator": "^0.8.0",
     "drizzle-orm": "^0.45.2",
-    "hono": "^4.6.14"
+    "hono": "^4.6.14",
+    "sharp": "^0.34.2"
   },
   "devDependencies": {
     "@factivist/tsconfig": "workspace:*",
