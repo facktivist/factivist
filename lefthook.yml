@@ -29,6 +29,17 @@ pre-commit:
       glob: "apps/{api,web}/src/**/*.{ts,tsx}"
       run: bash scripts/anonymity-grep-guard.sh
 
+# Conventional Commits enforcement (Phase 7 Wave 7B, release-runbook.md).
+# release-please scans CC titles to build the rolling release PR; non-CC
+# commits silently miss the changelog. Local enforcement keeps the
+# release pipeline honest without requiring CI gates yet (Phase 9).
+# Bypass with `BYPASS_GUARDRAILS=local BYPASS_REASON="…"` per the
+# guardrails contract — bypasses are audited.
+commit-msg:
+  commands:
+    commitlint:
+      run: bunx --bun @commitlint/cli --extends @commitlint/config-conventional --edit {1}
+
 pre-push:
   parallel: false
   commands:

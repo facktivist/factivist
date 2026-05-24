@@ -551,9 +551,16 @@ reviewers configured in repo settings → Environments → `production`.
 
 ### 7.5 Exit gate
 
-- [ ] All 9 workflows green for two consecutive PRs
+- [ ] All 8 workflows green for two consecutive PRs [^p7-contracts]
 - [ ] Staging deploy round-trip < 7 minutes
 - [ ] Production deploy gated by manual approval + audit-pass artifact
+- [ ] `release.yml` (Wave 7B) opens a rolling release PR on every push to
+      `main`; merging it cuts tags + attaches `prod-validator-<sha>.json`
+
+[^p7-contracts]: Wave 7A authored 8 of the 9 workflows in §7.3 + added
+    `release.yml` in Wave 7B. `contracts.yml` is deferred to **Phase 9**
+    alongside the on-chain contract surface; see
+    `docs/action-plans/season-1/phase-9-plan.md`.
 
 ---
 

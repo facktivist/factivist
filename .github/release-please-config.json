@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "bootstrap-sha": "52b5f4d294c65013821fdb36540f0c2fb0b52ab1",
+  "include-component-in-tag": true,
+  "include-v-in-tag": true,
+  "separate-pull-requests": false,
+  "pull-request-title-pattern": "chore${scope}: release${component} ${version}",
+  "pull-request-header": "S1 release PR — merging cuts the tag(s) and fires deploy-prod.yml.",
+  "changelog-sections": [
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug Fixes" },
+    { "type": "perf", "section": "Performance" },
+    { "type": "refactor", "section": "Refactors" },
+    { "type": "docs", "section": "Documentation" },
+    { "type": "test", "section": "Tests" },
+    { "type": "ci", "section": "CI" },
+    { "type": "chore", "section": "Chores", "hidden": true }
+  ],
+  "packages": {
+    "apps/api": { "package-name": "@factivist/api", "component": "api" },
+    "apps/web": { "package-name": "@factivist/web", "component": "web" },
+    "apps/mobile": { "package-name": "@factivist/mobile", "component": "mobile" },
+    "packages/db": { "package-name": "@factivist/db", "component": "db" },
+    "packages/shared": { "package-name": "@factivist/shared", "component": "shared" },
+    "packages/zkp-client": { "package-name": "@factivist/zkp-client", "component": "zkp-client" },
+    "packages/ui/web": { "package-name": "@factivist/ui-web", "component": "ui-web" },
+    "packages/ui/native": { "package-name": "@factivist/ui-native", "component": "ui-native" },
+    "packages/ui/theme": { "package-name": "@factivist/ui-theme", "component": "ui-theme" },
+    "packages/agent-acl": { "package-name": "@factivist/agent-acl", "component": "agent-acl" },
+    "packages/codegraph": { "package-name": "@factivist/codegraph", "component": "codegraph" },
+    "packages/guardrails": { "package-name": "@factivist/guardrails", "component": "guardrails" },
+    "tooling/tsconfig": { "package-name": "@factivist/tsconfig", "component": "tsconfig" },
+    "tooling/tailwind-config": {
+      "package-name": "@factivist/tailwind-config",
+      "component": "tailwind-config"
+    },
+    "tooling/vitest-config": {
+      "package-name": "@factivist/vitest-config",
+      "component": "vitest-config"
+    }
+  }
+}

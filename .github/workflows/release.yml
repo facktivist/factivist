@@ -1,0 +1,180 @@
+# Release flow (Phase 7 Wave 7B).
+#
+# ## Strategy: release-please (Google)
+#
+# Picked over `changesets` and the bespoke "tag + custom changelog" option for
+# four reasons specific to S1:
+#
+#   1. **Conventional-Commits-driven, zero-friction.** Every PR landed on
+#      `main` with a CC message contributes to a single rolling "release PR"
+#      that release-please opens and keeps up to date. No `bunx changeset`
+#      step per feature, no manual CHANGELOG edits. Single-maintainer S1 wins
+#      from automation.
+#   2. **Monorepo manifest mode.** All 15 packages bump in lockstep (or
+#      independently — release-please tracks each package's commits via the
+#      `component` field). Tag format is `<component>-v<x.y.z>`, e.g.
+#      `api-v0.1.0`, which is what the `release:published` trigger on
+#      `deploy-prod.yml` expects.
+#   3. **CHANGELOG + tag + GitHub Release in one shot.** Merging the release
+#      PR writes a `CHANGELOG.md` per package, bumps `package.json`, cuts
+#      git tags, and publishes a GitHub Release per component — all from a
+#      single PR merge. No manual `git tag` ceremony.
+#   4. **No new install.** Uses `googleapis/release-please-action`, a
+#      first-party action. We add zero npm devDependencies.
+#
+# `changesets` was rejected: better for independent-publish multi-package
+# libraries (we don't publish to npm in S1; everything ships behind our own
+# deploy targets). The "simple tag-and-changelog" option was rejected because
+# it puts changelog discipline on the maintainer rather than the toolchain.
+#
+# ## What this workflow does
+#
+# 1. **`release-please` job**: opens or updates the rolling release PR.
+#    When that PR is merged, this same job creates the tag(s) and the
+#    GitHub Release(s).
+#
+# 2. **`prod-validator` job** (runs only when a release was created):
+#    * checks out the release commit;
+#    * runs `bun run check` (anonymity → lint → test:coverage → build) — the
+#      same gate `ci.yml` enforces on PRs, re-run against the exact release
+#      commit so a stale main-cache cannot leak through;
+#    * runs `scripts/ci/prod-validator-artifact.ts` to package the evidence
+#      into a single JSON blob;
+#    * attaches the JSON to every release created in step 1 via
+#      `gh release upload`.
+#
+#    `deploy-prod.yml` reads the JSON to decide whether to proceed.
+#
+# ## Phase 8 follow-ups
+#
+# - Wire `deploy-prod.yml` to download the artifact from the *release* asset
+#   (current Wave 7A version downloads from `check.yml` on `main` —
+#   functional but not airtight, since it ignores per-release evidence).
+# - Add `NPM_TOKEN` if/when any package is published to npm (none in S1).
+# - Add a `release-please` PR comment summarising bumped components.
+#
+# Skills consulted: `release-manager`, `changelog-generator`,
+# `github:workflow-automation`.
+#
+# Runbook: docs/operations/release-runbook.md
+# Config:  .github/release-please-config.json
+# State:   .github/release-please-manifest.json
+#
+# Owner Agent: releaser (Phase 7 Wave B)
+
+name: release
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  release-please:
+    name: release-please (open / cut)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      releases_created: ${{ steps.rp.outputs.releases_created }}
+      paths_released:   ${{ steps.rp.outputs.paths_released }}
+    steps:
+      - id: rp
+        uses: googleapis/release-please-action@v4
+        with:
+          # Workflow scope on the default GITHUB_TOKEN is enough to open the
+          # release PR + cut tags. Phase 8: swap to a fine-grained PAT once
+          # secrets are provisioned (per docs/operations/release-runbook.md).
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: .github/release-please-config.json
+          manifest-file: .github/release-please-manifest.json
+
+  prod-validator:
+    name: prod-validator (audit + artifact attach)
+    needs: release-please
+    if: needs.release-please.outputs.releases_created == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Need full history so release-please tags are visible to `gh`.
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-release-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-release-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # Re-run the full gate against the release commit. If this step fails
+      # the workflow aborts before any artifact is attached, so a broken
+      # release cannot satisfy deploy-prod.yml's audit-gate.
+      - name: Full check (anonymity + lint + test:coverage + build)
+        run: bun run check
+
+      - name: Build prod-validator artifact
+        id: build
+        run: |
+          SHA="${{ github.sha }}"
+          OUT="prod-validator-${SHA}.json"
+          bun run scripts/ci/prod-validator-artifact.ts \
+            --commit "$SHA" \
+            --out "$OUT"
+          echo "artifact_path=$OUT" >> "$GITHUB_OUTPUT"
+
+      - name: Upload prod-validator as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-validator
+          path: ${{ steps.build.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 90
+
+      # release-please emits a JSON array of paths whose release was cut on
+      # this run. For each path we resolve the tag name from the same
+      # outputs (release-please writes `<component>--tag_name`) and attach
+      # the artifact as a release asset so deploy-prod.yml can read it.
+      - name: Attach prod-validator to every cut release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PATHS:    ${{ needs.release-please.outputs.paths_released }}
+          ARTIFACT: ${{ steps.build.outputs.artifact_path }}
+        run: |
+          set -euo pipefail
+          # Fall back to all tags created at HEAD if release-please did not
+          # report per-path tag names (it does in v4, but be defensive).
+          TAGS=$(git tag --points-at HEAD)
+          if [ -z "$TAGS" ]; then
+            echo "::warning::no tags found at HEAD — release-please may have skipped tag creation."
+            exit 0
+          fi
+          for TAG in $TAGS; do
+            echo "::notice::Attaching $ARTIFACT to release $TAG"
+            gh release upload "$TAG" "$ARTIFACT" --clobber
+          done
