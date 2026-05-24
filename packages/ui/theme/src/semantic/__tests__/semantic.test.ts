@@ -9,21 +9,44 @@ describe('semantic tokens', () => {
 
   it('exposes the full canonical semantic vocabulary', () => {
     const required = [
+      // core surface / text
       'background',
       'foreground',
+      'surface',
+      'surfaceElevated',
+      'text',
+      'textMuted',
+      'textOnBrand',
+      // card (HeroUI-compat)
       'card',
       'cardForeground',
+      // brand / primary
+      'brand',
+      'brandText',
       'primary',
       'primaryForeground',
+      // secondary / muted / accent
       'secondary',
       'secondaryForeground',
       'muted',
       'mutedForeground',
       'accent',
       'accentForeground',
+      // status: danger
       'destructive',
       'destructiveForeground',
+      'dangerBg',
+      'dangerText',
+      // status: success / warning / info
+      'successBg',
+      'successText',
+      'warningBg',
+      'warningText',
+      'infoBg',
+      'infoText',
+      // borders / inputs / focus ring
       'border',
+      'borderStrong',
       'input',
       'ring',
     ].sort()

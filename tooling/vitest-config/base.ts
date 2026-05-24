@@ -18,7 +18,14 @@ export const baseConfig = defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov', 'json-summary'],
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['**/*.test.*', '**/*.spec.*', '**/__tests__/**', '**/types.ts', '**/index.ts'],
+      exclude: [
+        '**/*.test.*',
+        '**/*.spec.*',
+        '**/__tests__/**',
+        '**/types.ts',
+        '**/*.types.ts',
+        '**/index.ts',
+      ],
       thresholds: {
         lines: 95,
         functions: 95,

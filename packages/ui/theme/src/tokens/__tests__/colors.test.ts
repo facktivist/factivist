@@ -7,6 +7,7 @@ import {
   colors,
   danger,
   gray,
+  info,
   success,
   warning,
 } from '../colors.ts'
@@ -20,6 +21,7 @@ const SCALES: ReadonlyArray<readonly [string, ColorScale]> = [
   ['success', success],
   ['warning', warning],
   ['danger', danger],
+  ['info', info],
 ]
 
 describe('COLOR_STEPS', () => {
@@ -90,9 +92,20 @@ describe('lightness ladder', () => {
 })
 
 describe('colors registry', () => {
-  it('exposes exactly the five canonical scales', () => {
+  it('exposes exactly the six canonical scales', () => {
     expect(Object.keys(colors).sort()).toEqual(
-      ['brand', 'danger', 'gray', 'success', 'warning'].sort(),
+      ['brand', 'danger', 'gray', 'info', 'success', 'warning'].sort(),
     )
+  })
+})
+
+describe('info canonical hue', () => {
+  it('every info step uses hue 220 (distinct from brand hue 250)', () => {
+    for (const step of COLOR_STEPS) {
+      const match = OKLCH_REGEX.exec(info[step])
+      expect(match, `info.${step} did not match regex`).not.toBeNull()
+      const hue = Number(match?.[3])
+      expect(hue).toBe(220)
+    }
   })
 })

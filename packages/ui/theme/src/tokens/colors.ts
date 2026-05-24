@@ -116,6 +116,27 @@ export const danger = {
   '950': 'oklch(0.15 0.075 25)',
 } as const satisfies ColorScale
 
+/**
+ * Info — cyan-blue, hue 220.
+ *
+ * Distinct from `brand` (hue 250) so info banners read as informational, not
+ * primary-actionable. Hue 220 stays inside sRGB at the chroma values below
+ * across the full lightness ladder.
+ */
+export const info = {
+  '50': 'oklch(0.97 0.020 220)',
+  '100': 'oklch(0.94 0.050 220)',
+  '200': 'oklch(0.87 0.090 220)',
+  '300': 'oklch(0.78 0.130 220)',
+  '400': 'oklch(0.67 0.165 220)',
+  '500': 'oklch(0.55 0.180 220)',
+  '600': 'oklch(0.45 0.165 220)',
+  '700': 'oklch(0.36 0.140 220)',
+  '800': 'oklch(0.28 0.115 220)',
+  '900': 'oklch(0.21 0.090 220)',
+  '950': 'oklch(0.15 0.060 220)',
+} as const satisfies ColorScale
+
 /** All primitive color scales keyed by name. */
 export const colors = {
   gray,
@@ -123,6 +144,7 @@ export const colors = {
   success,
   warning,
   danger,
+  info,
 } as const
 
 /** Union of every primitive scale name. */
