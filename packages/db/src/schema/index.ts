@@ -44,6 +44,9 @@ export {
   type LlmCall,
   llmCalls,
   type NewLlmCall,
+  type NewZkpRouteEvent,
+  type ZkpRouteEvent,
+  zkpRouteEvents,
 } from './dev_metrics.ts'
 export {
   FEATURE_FLAG_KEYS,

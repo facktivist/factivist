@@ -265,15 +265,223 @@ The route handler and Server Action both follow the same rules:
 The callback test suite spies on `console.log/info/warn/error/debug` and
 asserts the code value is absent from every captured argument.
 
+## Wave 3B — JWKS local verifier (shipped 2026-05-24)
+
+Wave-2's `supabase.auth.getUser(token)` round-trip is replaced with a
+local JWKS-based verifier. Admin traffic now verifies bearers against
+Supabase's published JWKS in process memory — zero network on the hot
+path.
+
+### What changed
+
+  - **New module:** `apps/api/src/lib/supabase-jwks.ts`
+    - `getJWKS()` — singleton `createRemoteJWKSet(new URL('/auth/v1/keys', SUPABASE_URL))`.
+      `jose` honours the upstream `Cache-Control` (Supabase serves 1h
+      TTL) and re-fetches transparently on key rotation (unknown `kid`
+      arrival triggers refresh).
+    - `verifyAccessToken(token)` — calls `jwtVerify(token, getJWKS(), {
+      issuer: SUPABASE_URL, audience: 'authenticated' })`. Reads role
+      from `app_metadata.role` first, falling back to
+      `user_metadata.role`. Returns `null` on ANY failure (signature,
+      expiry, audience, issuer, malformed, missing `sub`, JWKS fetch
+      error). Pins `aud: 'authenticated'` so service-role JWTs cannot
+      masquerade as admins.
+
+  - **Refactored:** `apps/api/src/lib/supabase-auth.ts`
+    - `@supabase/supabase-js` import removed.
+    - The middleware now calls `verifyAccessToken(token)` and publishes
+      `{ id: verified.sub, role: verified.role }` exactly as before.
+    - Env gate now keys on `SUPABASE_URL` alone (the JWKS endpoint is
+      public — no service-role key needed). `SUPABASE_SERVICE_ROLE_KEY`
+      remains required for `upload.ts` (Storage signed-URL issuance)
+      and is documented in `apps/api/.env.example` for that purpose.
+    - Contract for downstream consumers (`rbac.ts`, all admin routes)
+      is unchanged — `c.set('factivist.actor', …)` and
+      `c.set('factivist.token', token)` happen exactly as in wave 2.
+
+  - **Dependency:** `jose@^6.2.3` added to `apps/api/package.json`.
+    `@supabase/supabase-js` removed from `apps/api/package.json` (no
+    remaining consumer in `apps/api/src/`; `upload.ts` uses Bun's
+    native `fetch` against Storage's REST surface).
+
+### Performance characteristic
+
+  - **First request after process boot:** one HTTP fetch of the JWKS
+    (~20-40ms cold from `ap-south-1`). Cached for the upstream TTL.
+  - **Every subsequent request within the JWKS TTL:** zero network.
+    `jose`'s WebCrypto verify is sub-millisecond on ES256/RS256 for
+    typical Supabase claim sizes.
+  - **Key rotation:** transparent — `jose` re-fetches when a JWT signed
+    by an unknown `kid` arrives. No manual cache invalidation.
+  - **Net effect at S1 scale:** admin actions verify locally. At ~10
+    RPS the saving is ~9 round-trips per second; at S1's actual ~few
+    admin actions per day the saving is qualitative (no Supabase
+    rate-limit exposure on the admin queue).
+
+### Threat-model implications
+
+  - **Service-role JWT cannot masquerade as admin user.** `aud:
+    'service_role'` fails the pinned `audience: 'authenticated'` check.
+  - **Issuer pinning** — a JWT signed with a different Supabase
+    project's keys (i.e. a leaked dev-project JWT presented to a prod
+    deploy) fails the `iss !== SUPABASE_URL` check.
+  - **Revoked admin survives until JWT expiry.** This is the same
+    posture as wave 2 in practice (Supabase's `getUser` does NOT check
+    a revocation list either — it only verifies the JWT). Defense:
+    keep the default 1h JWT TTL, rotate signing keys on
+    hostile-departure incidents (Supabase Dashboard → Auth → JWT keys
+    → rotate).
+  - **JWKS endpoint compromise** would let an attacker swap public
+    keys. Mitigation lives at the TLS layer (Supabase serves the JWKS
+    over HTTPS with HSTS) and at ADR-0009 (custom-domain pinning).
+
+### Test seam
+
+`supabase-jwks.ts` ships two private hooks:
+
+  - `__resetJWKSForTests()` clears the singleton between cases.
+  - `__setJWKSForTests(url, getKey)` injects a deterministic key
+    resolver so the unit test signs JWTs with a local ES256 pair and
+    verifies them without touching the network.
+
+The middleware's unit test (`supabase-auth.test.ts`) mocks
+`./supabase-jwks.ts` at the module boundary — the verifier itself is
+stubbed, and the 14-case contract from wave 2 is preserved (env gate,
+bearer extraction, role resolution, error fall-through).
+
+### Open items still tracked
+
+  - **A1 — Server-side prove path.** The admin shell fetch wrapper that
+    forwards `session.token` to the Hono API as
+    `Authorization: Bearer <token>` is still wave-1's `x-factivist-token`
+    header. Wire it to real `Authorization` once the fetch wrapper lands.
+  - **JWKS cache TTL override.** `jose` honours the upstream
+    `Cache-Control`; there is no exposed knob today. If Supabase ever
+    sets a too-aggressive max-age we can swap to
+    `createRemoteJWKSet(url, { cacheMaxAge: …, cooldownDuration: … })`.
+
+## Wave 3B — Dev-metrics observability for `/identity/prove` (ATID-IDENT-004)
+
+The wave-2C low-tier server fallback (`POST /identity/prove`) now writes one
+`dev_metrics.zkp_route_events` row per proving attempt — success OR failure —
+so the cost-analyst scorecard tracks the server-fallback rate and feeds it
+into [[s1-cost-drift]].
+
+### Table
+
+`dev_metrics.zkp_route_events` (Postgres schema `dev_metrics`, NOT `public`):
+
+| Column       | Type                          | Notes                                                |
+|--------------|-------------------------------|------------------------------------------------------|
+| `id`         | `uuid PK gen_random_uuid()`   | Server-generated.                                    |
+| `purpose`    | `text NOT NULL`               | Currently `'zkp_route'`. New families extend.        |
+| `route`      | `text NOT NULL`               | `'server'` (API) or `'client'` (wave-4 beacon).      |
+| `platform`   | `text NOT NULL`               | `'ios' \| 'android' \| 'web'` — from header hint.    |
+| `outcome`    | `text NOT NULL`               | `'success' \| 'failed'`.                             |
+| `durationMs` | `integer`                     | Nullable; omitted on pre-prover rejects.             |
+| `metadata`   | `jsonb`                       | Strict-shape via Zod (`{ complaintFlagOn?: bool }`). |
+| `ts`         | `timestamp with time zone`    | `DEFAULT now()`.                                     |
+
+Indices: `(purpose, ts)`, `(outcome, ts)`. Both non-unique.
+
+Migration: `packages/db/drizzle/0003_redundant_silver_fox.sql`.
+
+### Event shape (Zod source of truth)
+
+```ts
+import { recordDevMetric } from '@/lib/dev-metrics'
+
+await recordDevMetric(db, {
+  purpose: 'zkp_route',
+  route: 'server',
+  platform: 'ios' | 'android' | 'web',
+  outcome: 'success' | 'failed',
+  durationMs: 1234,                   // optional non-negative integer ≤ 5min
+  metadata: { complaintFlagOn: true } // optional, strict-shape
+})
+```
+
+Validators live at `packages/shared/src/validators/dev-metrics.ts`:
+`zkpRouteEventInsertSchema` (single event) and `devMetricEventSchema`
+(discriminated union root over every dev-metrics family).
+
+### Anonymity invariant (zkp-key-custody.md §Server-side fallback rule #6)
+
+The row MUST NOT carry:
+
+  - the nullifier, the Aadhaar number, the witness, the seed, the photo
+    halves, the prover's public signals, any prover error message;
+  - the source IP, the User-Agent, the session id, the cookie.
+
+The platform hint comes from the explicit `x-factivist-platform` request
+header. We deliberately DO NOT parse User-Agent — UA strings can identify
+a specific device model and break the I-MOD-3 anonymity floor. Unknown or
+missing values resolve to `'web'`.
+
+The Zod validator and the test suite both check the column keyspace.
+Adding a new metadata key requires editing the strict-shape Zod schema —
+`.strict()` mode rejects anything else.
+
+### Fire-and-forget contract
+
+The route calls `void recordDevMetric(...)` — the citizen's response MUST
+NOT block on observability. `recordDevMetric` parses through the Zod
+schema first (programmer-bug paths throw synchronously, but `void` swallows
+them at the route call site) and catches every DB write failure with a
+single `console.warn` (the operator log captures it; a separate ops alarm
+tracks the rate of these warnings).
+
+### What does NOT emit a metric
+
+Three pre-prover reject paths intentionally skip the dev-metrics write
+because the prover was never invoked — counting them would skew the
+server-fallback rate:
+
+  - `429 RATE_LIMITED` — the token-bucket rejected the request.
+  - `503 S1_COMPLAINT_SUBMIT_OFF` — the feature flag is disabled.
+  - `503 PROVER_NOT_CONFIGURED` raised before the prover (DATABASE_URL
+    missing) — the route returns this before the try/catch ever runs.
+
+Every path that reaches `proveServerSide(witness)` — including the typed
+`CircuitConstraintError`, `ProvingFailedError`, and generic `throw` paths —
+is covered by the integration tests in
+`apps/api/src/routes/__tests__/identity.test.ts` §"dev_metrics observability".
+
+### Cost-analyst hookup
+
+The scorecard query (tracked in `pattern_s1_phase_2_done.md`'s recurring
+issue #116) joins:
+
+```sql
+select
+  date_trunc('day', ts) as day,
+  count(*) filter (where outcome = 'success') as ok_count,
+  count(*) filter (where outcome = 'failed')  as fail_count,
+  percentile_cont(0.5) within group (order by duration_ms) as p50_ms,
+  percentile_cont(0.95) within group (order by duration_ms) as p95_ms
+from dev_metrics.zkp_route_events
+where purpose = 'zkp_route'
+  and route = 'server'
+  and ts > now() - interval '7 days'
+group by day
+order by day;
+```
+
+A spike in `fail_count / (ok_count + fail_count)` or in `p95_ms`
+correlates with a Polygon-side cost drift signal — see [[s1-cost-drift]].
+
+**TODO (lead):** the [[s1-cost-drift]] memory note (`reference_s1_cost_drift.md`)
+should reference this table so the next cost-analyst review picks it up.
+The memory file lives outside the repo (`~/.claude/projects/...`) and is
+edited by the user, not by sub-agents.
+
 ## Open items (wave 3 and beyond)
 
   - **A1 — Server-side prove path.** The admin shell fetch wrapper that
     forwards `session.token` to the Hono API as
     `Authorization: Bearer <token>` is still wave-1's `x-factivist-token`
     header. Wire it to real `Authorization` once the fetch wrapper lands.
-  - **JWKS local verifier.** Swap `auth.getUser(token)` for a local
-    JWKS verifier once admin traffic crosses ~10 RPS. Tracked because
-    `getUser` adds one Supabase round-trip per admin request.
+  - **~~JWKS local verifier.~~** Shipped in Wave 3B — see section above.
   - **Audit-log integration.** Every admin Hono route already writes
     `audit_log` with `actor = factivist.actor.id`. Once real Supabase
     user IDs land in production, confirm the audit-log sweep

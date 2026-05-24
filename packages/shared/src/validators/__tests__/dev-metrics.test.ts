@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import { llmCallInsertSchema, llmCallSnakeInsertSchema } from '../dev-metrics.ts'
+import {
+  devMetricEventSchema,
+  llmCallInsertSchema,
+  llmCallSnakeInsertSchema,
+  ZKP_OUTCOMES,
+  ZKP_PLATFORMS,
+  ZKP_ROUTE_PURPOSE,
+  ZKP_ROUTES,
+  zkpRouteEventInsertSchema,
+} from '../dev-metrics.ts'
 
 describe('llmCallInsertSchema (camelCase)', () => {
   const valid = {
@@ -170,5 +179,136 @@ describe('llmCallSnakeInsertSchema (snake_case → camelCase transform)', () => 
       ts: '2026-05-22T10:00:00.000Z',
     })
     expect(parsed.ts).toBe('2026-05-22T10:00:00.000Z')
+  })
+})
+
+// ─── zkpRouteEventInsertSchema (ATID-IDENT-004) ───────────────────────────
+
+describe('zkpRouteEventInsertSchema', () => {
+  const valid = {
+    purpose: ZKP_ROUTE_PURPOSE,
+    route: 'server',
+    platform: 'ios',
+    outcome: 'success',
+    durationMs: 1500,
+    metadata: { complaintFlagOn: true },
+  } as const
+
+  it('parses a minimal valid event', () => {
+    const parsed = zkpRouteEventInsertSchema.parse(valid)
+    expect(parsed.purpose).toBe('zkp_route')
+    expect(parsed.route).toBe('server')
+    expect(parsed.platform).toBe('ios')
+    expect(parsed.outcome).toBe('success')
+    expect(parsed.durationMs).toBe(1500)
+    expect(parsed.metadata).toEqual({ complaintFlagOn: true })
+  })
+
+  it('exposes the canonical enum constants for callers', () => {
+    expect(ZKP_ROUTE_PURPOSE).toBe('zkp_route')
+    expect(ZKP_ROUTES).toEqual(['server', 'client'])
+    expect(ZKP_PLATFORMS).toEqual(['ios', 'android', 'web'])
+    expect(ZKP_OUTCOMES).toEqual(['success', 'failed'])
+  })
+
+  it('allows optional durationMs and metadata to be omitted', () => {
+    const minimal = {
+      purpose: ZKP_ROUTE_PURPOSE,
+      route: 'server',
+      platform: 'web',
+      outcome: 'failed',
+    } as const
+    const parsed = zkpRouteEventInsertSchema.parse(minimal)
+    expect(parsed.durationMs).toBeUndefined()
+    expect(parsed.metadata).toBeUndefined()
+  })
+
+  it('rejects an unknown purpose literal', () => {
+    const res = zkpRouteEventInsertSchema.safeParse({ ...valid, purpose: 'something_else' })
+    expect(res.success).toBe(false)
+  })
+
+  it('rejects an unknown route value', () => {
+    const res = zkpRouteEventInsertSchema.safeParse({ ...valid, route: 'satellite' })
+    expect(res.success).toBe(false)
+  })
+
+  it('rejects an unknown platform value', () => {
+    const res = zkpRouteEventInsertSchema.safeParse({ ...valid, platform: 'desktop' })
+    expect(res.success).toBe(false)
+  })
+
+  it('rejects an unknown outcome value', () => {
+    const res = zkpRouteEventInsertSchema.safeParse({ ...valid, outcome: 'partial' })
+    expect(res.success).toBe(false)
+  })
+
+  it('rejects negative durationMs', () => {
+    const res = zkpRouteEventInsertSchema.safeParse({ ...valid, durationMs: -1 })
+    expect(res.success).toBe(false)
+  })
+
+  it('rejects non-integer durationMs', () => {
+    const res = zkpRouteEventInsertSchema.safeParse({ ...valid, durationMs: 1.5 })
+    expect(res.success).toBe(false)
+  })
+
+  it('rejects durationMs above the 5-minute sanity cap', () => {
+    const res = zkpRouteEventInsertSchema.safeParse({ ...valid, durationMs: 5 * 60 * 1000 + 1 })
+    expect(res.success).toBe(false)
+  })
+
+  it('rejects unknown metadata keys (strict whitelist)', () => {
+    const res = zkpRouteEventInsertSchema.safeParse({
+      ...valid,
+      metadata: { complaintFlagOn: true, nullifier: `0x${'a'.repeat(64)}` },
+    })
+    expect(res.success).toBe(false)
+  })
+
+  it('rejects non-boolean values for complaintFlagOn', () => {
+    const res = zkpRouteEventInsertSchema.safeParse({
+      ...valid,
+      metadata: { complaintFlagOn: 'yes' },
+    })
+    expect(res.success).toBe(false)
+  })
+
+  it('accepts both a Date and an ISO string for ts', () => {
+    const withDate = zkpRouteEventInsertSchema.parse({ ...valid, ts: new Date() })
+    expect(withDate.ts).toBeInstanceOf(Date)
+    const withIso = zkpRouteEventInsertSchema.parse({ ...valid, ts: '2026-05-24T10:00:00.000Z' })
+    expect(typeof withIso.ts).toBe('string')
+  })
+})
+
+describe('devMetricEventSchema (discriminated union)', () => {
+  it('parses a zkp_route event via the union root', () => {
+    const parsed = devMetricEventSchema.parse({
+      purpose: 'zkp_route',
+      route: 'server',
+      platform: 'android',
+      outcome: 'success',
+    })
+    expect(parsed.purpose).toBe('zkp_route')
+  })
+
+  it('rejects an event with an unknown discriminant', () => {
+    const res = devMetricEventSchema.safeParse({
+      purpose: 'collect_everything',
+      route: 'server',
+      platform: 'ios',
+      outcome: 'success',
+    })
+    expect(res.success).toBe(false)
+  })
+
+  it('rejects a payload missing the discriminant', () => {
+    const res = devMetricEventSchema.safeParse({
+      route: 'server',
+      platform: 'ios',
+      outcome: 'success',
+    })
+    expect(res.success).toBe(false)
   })
 })

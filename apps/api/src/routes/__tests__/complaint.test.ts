@@ -333,7 +333,16 @@ describe('GET /complaints/:slug', () => {
   })
 
   it('returns 200 with full detail for published complaints', async () => {
-    state.selectResults = [[fixtureComplaintDetail], [{ total: 2 }]]
+    // 6 selects expected: 1 detail row + 1 flag count + 4 geo-label lookups
+    // (state, district, pc, ac) — wave 3B `resolveGeoLabels`.
+    state.selectResults = [
+      [fixtureComplaintDetail],
+      [{ total: 2 }],
+      [{ label: 'Karnataka' }],
+      [{ label: 'Bangalore Urban' }],
+      [{ label: 'Bangalore South' }],
+      [{ label: 'BTM Layout' }],
+    ]
     const { createApp } = await import('../../app.ts')
     const res = await createApp().request('/complaints/pothole-mg-7k3a')
     expect(res.status).toBe(200)
@@ -341,10 +350,35 @@ describe('GET /complaints/:slug', () => {
     expect(body.id).toBe('pothole-mg-7k3a')
     expect(body.disclaimer).toBe('User-submitted; not verified by Factivist.')
     expect(body.flagCount).toBe(2)
+    // Real labels resolved from the four reference tables (closes the
+    // wave-1 stub item #3 — labels are no longer the bare codes).
+    expect(body.stateLabel).toBe('Karnataka')
+    expect(body.districtLabel).toBe('Bangalore Urban')
+    expect(body.pcLabel).toBe('Bangalore South')
+    expect(body.acLabel).toBe('BTM Layout')
     expect(body).toHaveProperty('authorHandle')
     expect(body).not.toHaveProperty('authorNullifier')
     expect(body).not.toHaveProperty('authorId')
     expect(body).not.toHaveProperty('nullifier')
+  })
+
+  it('falls back to codes when a reference row is missing (graceful degradation)', async () => {
+    // PC reference row missing — handler must still return 200 and surface
+    // the code as the label rather than 500-ing.
+    state.selectResults = [
+      [fixtureComplaintDetail],
+      [{ total: 0 }],
+      [{ label: 'Karnataka' }],
+      [{ label: 'Bangalore Urban' }],
+      [], // pc missing
+      [{ label: 'BTM Layout' }],
+    ]
+    const { createApp } = await import('../../app.ts')
+    const res = await createApp().request('/complaints/pothole-mg-7k3a')
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as Record<string, unknown>
+    expect(body.pcLabel).toBe('blr-s')
+    expect(body.stateLabel).toBe('Karnataka')
   })
 
   it('returns 404 when the complaint does not exist', async () => {

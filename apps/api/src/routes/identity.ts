@@ -16,6 +16,7 @@ import { zValidator } from '@hono/zod-validator'
 import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
 
+import { recordDevMetric } from '../lib/dev-metrics.ts'
 import { isFlagEnabled } from '../lib/flags.ts'
 import {
   buildSetCookieHeader,
@@ -118,6 +119,21 @@ const sourceIp = (c: import('hono').Context): string => {
   const fwd = c.req.header('x-forwarded-for')
   if (fwd) return fwd.split(',')[0]?.trim() ?? 'fwd:empty'
   return c.req.header('x-real-ip') ?? 'anon:local'
+}
+
+/**
+ * Best-effort platform hint for the dev-metrics row. Sourced from
+ * `x-factivist-platform` — a client-supplied header that low-tier mobile
+ * clients set when they fall back to the API prover. We deliberately
+ * DO NOT parse User-Agent: UA strings can identify a specific device
+ * model and break the I-MOD-3 anonymity floor. Unknown values resolve
+ * to `'web'` so the column always carries one of the three enum values
+ * the `dev_metrics.zkp_route_events` schema accepts.
+ */
+const platformHint = (c: import('hono').Context): 'ios' | 'android' | 'web' => {
+  const raw = c.req.header('x-factivist-platform')?.toLowerCase()
+  if (raw === 'ios' || raw === 'android' || raw === 'web') return raw
+  return 'web'
 }
 
 export const identityRoute = new Hono()
@@ -318,11 +334,40 @@ export const identityRoute = new Hono()
       let proofSucceeded = false
       let result: Awaited<ReturnType<typeof proveServerSide>> | null = null
       let proverError: unknown = null
+      const proverStart = Date.now()
       try {
         result = await proveServerSide(witness)
         proofSucceeded = true
       } catch (err) {
         proverError = err
+      }
+      const provingDurationMs = Date.now() - proverStart
+
+      // ─── Dev-metrics observability (ATID-IDENT-004) ───────────────
+      // Fire-and-forget — the citizen's response MUST NOT block on this
+      // write. `recordDevMetric` parses through `devMetricEventSchema`
+      // first (no nullifier / Aadhaar / IP / UA can leak) and swallows
+      // any DB error with a single warn-log. We deliberately exclude the
+      // pre-prover reject paths (rate-limit, flag-off, db-down) — they
+      // never invoked the prover so a `zkp_route` row would skew the
+      // server-fallback rate the cost-analyst tracks.
+      //
+      // The try/catch swallows the synchronous Zod throw that
+      // `recordDevMetric` raises on a malformed event payload. The event
+      // shape here is built from typed enums + a header hint so a parse
+      // failure would be a programmer bug, not a runtime condition — but
+      // we want a citizen response either way.
+      try {
+        void recordDevMetric(db, {
+          purpose: 'zkp_route',
+          route: 'server',
+          platform: platformHint(c),
+          outcome: proofSucceeded ? 'success' : 'failed',
+          durationMs: provingDurationMs,
+          metadata: { complaintFlagOn: submitEnabled },
+        })
+      } catch {
+        // Intentional: observability MUST NOT block the citizen response.
       }
 
       // ─── Audit log (no PII) ────────────────────────────────────────

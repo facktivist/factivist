@@ -1,7 +1,7 @@
 import { getTableConfig } from 'drizzle-orm/pg-core'
 import { describe, expect, it } from 'vitest'
 
-import { devMetricsSchema, llmCalls } from '../dev_metrics.ts'
+import { devMetricsSchema, llmCalls, zkpRouteEvents } from '../dev_metrics.ts'
 
 describe('dev_metrics.llm_calls table', () => {
   const config = getTableConfig(llmCalls)
@@ -109,6 +109,115 @@ describe('dev_metrics.llm_calls table', () => {
 
   it('all indices are non-unique (this is a time-series append-log)', () => {
     for (const idx of config.indexes) {
+      expect(idx.config.unique).toBeFalsy()
+    }
+  })
+})
+
+// ─── dev_metrics.zkp_route_events (ATID-IDENT-004) ────────────────────────
+
+describe('dev_metrics.zkp_route_events table', () => {
+  const zCfg = getTableConfig(zkpRouteEvents)
+  const zByKey = new Map(zCfg.columns.map((c) => [c.name, c]))
+
+  /**
+   * The columns this table MUST expose — and the columns it MUST NEVER
+   * expose. The "MUST NEVER" set is the headline ATID-IDENT-004 invariant:
+   * if a future migration adds any of these we want a loud test failure.
+   */
+  const REQUIRED_COLUMNS = [
+    'id',
+    'purpose',
+    'route',
+    'platform',
+    'outcome',
+    'durationMs',
+    'metadata',
+    'ts',
+  ]
+  const FORBIDDEN_COLUMNS = [
+    'nullifier',
+    'aadhaar',
+    'aadhaarNumber',
+    'ipAddress',
+    'ip',
+    'userAgent',
+    'photoHash',
+    'witness',
+    'seed',
+  ]
+
+  it('lives in the `dev_metrics` Postgres schema (not public)', () => {
+    expect(zCfg.schema).toBe('dev_metrics')
+    expect(devMetricsSchema.schemaName).toBe('dev_metrics')
+  })
+
+  it('uses the plural snake_case table name', () => {
+    expect(zCfg.name).toBe('zkp_route_events')
+  })
+
+  it('exposes exactly the required column whitelist — and nothing more', () => {
+    const names = zCfg.columns.map((c) => c.name).sort()
+    expect(names).toEqual([...REQUIRED_COLUMNS].sort())
+  })
+
+  it('exposes none of the forbidden PII columns', () => {
+    const names = zCfg.columns.map((c) => c.name.toLowerCase())
+    for (const banned of FORBIDDEN_COLUMNS) {
+      expect(names).not.toContain(banned.toLowerCase())
+    }
+  })
+
+  it('declares `id` as a UUID primary key with server-generated default', () => {
+    const id = zByKey.get('id')
+    expect(id?.primary).toBe(true)
+    expect(id?.getSQLType()).toBe('uuid')
+    expect(id?.hasDefault).toBe(true)
+  })
+
+  it('marks purpose, route, platform, outcome, and ts as NOT NULL', () => {
+    for (const key of ['purpose', 'route', 'platform', 'outcome', 'ts'] as const) {
+      expect(zByKey.get(key)?.notNull).toBe(true)
+    }
+  })
+
+  it('allows nulls on durationMs and metadata (pre-prover rejects skip these)', () => {
+    expect(zByKey.get('durationMs')?.notNull).toBe(false)
+    expect(zByKey.get('metadata')?.notNull).toBe(false)
+  })
+
+  it('uses integer for durationMs (milliseconds, no decimals)', () => {
+    expect(zByKey.get('durationMs')?.getSQLType()).toBe('integer')
+  })
+
+  it('uses jsonb for metadata (strict-shape enforced by Zod, not the column)', () => {
+    expect(zByKey.get('metadata')?.getSQLType()).toBe('jsonb')
+  })
+
+  it('uses timestamp with time zone + defaultNow for ts', () => {
+    const col = zByKey.get('ts')
+    expect(col?.dataType).toBe('date')
+    expect(col?.getSQLType()).toMatch(/timestamp with time zone/i)
+    expect(col?.hasDefault).toBe(true)
+  })
+
+  it('declares the (purpose, ts) and (outcome, ts) indices', () => {
+    const names = zCfg.indexes.map((idx) => idx.config.name).sort()
+    expect(names).toEqual(['zkp_route_events_by_outcome', 'zkp_route_events_by_purpose'])
+
+    const byPurpose = zCfg.indexes.find((idx) => idx.config.name === 'zkp_route_events_by_purpose')
+    // biome-ignore lint/suspicious/noExplicitAny: drizzle index column union is internal
+    const purposeCols = byPurpose?.config.columns.map((col: any) => col.name)
+    expect(purposeCols).toEqual(['purpose', 'ts'])
+
+    const byOutcome = zCfg.indexes.find((idx) => idx.config.name === 'zkp_route_events_by_outcome')
+    // biome-ignore lint/suspicious/noExplicitAny: drizzle index column union is internal
+    const outcomeCols = byOutcome?.config.columns.map((col: any) => col.name)
+    expect(outcomeCols).toEqual(['outcome', 'ts'])
+  })
+
+  it('all indices are non-unique (time-series append-log)', () => {
+    for (const idx of zCfg.indexes) {
       expect(idx.config.unique).toBeFalsy()
     }
   })

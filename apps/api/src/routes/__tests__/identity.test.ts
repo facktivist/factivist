@@ -76,16 +76,19 @@ const buildDbMock = () => {
 
   // INSERT chain.
   //
-  // Two consumer shapes:
+  // Three consumer shapes:
   //   - citizens: insert().values().onConflictDoNothing().returning()
   //   - audit_log: insert().values()   (await thenable, no chain)
+  //   - dev_metrics.zkp_route_events: insert().values() (await thenable)
   //
   // The `values()` call returns a Thenable that also exposes
-  // `onConflictDoNothing()` so both shapes work without per-call mode flags.
+  // `onConflictDoNothing()` so all shapes work without per-call mode flags.
   const returning = vi.fn(async () => dbState.insertResult)
   const onConflictDoNothing = vi.fn(() => ({ returning }))
   /** Captures every audit_log row written during the test. */
   const auditRows: Array<Record<string, unknown>> = []
+  /** Captures every dev_metrics.zkp_route_events row written during the test. */
+  const devMetricsRows: Array<Record<string, unknown>> = []
   const values = vi.fn((row?: Record<string, unknown>) => {
     // Recognise audit rows by the presence of `action` + `actor` so we
     // can both let the await resolve and record what was written.
@@ -93,11 +96,16 @@ const buildDbMock = () => {
       auditRows.push(row)
       return Promise.resolve()
     }
+    // Recognise dev_metrics rows by the presence of `purpose` + `route`.
+    if (row && 'purpose' in row && 'route' in row) {
+      devMetricsRows.push(row)
+      return Promise.resolve()
+    }
     return { onConflictDoNothing }
   })
   const insert = vi.fn(() => ({ values }))
 
-  return { select, insert, returning, values, insertCall: insert, auditRows }
+  return { select, insert, returning, values, insertCall: insert, auditRows, devMetricsRows }
 }
 
 let dbMock = buildDbMock()
@@ -729,5 +737,197 @@ describe('POST /identity/prove', () => {
     expect(body).not.toContain(validProveWitness.photoHash[1])
     // sanity: it DOES contain the proof envelope.
     expect(body).toContain('pi_a')
+  })
+})
+
+// ─── POST /identity/prove — dev_metrics observability (ATID-IDENT-004) ────
+
+describe('POST /identity/prove — dev_metrics observability', () => {
+  beforeEach(async () => {
+    const { __resetRateLimit } = await import('../identity.ts')
+    __resetRateLimit()
+    const { __prover } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = undefined
+  })
+
+  afterEach(async () => {
+    const { __prover } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = undefined
+  })
+
+  /** Wait one microtask tick so the fire-and-forget `void recordDevMetric`
+   * promise has a chance to settle before the test assertions run. */
+  const flush = () => new Promise<void>((resolve) => setImmediate(resolve))
+
+  it('writes exactly one zkp_route row on the happy path with route=server, outcome=success', async () => {
+    vi.stubEnv('DATABASE_URL', 'postgresql://test')
+    const { __prover } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = vi.fn(async () => sampleProverResult)
+
+    const res = await postProve(validProveRequest, {
+      'x-test-client-id': 'metric-happy',
+      'x-factivist-platform': 'ios',
+    })
+    expect(res.status).toBe(200)
+    await flush()
+
+    expect(dbMock.devMetricsRows).toHaveLength(1)
+    const row = dbMock.devMetricsRows[0]
+    if (!row) throw new Error('precondition')
+    expect(row.purpose).toBe('zkp_route')
+    expect(row.route).toBe('server')
+    expect(row.outcome).toBe('success')
+    expect(row.platform).toBe('ios')
+    expect(typeof row.durationMs).toBe('number')
+    expect((row.durationMs as number) >= 0).toBe(true)
+    expect(row.metadata).toEqual({ complaintFlagOn: true })
+  })
+
+  it('writes a zkp_route row with outcome=failed when the prover throws ProvingFailedError', async () => {
+    vi.stubEnv('DATABASE_URL', 'postgresql://test')
+    const { __prover, ProvingFailedError } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = vi.fn(async () => {
+      throw new ProvingFailedError('nope')
+    })
+
+    const res = await postProve(validProveRequest, {
+      'x-test-client-id': 'metric-failed',
+      'x-factivist-platform': 'android',
+    })
+    expect(res.status).toBe(422)
+    await flush()
+
+    expect(dbMock.devMetricsRows).toHaveLength(1)
+    const row = dbMock.devMetricsRows[0]
+    if (!row) throw new Error('precondition')
+    expect(row.purpose).toBe('zkp_route')
+    expect(row.route).toBe('server')
+    expect(row.outcome).toBe('failed')
+    expect(row.platform).toBe('android')
+  })
+
+  it('writes a zkp_route row with outcome=failed on CircuitConstraintError', async () => {
+    vi.stubEnv('DATABASE_URL', 'postgresql://test')
+    const { __prover, CircuitConstraintError } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = vi.fn(async () => {
+      throw new CircuitConstraintError('bad checksum')
+    })
+
+    const res = await postProve(validProveRequest, { 'x-test-client-id': 'metric-circuit' })
+    expect(res.status).toBe(400)
+    await flush()
+
+    expect(dbMock.devMetricsRows).toHaveLength(1)
+    expect(dbMock.devMetricsRows[0]?.outcome).toBe('failed')
+  })
+
+  it('defaults platform to web when the x-factivist-platform header is absent', async () => {
+    vi.stubEnv('DATABASE_URL', 'postgresql://test')
+    const { __prover } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = vi.fn(async () => sampleProverResult)
+
+    const res = await postProve(validProveRequest, { 'x-test-client-id': 'metric-default' })
+    expect(res.status).toBe(200)
+    await flush()
+
+    expect(dbMock.devMetricsRows[0]?.platform).toBe('web')
+  })
+
+  it('defaults platform to web when x-factivist-platform is an unknown value', async () => {
+    vi.stubEnv('DATABASE_URL', 'postgresql://test')
+    const { __prover } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = vi.fn(async () => sampleProverResult)
+
+    const res = await postProve(validProveRequest, {
+      'x-test-client-id': 'metric-fingerprint',
+      'x-factivist-platform': 'desktop-fingerprint-v3',
+    })
+    expect(res.status).toBe(200)
+    await flush()
+
+    expect(dbMock.devMetricsRows[0]?.platform).toBe('web')
+  })
+
+  it('does NOT write a zkp_route row when rate-limited (prover never invoked)', async () => {
+    vi.stubEnv('DATABASE_URL', 'postgresql://test')
+    const { __prover } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = vi.fn(async () => sampleProverResult)
+
+    // First 10 requests fill the bucket — each writes one metric.
+    for (let i = 0; i < 10; i++) {
+      await postProve(validProveRequest, { 'x-test-client-id': 'metric-rate' })
+    }
+    await flush()
+    const baseline = dbMock.devMetricsRows.length
+
+    const limited = await postProve(validProveRequest, { 'x-test-client-id': 'metric-rate' })
+    expect(limited.status).toBe(429)
+    await flush()
+
+    // The 11th (rate-limited) request must NOT emit a metric.
+    expect(dbMock.devMetricsRows).toHaveLength(baseline)
+  })
+
+  it('does NOT write a zkp_route row when the feature flag is off (prover never invoked)', async () => {
+    vi.stubEnv('DATABASE_URL', 'postgresql://test')
+    dbState.flagEnabled = false
+    const { __prover } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = vi.fn(async () => sampleProverResult)
+
+    const res = await postProve(validProveRequest, { 'x-test-client-id': 'metric-flag-off' })
+    expect(res.status).toBe(503)
+    await flush()
+
+    expect(dbMock.devMetricsRows).toHaveLength(0)
+  })
+
+  it('never includes the witness (Aadhaar / seed / photo halves) in the dev_metrics row', async () => {
+    vi.stubEnv('DATABASE_URL', 'postgresql://test')
+    const { __prover } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = vi.fn(async () => sampleProverResult)
+
+    await postProve(validProveRequest, {
+      'x-test-client-id': 'metric-no-leak',
+      'x-factivist-platform': 'ios',
+    })
+    await flush()
+
+    expect(dbMock.devMetricsRows).toHaveLength(1)
+    const row = dbMock.devMetricsRows[0]
+    if (!row) throw new Error('precondition')
+    const serialised = JSON.stringify(row)
+
+    // Witness primitives — the headline ATID-IDENT-004 invariant.
+    expect(serialised).not.toContain('999999999999') // Aadhaar fixture
+    expect(serialised).not.toContain(validProveWitness.seed) // 64 hex chars
+    expect(serialised).not.toContain(validProveWitness.photoHash[0])
+    expect(serialised).not.toContain(validProveWitness.photoHash[1])
+    // Nullifier from the prover's public signals must not bleed in either.
+    expect(serialised).not.toContain(NULLIFIER)
+
+    // PII-shaped column names must not appear in the row keys.
+    const keys = Object.keys(row).join(',').toLowerCase()
+    for (const banned of ['nullifier', 'aadhaar', 'ip', 'useragent', 'user_agent', 'photo']) {
+      expect(keys).not.toContain(banned)
+    }
+  })
+
+  it('still includes the witness fixture nowhere — even on failure paths', async () => {
+    vi.stubEnv('DATABASE_URL', 'postgresql://test')
+    const { __prover } = await import('../../lib/zkp-prover.ts')
+    __prover.backend = vi.fn(async () => {
+      // The prover crashes with an Aadhaar in the message — the dev_metrics
+      // row MUST NOT swallow it into `metadata` or any other field.
+      throw new Error('crash with witness 999999999999')
+    })
+
+    const res = await postProve(validProveRequest, { 'x-test-client-id': 'metric-leak-fail' })
+    expect(res.status).toBe(500)
+    await flush()
+
+    expect(dbMock.devMetricsRows).toHaveLength(1)
+    const serialised = JSON.stringify(dbMock.devMetricsRows[0])
+    expect(serialised).not.toContain('999999999999')
+    expect(serialised).not.toContain('crash')
   })
 })

@@ -83,6 +83,73 @@ export const llmCallInsertSchema = z.object({
 export type LlmCallInsert = z.infer<typeof llmCallInsertSchema>
 
 /**
+ * `zkp_route_events` insert payload — observability for AnonCitizen
+ * proving-route decisions per ATID-IDENT-004.
+ *
+ * Anonymity invariant (zkp-key-custody.md §Server-side fallback rule #6):
+ * the helper that writes this row MUST validate through this schema before
+ * touching the DB so a stray nullifier / Aadhaar / IP / UA cannot reach
+ * Postgres. The keyspace is intentionally tiny — every allowed value is
+ * enumerated here.
+ *
+ *   - `purpose`     — currently the literal `'zkp_route'`. New event
+ *                     families must extend the union explicitly.
+ *   - `route`       — `'server'` (the API proved) or `'client'` (device
+ *                     proved; reserved for the wave-4 mobile beacon).
+ *   - `platform`    — `'ios' | 'android' | 'web'`. Sourced from a
+ *                     client hint header, never from User-Agent.
+ *   - `outcome`     — `'success' | 'failed'`.
+ *   - `durationMs`  — non-negative integer ≤ 5 minutes (sanity cap).
+ *                     Omitted on paths that reject before proving starts.
+ *   - `metadata`    — strict whitelist of feature-flag booleans. NO free
+ *                     text fields. NO PII-shaped fields. Adding a new key
+ *                     requires editing this schema.
+ *   - `ts`          — optional explicit timestamp; the DB fills `now()`.
+ */
+export const ZKP_ROUTE_PURPOSE = 'zkp_route' as const
+export const ZKP_ROUTES = ['server', 'client'] as const
+export const ZKP_PLATFORMS = ['ios', 'android', 'web'] as const
+export const ZKP_OUTCOMES = ['success', 'failed'] as const
+
+/**
+ * Five-minute upper bound (300_000 ms). The Polygon-side latency budget
+ * for low-tier proving is ~60s; the 5× headroom catches a degenerate
+ * cold-start without admitting suspicious values.
+ */
+const MAX_DURATION_MS = 5 * 60 * 1000
+
+const zkpRouteMetadataSchema = z
+  .object({
+    /**
+     * Whether the `S1_COMPLAINT_SUBMIT` flag was enabled when the route
+     * decision was made. Lets us correlate fail-spikes with flag flips.
+     */
+    complaintFlagOn: z.boolean().optional(),
+  })
+  .strict()
+
+export const zkpRouteEventInsertSchema = z.object({
+  purpose: z.literal(ZKP_ROUTE_PURPOSE),
+  route: z.enum(ZKP_ROUTES),
+  platform: z.enum(ZKP_PLATFORMS),
+  outcome: z.enum(ZKP_OUTCOMES),
+  durationMs: z.number().int().nonnegative().max(MAX_DURATION_MS).optional(),
+  metadata: zkpRouteMetadataSchema.optional(),
+  ts: tsSchema,
+})
+
+export type ZkpRouteEventInsert = z.infer<typeof zkpRouteEventInsertSchema>
+
+/**
+ * Discriminated union of every dev-metrics event the API may emit. New
+ * event families add a branch here so `recordDevMetric` stays typed
+ * end-to-end.
+ */
+export const devMetricEventSchema = z.discriminatedUnion('purpose', [zkpRouteEventInsertSchema])
+
+export type DevMetricEvent = z.infer<typeof devMetricEventSchema>
+
+/**
  * Snake-case input payload (the JSON shape Claude / Codex / Cursor hooks emit)
  * transformed into the canonical camelCase shape.
  *

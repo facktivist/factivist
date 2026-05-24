@@ -23,6 +23,7 @@ import { and, count, eq, sql } from 'drizzle-orm'
 import { Hono } from 'hono'
 
 import { isFlagEnabled } from '../lib/flags.ts'
+import { resolveGeoLabels } from '../lib/geo-resolve.ts'
 
 /**
  * Complaint routes — detail, create, flag.
@@ -175,6 +176,16 @@ export const complaintRoute = new Hono()
       .from(complaintFlags)
       .where(eq(complaintFlags.complaintSlug, slug))
 
+    // Resolve the four constituency codes to human-readable labels via
+    // `lib/geo-resolve.ts` (wave 3B). Falls back to the code itself when
+    // a reference row is missing — see the helper for the rationale.
+    const labels = await resolveGeoLabels(db, {
+      stateCode: row.stateCode,
+      districtCode: row.districtCode,
+      pcCode: row.pcCode,
+      acCode: row.acCode,
+    })
+
     return c.json({
       id: row.slug,
       title: row.title,
@@ -186,14 +197,10 @@ export const complaintRoute = new Hono()
       districtCode: row.districtCode,
       pcCode: row.pcCode,
       acCode: row.acCode,
-      // Labels for state / district / pc / ac would require three more
-      // joins; the discovery feed already exposes codes only. The detail
-      // surface mirrors that contract today and gets full labels in a
-      // follow-up wave once we have geo joins in place.
-      stateLabel: row.stateCode,
-      districtLabel: row.districtCode,
-      pcLabel: row.pcCode,
-      acLabel: row.acCode,
+      stateLabel: labels.stateLabel,
+      districtLabel: labels.districtLabel,
+      pcLabel: labels.pcLabel,
+      acLabel: labels.acLabel,
       photoUrls: row.photoUrls ?? [],
       authorHandle: deriveHandle(row.authorNullifier as Nullifier),
       disclaimer: COMPLAINT_DISCLAIMER,
