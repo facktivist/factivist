@@ -62,5 +62,7 @@
   },
   "warnings": [],
   "errors": [],
-  "suggestions": ["Consider adding optional directories: references, expected_outputs"]
+  "suggestions": [
+    "Consider adding optional directories: references, expected_outputs"
+  ]
 }

@@ -91,6 +91,12 @@
       "skillPath": "marketing-skill/skills/analytics-tracking/SKILL.md",
       "computedHash": "2f5e82d073aeceb4aa44c2f2b530f24e33d3f2c91a09fe1a156b9919091d813f"
     },
+    "andreessen": {
+      "source": "alirezarezvani/claude-skills",
+      "sourceType": "github",
+      "skillPath": "productivity/andreessen/skills/andreessen/SKILL.md",
+      "computedHash": "9ae34a8e45de3084d961440fda4138af12b04a4074563ff52bd7b0bc217a3c18"
+    },
     "api-design-reviewer": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
@@ -482,7 +488,7 @@
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
       "skillPath": "engineering-team/skills/code-reviewer/SKILL.md",
-      "computedHash": "1f8ffbb909c7038ef31d11b517a7f7f9407207e2ce234aa90551943ed85a5a78"
+      "computedHash": "2ee52c898102171c99aa6d821dfe47f95c91bc65d72e301edb8a0aaefd07528c"
     },
     "code-to-prd": {
       "source": "alirezarezvani/claude-skills",
@@ -1760,7 +1766,7 @@
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
       "skillPath": "engineering-team/skills/senior-backend/SKILL.md",
-      "computedHash": "45f3294ffe96c436b689d3e950a605759440f6effc7b3747caa1ef394717b12a"
+      "computedHash": "45228f6f893be2bbfcea6be09a7f3fb847635e828a31860a4fd810dbdd26ec0d"
     },
     "senior-computer-vision": {
       "source": "alirezarezvani/claude-skills",
@@ -1790,13 +1796,13 @@
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
       "skillPath": "engineering-team/skills/senior-frontend/SKILL.md",
-      "computedHash": "876e6daaf3a8785f1628e90bc2b92675e869206fddfe352c1d95c634f146311b"
+      "computedHash": "c4845ae10ab5e18b1a6bcfd19067e17545108ee87700f89fd5ea07811ad5096a"
     },
     "senior-fullstack": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
       "skillPath": "engineering-team/skills/senior-fullstack/SKILL.md",
-      "computedHash": "a1bbb5942526a19de7b94768555a5509d37337f74ba163399ea0f41bc95959e7"
+      "computedHash": "dd76adf15ea122eecf565b23755950c1c8bb8538362277feace0e12f7e4e0c06"
     },
     "senior-ml-engineer": {
       "source": "alirezarezvani/claude-skills",

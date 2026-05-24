@@ -30,16 +30,33 @@
             "language": {
               "type": "string",
               "description": "Language code for search results",
-              "enum": ["en", "es", "fr", "de", "it", "pt", "zh", "ja"],
+              "enum": [
+                "en",
+                "es",
+                "fr",
+                "de",
+                "it",
+                "pt",
+                "zh",
+                "ja"
+              ],
               "default": "en"
             },
             "time_range": {
               "type": "string",
               "description": "Time range filter for search results",
-              "enum": ["any", "day", "week", "month", "year"]
+              "enum": [
+                "any",
+                "day",
+                "week",
+                "month",
+                "year"
+              ]
             }
           },
-          "required": ["query"],
+          "required": [
+            "query"
+          ],
           "additionalProperties": false
         }
       },
@@ -64,15 +81,32 @@
             "language": {
               "type": "string",
               "description": "Language code for search results",
-              "enum": ["en", "es", "fr", "de", "it", "pt", "zh", "ja"]
+              "enum": [
+                "en",
+                "es",
+                "fr",
+                "de",
+                "it",
+                "pt",
+                "zh",
+                "ja"
+              ]
             },
             "time_range": {
               "type": "string",
               "description": "Time range filter for search results",
-              "enum": ["any", "day", "week", "month", "year"]
+              "enum": [
+                "any",
+                "day",
+                "week",
+                "month",
+                "year"
+              ]
             }
           },
-          "required": ["query"]
+          "required": [
+            "query"
+          ]
         }
       },
       "validation_rules": [
@@ -147,8 +181,14 @@
       "metadata": {
         "category": "search",
         "idempotent": true,
-        "side_effects": ["Logs search query for analytics", "May cache results temporarily"],
-        "dependencies": ["search_api_service", "content_filter_service"],
+        "side_effects": [
+          "Logs search query for analytics",
+          "May cache results temporarily"
+        ],
+        "dependencies": [
+          "search_api_service",
+          "content_filter_service"
+        ],
         "security_requirements": [
           "Query sanitization",
           "Rate limiting by user",
@@ -187,7 +227,13 @@
             "analysis_type": {
               "type": "string",
               "description": "Type of analysis to perform",
-              "enum": ["descriptive", "correlation", "trend", "distribution", "outlier_detection"]
+              "enum": [
+                "descriptive",
+                "correlation",
+                "trend",
+                "distribution",
+                "outlier_detection"
+              ]
             },
             "target_column": {
               "type": "string",
@@ -200,7 +246,10 @@
               "default": true
             }
           },
-          "required": ["data", "analysis_type"],
+          "required": [
+            "data",
+            "analysis_type"
+          ],
           "additionalProperties": false
         }
       },
@@ -217,7 +266,13 @@
             "analysis_type": {
               "type": "string",
               "description": "Type of analysis to perform",
-              "enum": ["descriptive", "correlation", "trend", "distribution", "outlier_detection"]
+              "enum": [
+                "descriptive",
+                "correlation",
+                "trend",
+                "distribution",
+                "outlier_detection"
+              ]
             },
             "target_column": {
               "type": "string",
@@ -229,7 +284,10 @@
               "description": "Whether to generate visualization data"
             }
           },
-          "required": ["data", "analysis_type"]
+          "required": [
+            "data",
+            "analysis_type"
+          ]
         }
       },
       "validation_rules": [
@@ -278,11 +336,27 @@
           "description": "Basic descriptive analysis",
           "input": {
             "data": {
-              "columns": ["age", "salary", "department"],
+              "columns": [
+                "age",
+                "salary",
+                "department"
+              ],
               "rows": [
-                [25, 50000, "engineering"],
-                [30, 60000, "engineering"],
-                [28, 55000, "marketing"]
+                [
+                  25,
+                  50000,
+                  "engineering"
+                ],
+                [
+                  30,
+                  60000,
+                  "engineering"
+                ],
+                [
+                  28,
+                  55000,
+                  "marketing"
+                ]
               ]
             },
             "analysis_type": "descriptive",
@@ -309,8 +383,14 @@
           "May create temporary analysis files",
           "Logs analysis parameters for optimization"
         ],
-        "dependencies": ["statistics_engine", "visualization_service"],
-        "security_requirements": ["Data anonymization", "Access control validation"],
+        "dependencies": [
+          "statistics_engine",
+          "visualization_service"
+        ],
+        "security_requirements": [
+          "Data anonymization",
+          "Access control validation"
+        ],
         "generated_at": "2024-01-15T10:30:00Z",
         "schema_version": "1.0",
         "input_parameters": 4,

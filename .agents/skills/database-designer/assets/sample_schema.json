@@ -48,7 +48,10 @@
         }
       },
       "primary_key": ["id"],
-      "unique_constraints": [["email"], ["username"]],
+      "unique_constraints": [
+        ["email"],
+        ["username"]
+      ],
       "check_constraints": {
         "chk_status_valid": "status IN ('active', 'inactive', 'suspended', 'deleted')"
       },
@@ -118,7 +121,9 @@
         }
       },
       "primary_key": ["id"],
-      "unique_constraints": [["sku"]],
+      "unique_constraints": [
+        ["sku"]
+      ],
       "check_constraints": {
         "chk_price_positive": "price > 0",
         "chk_inventory_non_negative": "inventory_count >= 0"
@@ -190,7 +195,9 @@
         }
       },
       "primary_key": ["id"],
-      "unique_constraints": [["order_number"]],
+      "unique_constraints": [
+        ["order_number"]
+      ],
       "check_constraints": {
         "chk_total_positive": "total_amount > 0",
         "chk_status_valid": "status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')"
@@ -340,7 +347,9 @@
         }
       },
       "primary_key": ["id"],
-      "unique_constraints": [["product_id", "user_id"]],
+      "unique_constraints": [
+        ["product_id", "user_id"]
+      ],
       "check_constraints": {
         "chk_rating_valid": "rating BETWEEN 1 AND 5"
       },

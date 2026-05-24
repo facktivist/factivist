@@ -36,7 +36,9 @@
         }
       ],
       "join_conditions": [],
-      "order_by": [{ "column": "created_at", "direction": "DESC" }],
+      "order_by": [
+        {"column": "created_at", "direction": "DESC"}
+      ],
       "group_by": [],
       "frequency": 2500,
       "avg_execution_time_ms": 15.2
@@ -64,7 +66,9 @@
         }
       ],
       "join_conditions": [],
-      "order_by": [{ "column": "price", "direction": "ASC" }],
+      "order_by": [
+        {"column": "price", "direction": "ASC"}
+      ],
       "group_by": [],
       "frequency": 800,
       "avg_execution_time_ms": 25.7
@@ -82,7 +86,9 @@
         }
       ],
       "join_conditions": [],
-      "order_by": [{ "column": "created_at", "direction": "DESC" }],
+      "order_by": [
+        {"column": "created_at", "direction": "DESC"}
+      ],
       "group_by": [],
       "frequency": 1200,
       "avg_execution_time_ms": 8.3
@@ -130,7 +136,9 @@
         }
       ],
       "join_conditions": [],
-      "order_by": [{ "column": "created_at", "direction": "ASC" }],
+      "order_by": [
+        {"column": "created_at", "direction": "ASC"}
+      ],
       "group_by": [],
       "frequency": 150,
       "avg_execution_time_ms": 45.2
@@ -153,7 +161,9 @@
         }
       ],
       "join_conditions": [],
-      "order_by": [{ "column": "created_at", "direction": "DESC" }],
+      "order_by": [
+        {"column": "created_at", "direction": "DESC"}
+      ],
       "group_by": [],
       "frequency": 600,
       "avg_execution_time_ms": 18.5
@@ -194,7 +204,9 @@
         }
       ],
       "join_conditions": [],
-      "order_by": [{ "column": "inventory_count", "direction": "ASC" }],
+      "order_by": [
+        {"column": "inventory_count", "direction": "ASC"}
+      ],
       "group_by": [],
       "frequency": 50,
       "avg_execution_time_ms": 35.8
@@ -225,7 +237,9 @@
           "join_type": "INNER"
         }
       ],
-      "order_by": [{ "column": "total_quantity", "direction": "DESC" }],
+      "order_by": [
+        {"column": "total_quantity", "direction": "DESC"}
+      ],
       "group_by": ["product_id", "category_id"],
       "frequency": 25,
       "avg_execution_time_ms": 180.5
@@ -255,7 +269,9 @@
           "join_type": "INNER"
         }
       ],
-      "order_by": [{ "column": "created_at", "direction": "DESC" }],
+      "order_by": [
+        {"column": "created_at", "direction": "DESC"}
+      ],
       "group_by": [],
       "frequency": 300,
       "avg_execution_time_ms": 65.2
@@ -278,7 +294,9 @@
         }
       ],
       "join_conditions": [],
-      "order_by": [{ "column": "order_date", "direction": "DESC" }],
+      "order_by": [
+        {"column": "order_date", "direction": "DESC"}
+      ],
       "group_by": ["DATE(created_at)"],
       "frequency": 10,
       "avg_execution_time_ms": 250.8
@@ -301,7 +319,9 @@
         }
       ],
       "join_conditions": [],
-      "order_by": [{ "column": "sort_order", "direction": "ASC" }],
+      "order_by": [
+        {"column": "sort_order", "direction": "ASC"}
+      ],
       "group_by": [],
       "frequency": 800,
       "avg_execution_time_ms": 5.1
@@ -326,7 +346,9 @@
           "join_type": "INNER"
         }
       ],
-      "order_by": [{ "column": "created_at", "direction": "DESC" }],
+      "order_by": [
+        {"column": "created_at", "direction": "DESC"}
+      ],
       "group_by": [],
       "frequency": 200,
       "avg_execution_time_ms": 12.7

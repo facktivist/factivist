@@ -16,130 +16,126 @@
       "type": "trigger",
       "actor": "system",
       "description": "Database connection pool utilization reaches 95% on payment-gateway primary",
-      "metadata": { "metric": "db_pool_utilization", "value": 95, "threshold": 90 }
+      "metadata": {"metric": "db_pool_utilization", "value": 95, "threshold": 90}
     },
     {
       "timestamp": "2024-01-15T14:20:00Z",
       "type": "detection",
       "actor": "monitoring",
       "description": "PagerDuty alert fired: payment-gateway error rate >5% (current: 8.2%)",
-      "metadata": { "alert_id": "PD-98765", "source": "datadog", "error_rate": 8.2 }
+      "metadata": {"alert_id": "PD-98765", "source": "datadog", "error_rate": 8.2}
     },
     {
       "timestamp": "2024-01-15T14:21:00Z",
       "type": "detection",
       "actor": "monitoring",
       "description": "Datadog alert: p99 latency on /api/payments exceeds 5000ms (current: 8500ms)",
-      "metadata": { "alert_id": "DD-54321", "source": "datadog", "latency_p99_ms": 8500 }
+      "metadata": {"alert_id": "DD-54321", "source": "datadog", "latency_p99_ms": 8500}
     },
     {
       "timestamp": "2024-01-15T14:23:00Z",
       "type": "declaration",
       "actor": "Jane Smith",
       "description": "SEV1 declared. Incident channel #inc-20240115-payment-degradation created. Bridge call started.",
-      "metadata": { "channel": "#inc-20240115-payment-degradation", "severity": "SEV1" }
+      "metadata": {"channel": "#inc-20240115-payment-degradation", "severity": "SEV1"}
     },
     {
       "timestamp": "2024-01-15T14:25:00Z",
       "type": "investigation",
       "actor": "Alice Chen",
       "description": "Confirmed: database connection pool at 100% utilization. All new connections being rejected.",
-      "metadata": { "pool_size": 20, "active_connections": 20, "waiting_requests": 147 }
+      "metadata": {"pool_size": 20, "active_connections": 20, "waiting_requests": 147}
     },
     {
       "timestamp": "2024-01-15T14:28:00Z",
       "type": "investigation",
       "actor": "Carol Davis",
       "description": "Identified recent deployment of user-api v2.4.1 at 13:45 UTC. New ORM version (3.2.0) changed connection handling behavior.",
-      "metadata": { "deployment": "user-api-v2.4.1", "deployed_at": "2024-01-15T13:45:00Z" }
+      "metadata": {"deployment": "user-api-v2.4.1", "deployed_at": "2024-01-15T13:45:00Z"}
     },
     {
       "timestamp": "2024-01-15T14:30:00Z",
       "type": "communication",
       "actor": "Bob Kim",
       "description": "Status page updated: Investigating - We are investigating increased error rates affecting payment processing.",
-      "metadata": { "channel": "status_page", "status": "investigating" }
+      "metadata": {"channel": "status_page", "status": "investigating"}
     },
     {
       "timestamp": "2024-01-15T14:35:00Z",
       "type": "escalation",
       "actor": "Jane Smith",
       "description": "Escalated to VP Engineering. Customer impact confirmed: 12,500+ users affected, failed transactions accumulating.",
-      "metadata": { "escalated_to": "VP Engineering", "reason": "revenue_impact" }
+      "metadata": {"escalated_to": "VP Engineering", "reason": "revenue_impact"}
     },
     {
       "timestamp": "2024-01-15T14:40:00Z",
       "type": "mitigation",
       "actor": "Alice Chen",
       "description": "Attempting mitigation: increasing connection pool size from 20 to 50 via config override.",
-      "metadata": { "action": "pool_resize", "old_value": 20, "new_value": 50 }
+      "metadata": {"action": "pool_resize", "old_value": 20, "new_value": 50}
     },
     {
       "timestamp": "2024-01-15T14:45:00Z",
       "type": "communication",
       "actor": "Bob Kim",
       "description": "Status page updated: Identified - The issue has been identified as a database configuration problem. We are implementing a fix.",
-      "metadata": { "channel": "status_page", "status": "identified" }
+      "metadata": {"channel": "status_page", "status": "identified"}
     },
     {
       "timestamp": "2024-01-15T14:50:00Z",
       "type": "investigation",
       "actor": "Carol Davis",
       "description": "Pool resize partially effective. Error rate dropped from 23% to 12%. ORM 3.2.0 opens 3x more connections per request than 3.1.2.",
-      "metadata": { "error_rate_before": 23.5, "error_rate_after": 12.1 }
+      "metadata": {"error_rate_before": 23.5, "error_rate_after": 12.1}
     },
     {
       "timestamp": "2024-01-15T15:00:00Z",
       "type": "mitigation",
       "actor": "Alice Chen",
       "description": "Decision: roll back ORM version to 3.1.2. Initiating rollback deployment of user-api v2.3.9.",
-      "metadata": {
-        "action": "rollback",
-        "target_version": "2.3.9",
-        "rollback_reason": "orm_connection_leak"
-      }
+      "metadata": {"action": "rollback", "target_version": "2.3.9", "rollback_reason": "orm_connection_leak"}
     },
     {
       "timestamp": "2024-01-15T15:15:00Z",
       "type": "mitigation",
       "actor": "Alice Chen",
       "description": "Rollback deployment complete. user-api v2.3.9 running in production. Connection pool utilization dropping.",
-      "metadata": { "deployment_duration_minutes": 15, "pool_utilization": 45 }
+      "metadata": {"deployment_duration_minutes": 15, "pool_utilization": 45}
     },
     {
       "timestamp": "2024-01-15T15:20:00Z",
       "type": "communication",
       "actor": "Bob Kim",
       "description": "Status page updated: Monitoring - A fix has been implemented and we are monitoring the results.",
-      "metadata": { "channel": "status_page", "status": "monitoring" }
+      "metadata": {"channel": "status_page", "status": "monitoring"}
     },
     {
       "timestamp": "2024-01-15T15:30:00Z",
       "type": "mitigation",
       "actor": "Jane Smith",
       "description": "Error rate back to baseline (<0.1%). Payment processing fully restored. Entering monitoring phase.",
-      "metadata": { "error_rate": 0.08, "pool_utilization": 32 }
+      "metadata": {"error_rate": 0.08, "pool_utilization": 32}
     },
     {
       "timestamp": "2024-01-15T16:30:00Z",
       "type": "investigation",
       "actor": "Carol Davis",
       "description": "Confirmed stable for 60 minutes. No degradation detected. Root cause documented: ORM 3.2.0 connection pooling incompatibility.",
-      "metadata": { "monitoring_duration_minutes": 60, "stable": true }
+      "metadata": {"monitoring_duration_minutes": 60, "stable": true}
     },
     {
       "timestamp": "2024-01-15T16:45:00Z",
       "type": "resolution",
       "actor": "Jane Smith",
       "description": "Incident resolved. All services nominal. Postmortem scheduled for 2024-01-17 10:00 UTC.",
-      "metadata": { "postmortem_scheduled": "2024-01-17T10:00:00Z" }
+      "metadata": {"postmortem_scheduled": "2024-01-17T10:00:00Z"}
     },
     {
       "timestamp": "2024-01-15T16:50:00Z",
       "type": "communication",
       "actor": "Bob Kim",
       "description": "Status page updated: Resolved - The issue has been resolved. Payment processing is operating normally.",
-      "metadata": { "channel": "status_page", "status": "resolved" }
+      "metadata": {"channel": "status_page", "status": "resolved"}
     }
   ],
   "communications": [
@@ -272,9 +268,9 @@
     }
   ],
   "participants": [
-    { "name": "Jane Smith", "role": "Incident Commander" },
-    { "name": "Alice Chen", "role": "Operations Lead" },
-    { "name": "Bob Kim", "role": "Communications Lead" },
-    { "name": "Carol Davis", "role": "Database SME" }
+    {"name": "Jane Smith", "role": "Incident Commander"},
+    {"name": "Alice Chen", "role": "Operations Lead"},
+    {"name": "Bob Kim", "role": "Communications Lead"},
+    {"name": "Carol Davis", "role": "Database SME"}
   ]
 }

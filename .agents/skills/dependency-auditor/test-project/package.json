@@ -11,13 +11,7 @@
     "lint": "eslint src/",
     "audit": "npm audit"
   },
-  "keywords": [
-    "web",
-    "app",
-    "sample",
-    "dependency",
-    "audit"
-  ],
+  "keywords": ["web", "app", "sample", "dependency", "audit"],
   "author": "Claude Skills Team",
   "license": "MIT",
   "dependencies": {

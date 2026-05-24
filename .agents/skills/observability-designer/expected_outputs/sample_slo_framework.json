@@ -71,8 +71,17 @@
           "cluster_size": 3
         }
       },
-      "compliance_requirements": ["PCI-DSS", "SOX", "GDPR"],
-      "tags": ["payment", "transaction", "critical-path", "revenue-generating"]
+      "compliance_requirements": [
+        "PCI-DSS",
+        "SOX",
+        "GDPR"
+      ],
+      "tags": [
+        "payment",
+        "transaction",
+        "critical-path",
+        "revenue-generating"
+      ]
     },
     "generated_at": "2026-02-16T14:01:57.572080Z",
     "framework_version": "1.0"
@@ -133,7 +142,12 @@
       "target_value": 0.9999,
       "target_display": "99.99%",
       "operator": ">=",
-      "time_windows": ["1h", "1d", "7d", "30d"],
+      "time_windows": [
+        "1h",
+        "1d",
+        "7d",
+        "30d"
+      ],
       "measurement_window": "30d",
       "service": "payment-service",
       "criticality": "critical"
@@ -145,7 +159,12 @@
       "target_value": 100,
       "target_display": "0.1s",
       "operator": "<=",
-      "time_windows": ["1h", "1d", "7d", "30d"],
+      "time_windows": [
+        "1h",
+        "1d",
+        "7d",
+        "30d"
+      ],
       "measurement_window": "30d",
       "service": "payment-service",
       "criticality": "critical"
@@ -157,7 +176,12 @@
       "target_value": 0.001,
       "target_display": "0.1%",
       "operator": "<=",
-      "time_windows": ["1h", "1d", "7d", "30d"],
+      "time_windows": [
+        "1h",
+        "1d",
+        "7d",
+        "30d"
+      ],
       "measurement_window": "30d",
       "service": "payment-service",
       "criticality": "critical"
@@ -169,7 +193,12 @@
       "target_value": 0.9999,
       "target_display": "99.99%",
       "operator": ">=",
-      "time_windows": ["1h", "1d", "7d", "30d"],
+      "time_windows": [
+        "1h",
+        "1d",
+        "7d",
+        "30d"
+      ],
       "measurement_window": "30d",
       "service": "payment-service",
       "criticality": "critical"
@@ -181,7 +210,12 @@
       "target_value": 0.9999,
       "target_display": "99.99%",
       "operator": ">=",
-      "time_windows": ["1h", "1d", "7d", "30d"],
+      "time_windows": [
+        "1h",
+        "1d",
+        "7d",
+        "30d"
+      ],
       "measurement_window": "30d",
       "service": "payment-service",
       "criticality": "critical"
@@ -190,7 +224,7 @@
   "error_budgets": [
     {
       "slo_name": "Availability SLO",
-      "error_budget_rate": 9.999999999998899e-5,
+      "error_budget_rate": 9.999999999998899e-05,
       "error_budget_percentage": "0.010%",
       "budgets_by_window": {
         "1h": "0.4 seconds",
@@ -259,7 +293,7 @@
     },
     {
       "slo_name": "User Journey Success Rate SLO",
-      "error_budget_rate": 9.999999999998899e-5,
+      "error_budget_rate": 9.999999999998899e-05,
       "error_budget_percentage": "0.010%",
       "budgets_by_window": {
         "1h": "0.4 seconds",
@@ -328,7 +362,7 @@
     },
     {
       "slo_name": "Feature Availability SLO",
-      "error_budget_rate": 9.999999999998899e-5,
+      "error_budget_rate": 9.999999999998899e-05,
       "error_budget_percentage": "0.010%",
       "budgets_by_window": {
         "1h": "0.4 seconds",

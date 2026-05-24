@@ -55,26 +55,26 @@
   "license_recommendations": {
     "E5": {
       "count": 5,
-      "monthly_cost": 285.0,
+      "monthly_cost": 285.00,
       "users": "Executives and IT admins"
     },
     "E3": {
       "count": 15,
-      "monthly_cost": 540.0,
+      "monthly_cost": 540.00,
       "users": "Finance, Legal, HR departments"
     },
     "Business_Standard": {
       "count": 50,
-      "monthly_cost": 625.0,
+      "monthly_cost": 625.00,
       "users": "Standard office workers"
     },
     "Business_Basic": {
       "count": 5,
-      "monthly_cost": 30.0,
+      "monthly_cost": 30.00,
       "users": "Part-time staff"
     },
-    "total_monthly_cost": 1480.0,
-    "total_annual_cost": 17760.0
+    "total_monthly_cost": 1480.00,
+    "total_annual_cost": 17760.00
   },
   "next_steps": [
     "Review and verify DNS records",

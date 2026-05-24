@@ -12,11 +12,7 @@
           "required": true,
           "min_length": 1,
           "max_length": 500,
-          "examples": [
-            "artificial intelligence trends",
-            "climate change impact",
-            "python programming tutorial"
-          ]
+          "examples": ["artificial intelligence trends", "climate change impact", "python programming tutorial"]
         },
         {
           "name": "limit",
@@ -51,10 +47,10 @@
           "items": {
             "type": "object",
             "properties": {
-              "title": { "type": "string" },
-              "url": { "type": "string" },
-              "snippet": { "type": "string" },
-              "relevance_score": { "type": "number" }
+              "title": {"type": "string"},
+              "url": {"type": "string"},
+              "snippet": {"type": "string"},
+              "relevance_score": {"type": "number"}
             }
           }
         },
@@ -71,14 +67,20 @@
         "No results found",
         "Service unavailable"
       ],
-      "side_effects": ["Logs search query for analytics", "May cache results temporarily"],
+      "side_effects": [
+        "Logs search query for analytics",
+        "May cache results temporarily"
+      ],
       "idempotent": true,
       "rate_limits": {
         "requests_per_minute": 60,
         "requests_per_hour": 1000,
         "burst_limit": 10
       },
-      "dependencies": ["search_api_service", "content_filter_service"],
+      "dependencies": [
+        "search_api_service",
+        "content_filter_service"
+      ],
       "examples": [
         {
           "description": "Basic web search",
@@ -99,7 +101,11 @@
           }
         }
       ],
-      "security_requirements": ["Query sanitization", "Rate limiting by user", "Content filtering"]
+      "security_requirements": [
+        "Query sanitization",
+        "Rate limiting by user",
+        "Content filtering"
+      ]
     },
     {
       "name": "data_analyzer",
@@ -112,8 +118,8 @@
           "description": "Structured data to analyze in JSON format",
           "required": true,
           "properties": {
-            "columns": { "type": "array" },
-            "rows": { "type": "array" }
+            "columns": {"type": "array"},
+            "rows": {"type": "array"}
           }
         },
         {
@@ -171,7 +177,10 @@
         "requests_per_hour": 500,
         "burst_limit": 5
       },
-      "dependencies": ["statistics_engine", "visualization_service"],
+      "dependencies": [
+        "statistics_engine",
+        "visualization_service"
+      ],
       "examples": [
         {
           "description": "Basic descriptive analysis",
@@ -201,7 +210,10 @@
           }
         }
       ],
-      "security_requirements": ["Data anonymization", "Access control validation"]
+      "security_requirements": [
+        "Data anonymization",
+        "Access control validation"
+      ]
     },
     {
       "name": "document_processor",
@@ -393,7 +405,11 @@
         "requests_per_hour": 2000,
         "burst_limit": 20
       },
-      "dependencies": ["email_service", "sms_service", "webhook_service"],
+      "dependencies": [
+        "email_service",
+        "sms_service",
+        "webhook_service"
+      ],
       "examples": [
         {
           "description": "Send email notification",
@@ -430,9 +446,9 @@
           "description": "Definition of the task to be scheduled",
           "required": true,
           "properties": {
-            "action": { "type": "string" },
-            "parameters": { "type": "object" },
-            "retry_policy": { "type": "object" }
+            "action": {"type": "string"},
+            "parameters": {"type": "object"},
+            "retry_policy": {"type": "object"}
           }
         },
         {
@@ -441,9 +457,9 @@
           "description": "Scheduling parameters for the task",
           "required": true,
           "properties": {
-            "type": { "type": "string", "enum": ["once", "recurring"] },
-            "execute_at": { "type": "string" },
-            "recurrence_pattern": { "type": "string" }
+            "type": {"type": "string", "enum": ["once", "recurring"]},
+            "execute_at": {"type": "string"},
+            "recurrence_pattern": {"type": "string"}
           }
         },
         {
@@ -491,7 +507,10 @@
         "requests_per_hour": 1000,
         "burst_limit": 10
       },
-      "dependencies": ["task_scheduler_service", "task_executor_service"],
+      "dependencies": [
+        "task_scheduler_service",
+        "task_executor_service"
+      ],
       "examples": [
         {
           "description": "Schedule a one-time report generation",

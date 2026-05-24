@@ -30,31 +30,16 @@
   "routes": {
     "count": 8,
     "frontend_pages": [
-      { "path": "/", "source": "app/page.tsx", "filesystem": true },
-      { "path": "/dashboard", "source": "app/dashboard/page.tsx", "filesystem": true },
-      { "path": "/users", "source": "app/users/page.tsx", "filesystem": true },
-      { "path": "/users/:id", "source": "app/users/[id]/page.tsx", "filesystem": true },
-      { "path": "/settings", "source": "app/settings/page.tsx", "filesystem": true }
+      {"path": "/", "source": "app/page.tsx", "filesystem": true},
+      {"path": "/dashboard", "source": "app/dashboard/page.tsx", "filesystem": true},
+      {"path": "/users", "source": "app/users/page.tsx", "filesystem": true},
+      {"path": "/users/:id", "source": "app/users/[id]/page.tsx", "filesystem": true},
+      {"path": "/settings", "source": "app/settings/page.tsx", "filesystem": true}
     ],
     "backend_endpoints": [
-      {
-        "path": "/api/users",
-        "method": "GET",
-        "source": "app/api/users/route.ts",
-        "type": "backend"
-      },
-      {
-        "path": "/api/users",
-        "method": "POST",
-        "source": "app/api/users/route.ts",
-        "type": "backend"
-      },
-      {
-        "path": "/api/users/:id",
-        "method": "GET",
-        "source": "app/api/users/[id]/route.ts",
-        "type": "backend"
-      }
+      {"path": "/api/users", "method": "GET", "source": "app/api/users/route.ts", "type": "backend"},
+      {"path": "/api/users", "method": "POST", "source": "app/api/users/route.ts", "type": "backend"},
+      {"path": "/api/users/:id", "method": "GET", "source": "app/api/users/[id]/route.ts", "type": "backend"}
     ],
     "pages": []
   },
@@ -63,58 +48,18 @@
     "integrated": 4,
     "mock": 1,
     "endpoints": [
-      {
-        "path": "/api/users",
-        "method": "GET",
-        "source": "services/user.ts",
-        "integrated": true,
-        "mock_detected": false
-      },
-      {
-        "path": "/api/users",
-        "method": "POST",
-        "source": "services/user.ts",
-        "integrated": true,
-        "mock_detected": false
-      },
-      {
-        "path": "/api/users/:id",
-        "method": "GET",
-        "source": "services/user.ts",
-        "integrated": true,
-        "mock_detected": false
-      },
-      {
-        "path": "/api/users/:id",
-        "method": "PUT",
-        "source": "services/user.ts",
-        "integrated": true,
-        "mock_detected": false
-      },
-      {
-        "path": "/api/dashboard/stats",
-        "method": "GET",
-        "source": "services/dashboard.ts",
-        "integrated": false,
-        "mock_detected": true
-      }
+      {"path": "/api/users", "method": "GET", "source": "services/user.ts", "integrated": true, "mock_detected": false},
+      {"path": "/api/users", "method": "POST", "source": "services/user.ts", "integrated": true, "mock_detected": false},
+      {"path": "/api/users/:id", "method": "GET", "source": "services/user.ts", "integrated": true, "mock_detected": false},
+      {"path": "/api/users/:id", "method": "PUT", "source": "services/user.ts", "integrated": true, "mock_detected": false},
+      {"path": "/api/dashboard/stats", "method": "GET", "source": "services/dashboard.ts", "integrated": false, "mock_detected": true}
     ]
   },
   "enums": {
     "count": 2,
     "definitions": [
-      {
-        "name": "UserRole",
-        "type": "enum",
-        "values": { "ADMIN": "admin", "USER": "user", "MANAGER": "manager" },
-        "source": "types/user.ts"
-      },
-      {
-        "name": "STATUS_MAP",
-        "type": "constant_map",
-        "values": { "active": "Active", "inactive": "Inactive", "suspended": "Suspended" },
-        "source": "constants/status.ts"
-      }
+      {"name": "UserRole", "type": "enum", "values": {"ADMIN": "admin", "USER": "user", "MANAGER": "manager"}, "source": "types/user.ts"},
+      {"name": "STATUS_MAP", "type": "constant_map", "values": {"active": "Active", "inactive": "Inactive", "suspended": "Suspended"}, "source": "constants/status.ts"}
     ]
   },
   "models": {

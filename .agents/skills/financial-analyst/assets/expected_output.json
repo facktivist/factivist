@@ -17,7 +17,7 @@
           "interpretation": "Excellent - significantly above peers"
         },
         "gross_margin": {
-          "value": 0.4,
+          "value": 0.40,
           "formula": "(Revenue - COGS) / Revenue",
           "name": "Gross Margin",
           "interpretation": "Acceptable - within normal range"
@@ -36,27 +36,27 @@
         }
       },
       "liquidity": {
-        "current_ratio": { "value": 1.875, "name": "Current Ratio" },
-        "quick_ratio": { "value": 1.4375, "name": "Quick Ratio" },
-        "cash_ratio": { "value": 0.625, "name": "Cash Ratio" }
+        "current_ratio": {"value": 1.875, "name": "Current Ratio"},
+        "quick_ratio": {"value": 1.4375, "name": "Quick Ratio"},
+        "cash_ratio": {"value": 0.625, "name": "Cash Ratio"}
       },
       "leverage": {
-        "debt_to_equity": { "value": 0.545, "name": "Debt-to-Equity Ratio" },
-        "interest_coverage": { "value": 6.67, "name": "Interest Coverage Ratio" },
-        "dscr": { "value": 2.5, "name": "Debt Service Coverage Ratio" }
+        "debt_to_equity": {"value": 0.545, "name": "Debt-to-Equity Ratio"},
+        "interest_coverage": {"value": 6.67, "name": "Interest Coverage Ratio"},
+        "dscr": {"value": 2.50, "name": "Debt Service Coverage Ratio"}
       },
       "efficiency": {
-        "asset_turnover": { "value": 1.25, "name": "Asset Turnover" },
-        "inventory_turnover": { "value": 8.57, "name": "Inventory Turnover" },
-        "receivables_turnover": { "value": 8.33, "name": "Receivables Turnover" },
-        "dso": { "value": 43.8, "name": "Days Sales Outstanding" }
+        "asset_turnover": {"value": 1.25, "name": "Asset Turnover"},
+        "inventory_turnover": {"value": 8.57, "name": "Inventory Turnover"},
+        "receivables_turnover": {"value": 8.33, "name": "Receivables Turnover"},
+        "dso": {"value": 43.8, "name": "Days Sales Outstanding"}
       },
       "valuation": {
-        "pe_ratio": { "value": 81.82, "name": "Price-to-Earnings Ratio" },
-        "pb_ratio": { "value": 20.45, "name": "Price-to-Book Ratio" },
-        "ps_ratio": { "value": 9.0, "name": "Price-to-Sales Ratio" },
-        "ev_ebitda": { "value": 45.7, "name": "EV/EBITDA" },
-        "peg_ratio": { "value": 6.82, "name": "PEG Ratio" }
+        "pe_ratio": {"value": 81.82, "name": "Price-to-Earnings Ratio"},
+        "pb_ratio": {"value": 20.45, "name": "Price-to-Book Ratio"},
+        "ps_ratio": {"value": 9.0, "name": "Price-to-Sales Ratio"},
+        "ev_ebitda": {"value": 45.7, "name": "EV/EBITDA"},
+        "peg_ratio": {"value": 6.82, "name": "PEG Ratio"}
       }
     }
   },
@@ -83,7 +83,7 @@
     },
     "sensitivity_analysis": {
       "wacc_values": [0.065, 0.075, 0.085, 0.095, 0.105],
-      "growth_values": [0.015, 0.02, 0.025, 0.03, 0.035],
+      "growth_values": [0.015, 0.020, 0.025, 0.030, 0.035],
       "enterprise_value_table": "5x5 nested list of enterprise values",
       "share_price_table": "5x5 nested list of share prices"
     }
@@ -120,12 +120,12 @@
       }
     ],
     "department_summary": {
-      "Sales": { "total_variance": 0, "variance_pct": 0 },
-      "Operations": { "total_variance": 0, "variance_pct": 0 }
+      "Sales": {"total_variance": 0, "variance_pct": 0},
+      "Operations": {"total_variance": 0, "variance_pct": 0}
     },
     "category_summary": {
-      "Revenue": { "total_variance": 0, "variance_pct": 0 },
-      "COGS": { "total_variance": 0, "variance_pct": 0 }
+      "Revenue": {"total_variance": 0, "variance_pct": 0},
+      "COGS": {"total_variance": 0, "variance_pct": 0}
     }
   },
 
@@ -138,13 +138,13 @@
         "direction": "upward"
       },
       "average_growth_rate": 0.06,
-      "seasonality_index": [0.92, 0.97, 1.01, 1.1]
+      "seasonality_index": [0.92, 0.97, 1.01, 1.10]
     },
     "scenario_comparison": {
       "comparison": [
-        { "scenario": "base", "total_revenue": 185000000, "growth_rate": 0.08 },
-        { "scenario": "bull", "total_revenue": 210000000, "growth_rate": 0.12 },
-        { "scenario": "bear", "total_revenue": 165000000, "growth_rate": 0.05 }
+        {"scenario": "base", "total_revenue": 185000000, "growth_rate": 0.08},
+        {"scenario": "bull", "total_revenue": 210000000, "growth_rate": 0.12},
+        {"scenario": "bear", "total_revenue": 165000000, "growth_rate": 0.05}
       ]
     },
     "rolling_cash_flow": {

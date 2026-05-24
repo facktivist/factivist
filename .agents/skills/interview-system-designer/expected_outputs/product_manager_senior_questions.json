@@ -13,7 +13,11 @@
     "user_research",
     "data_analysis"
   ],
-  "question_types": ["technical", "behavioral", "situational"],
+  "question_types": [
+    "technical",
+    "behavioral",
+    "situational"
+  ],
   "generated_at": "2026-02-16T13:27:41.303329",
   "total_questions": 20,
   "questions": [
@@ -21,7 +25,10 @@
       "question": "What challenges have you faced related to p&l responsibility and how did you overcome them?",
       "competency": "p&l_responsibility",
       "type": "challenge_based",
-      "focus_areas": ["problem_solving", "learning_from_experience"]
+      "focus_areas": [
+        "problem_solving",
+        "learning_from_experience"
+      ]
     },
     {
       "question": "Analyze conversion funnel data to identify the biggest drop-off point and propose solutions.",
@@ -29,13 +36,20 @@
       "type": "analytical",
       "difficulty": "medium",
       "time_limit": 45,
-      "key_concepts": ["funnel_analysis", "conversion_optimization", "statistical_significance"]
+      "key_concepts": [
+        "funnel_analysis",
+        "conversion_optimization",
+        "statistical_significance"
+      ]
     },
     {
       "question": "What challenges have you faced related to team leadership and how did you overcome them?",
       "competency": "team_leadership",
       "type": "challenge_based",
-      "focus_areas": ["problem_solving", "learning_from_experience"]
+      "focus_areas": [
+        "problem_solving",
+        "learning_from_experience"
+      ]
     },
     {
       "question": "Design a go-to-market strategy for a new B2B SaaS product entering a competitive market.",
@@ -54,26 +68,39 @@
       "question": "What challenges have you faced related to business strategy and how did you overcome them?",
       "competency": "business_strategy",
       "type": "challenge_based",
-      "focus_areas": ["problem_solving", "learning_from_experience"]
+      "focus_areas": [
+        "problem_solving",
+        "learning_from_experience"
+      ]
     },
     {
       "question": "Describe your experience with business strategy in your current or previous role.",
       "competency": "business_strategy",
       "type": "experience",
-      "focus_areas": ["experience_depth", "practical_application"]
+      "focus_areas": [
+        "experience_depth",
+        "practical_application"
+      ]
     },
     {
       "question": "Describe your experience with team leadership in your current or previous role.",
       "competency": "team_leadership",
       "type": "experience",
-      "focus_areas": ["experience_depth", "practical_application"]
+      "focus_areas": [
+        "experience_depth",
+        "practical_application"
+      ]
     },
     {
       "question": "Describe a situation where you had to influence someone without having direct authority over them.",
       "competency": "leadership",
       "type": "behavioral",
       "method": "STAR",
-      "focus_areas": ["influence", "persuasion", "stakeholder_management"]
+      "focus_areas": [
+        "influence",
+        "persuasion",
+        "stakeholder_management"
+      ]
     },
     {
       "question": "Given a dataset of user activities, calculate the daily active users for the past month.",
@@ -81,13 +108,20 @@
       "type": "analytical",
       "difficulty": "easy",
       "time_limit": 30,
-      "key_concepts": ["sql_basics", "date_functions", "aggregation"]
+      "key_concepts": [
+        "sql_basics",
+        "date_functions",
+        "aggregation"
+      ]
     },
     {
       "question": "Describe your experience with analytics in your current or previous role.",
       "competency": "analytics",
       "type": "experience",
-      "focus_areas": ["experience_depth", "practical_application"]
+      "focus_areas": [
+        "experience_depth",
+        "practical_application"
+      ]
     },
     {
       "question": "How would you prioritize features for a mobile app with limited engineering resources?",
@@ -95,62 +129,94 @@
       "type": "case_study",
       "difficulty": "medium",
       "time_limit": 45,
-      "key_concepts": ["prioritization_frameworks", "resource_allocation", "impact_estimation"]
+      "key_concepts": [
+        "prioritization_frameworks",
+        "resource_allocation",
+        "impact_estimation"
+      ]
     },
     {
       "question": "Describe your experience with stakeholder management in your current or previous role.",
       "competency": "stakeholder_management",
       "type": "experience",
-      "focus_areas": ["experience_depth", "practical_application"]
+      "focus_areas": [
+        "experience_depth",
+        "practical_application"
+      ]
     },
     {
       "question": "What challenges have you faced related to stakeholder management and how did you overcome them?",
       "competency": "stakeholder_management",
       "type": "challenge_based",
-      "focus_areas": ["problem_solving", "learning_from_experience"]
+      "focus_areas": [
+        "problem_solving",
+        "learning_from_experience"
+      ]
     },
     {
       "question": "What challenges have you faced related to user research and how did you overcome them?",
       "competency": "user_research",
       "type": "challenge_based",
-      "focus_areas": ["problem_solving", "learning_from_experience"]
+      "focus_areas": [
+        "problem_solving",
+        "learning_from_experience"
+      ]
     },
     {
       "question": "What challenges have you faced related to strategy and how did you overcome them?",
       "competency": "strategy",
       "type": "challenge_based",
-      "focus_areas": ["problem_solving", "learning_from_experience"]
+      "focus_areas": [
+        "problem_solving",
+        "learning_from_experience"
+      ]
     },
     {
       "question": "Describe your experience with user research in your current or previous role.",
       "competency": "user_research",
       "type": "experience",
-      "focus_areas": ["experience_depth", "practical_application"]
+      "focus_areas": [
+        "experience_depth",
+        "practical_application"
+      ]
     },
     {
       "question": "Describe your experience with p&l responsibility in your current or previous role.",
       "competency": "p&l_responsibility",
       "type": "experience",
-      "focus_areas": ["experience_depth", "practical_application"]
+      "focus_areas": [
+        "experience_depth",
+        "practical_application"
+      ]
     },
     {
       "question": "Describe your experience with strategy in your current or previous role.",
       "competency": "strategy",
       "type": "experience",
-      "focus_areas": ["experience_depth", "practical_application"]
+      "focus_areas": [
+        "experience_depth",
+        "practical_application"
+      ]
     },
     {
       "question": "Tell me about a time when you had to lead a team through a significant change or challenge.",
       "competency": "leadership",
       "type": "behavioral",
       "method": "STAR",
-      "focus_areas": ["change_management", "team_motivation", "communication"]
+      "focus_areas": [
+        "change_management",
+        "team_motivation",
+        "communication"
+      ]
     },
     {
       "question": "What challenges have you faced related to analytics and how did you overcome them?",
       "competency": "analytics",
       "type": "challenge_based",
-      "focus_areas": ["problem_solving", "learning_from_experience"]
+      "focus_areas": [
+        "problem_solving",
+        "learning_from_experience"
+      ]
     }
   ],
   "scoring_rubrics": {
@@ -335,12 +401,20 @@
         "poor_answer": {
           "answer": "Sample poor answer for p&l_responsibility question - lacks detail, specificity, or demonstrates weak competency",
           "score": "1-2",
-          "issues": ["Vague response", "Limited evidence of competency", "Poor structure"]
+          "issues": [
+            "Vague response",
+            "Limited evidence of competency",
+            "Poor structure"
+          ]
         },
         "good_answer": {
           "answer": "Sample good answer for p&l_responsibility question - adequate detail, demonstrates competency clearly",
           "score": "3",
-          "strengths": ["Clear structure", "Demonstrates competency", "Adequate detail"]
+          "strengths": [
+            "Clear structure",
+            "Demonstrates competency",
+            "Adequate detail"
+          ]
         },
         "great_answer": {
           "answer": "Sample excellent answer for p&l_responsibility question - exceptional detail, strong evidence, goes above and beyond",
@@ -366,12 +440,20 @@
         "poor_answer": {
           "answer": "Sample poor answer for data_analysis question - lacks detail, specificity, or demonstrates weak competency",
           "score": "1-2",
-          "issues": ["Vague response", "Limited evidence of competency", "Poor structure"]
+          "issues": [
+            "Vague response",
+            "Limited evidence of competency",
+            "Poor structure"
+          ]
         },
         "good_answer": {
           "answer": "Sample good answer for data_analysis question - adequate detail, demonstrates competency clearly",
           "score": "3",
-          "strengths": ["Clear structure", "Demonstrates competency", "Adequate detail"]
+          "strengths": [
+            "Clear structure",
+            "Demonstrates competency",
+            "Adequate detail"
+          ]
         },
         "great_answer": {
           "answer": "Sample excellent answer for data_analysis question - exceptional detail, strong evidence, goes above and beyond",
@@ -397,12 +479,20 @@
         "poor_answer": {
           "answer": "Sample poor answer for team_leadership question - lacks detail, specificity, or demonstrates weak competency",
           "score": "1-2",
-          "issues": ["Vague response", "Limited evidence of competency", "Poor structure"]
+          "issues": [
+            "Vague response",
+            "Limited evidence of competency",
+            "Poor structure"
+          ]
         },
         "good_answer": {
           "answer": "Sample good answer for team_leadership question - adequate detail, demonstrates competency clearly",
           "score": "3",
-          "strengths": ["Clear structure", "Demonstrates competency", "Adequate detail"]
+          "strengths": [
+            "Clear structure",
+            "Demonstrates competency",
+            "Adequate detail"
+          ]
         },
         "great_answer": {
           "answer": "Sample excellent answer for team_leadership question - exceptional detail, strong evidence, goes above and beyond",
@@ -428,12 +518,20 @@
         "poor_answer": {
           "answer": "Sample poor answer for product_strategy question - lacks detail, specificity, or demonstrates weak competency",
           "score": "1-2",
-          "issues": ["Vague response", "Limited evidence of competency", "Poor structure"]
+          "issues": [
+            "Vague response",
+            "Limited evidence of competency",
+            "Poor structure"
+          ]
         },
         "good_answer": {
           "answer": "Sample good answer for product_strategy question - adequate detail, demonstrates competency clearly",
           "score": "3",
-          "strengths": ["Clear structure", "Demonstrates competency", "Adequate detail"]
+          "strengths": [
+            "Clear structure",
+            "Demonstrates competency",
+            "Adequate detail"
+          ]
         },
         "great_answer": {
           "answer": "Sample excellent answer for product_strategy question - exceptional detail, strong evidence, goes above and beyond",
@@ -459,12 +557,20 @@
         "poor_answer": {
           "answer": "Sample poor answer for business_strategy question - lacks detail, specificity, or demonstrates weak competency",
           "score": "1-2",
-          "issues": ["Vague response", "Limited evidence of competency", "Poor structure"]
+          "issues": [
+            "Vague response",
+            "Limited evidence of competency",
+            "Poor structure"
+          ]
         },
         "good_answer": {
           "answer": "Sample good answer for business_strategy question - adequate detail, demonstrates competency clearly",
           "score": "3",
-          "strengths": ["Clear structure", "Demonstrates competency", "Adequate detail"]
+          "strengths": [
+            "Clear structure",
+            "Demonstrates competency",
+            "Adequate detail"
+          ]
         },
         "great_answer": {
           "answer": "Sample excellent answer for business_strategy question - exceptional detail, strong evidence, goes above and beyond",

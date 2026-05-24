@@ -1,5 +1,5 @@
 // Sample React component with intentional a11y issues for testing
-import React from 'react'
+import React from 'react';
 
 export function UserCard({ user, onEdit, onDelete }) {
   return (
@@ -15,7 +15,7 @@ export function UserCard({ user, onEdit, onDelete }) {
       </div>
       <input placeholder="Add note" />
     </div>
-  )
+  );
 }
 
 export function SearchBar() {
@@ -26,30 +26,26 @@ export function SearchBar() {
         🔍
       </div>
     </div>
-  )
+  );
 }
 
 export function DataTable({ rows }) {
   return (
     <table>
       <tr>
-        <td>
-          <b>Name</b>
-        </td>
-        <td>
-          <b>Email</b>
-        </td>
-        <td>
-          <b>Status</b>
-        </td>
+        <td><b>Name</b></td>
+        <td><b>Email</b></td>
+        <td><b>Status</b></td>
       </tr>
       {rows.map((row) => (
         <tr key={row.id}>
           <td>{row.name}</td>
           <td>{row.email}</td>
-          <td style={{ color: row.active ? 'green' : 'red' }}>{row.active ? '●' : '●'}</td>
+          <td style={{ color: row.active ? 'green' : 'red' }}>
+            {row.active ? '●' : '●'}
+          </td>
         </tr>
       ))}
     </table>
-  )
+  );
 }

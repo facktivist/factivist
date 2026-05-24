@@ -11,14 +11,18 @@
       "description": "Execute intercept phase",
       "duration_hours": 100,
       "dependencies": [],
-      "validation_criteria": ["Intercept phase completed successfully"],
+      "validation_criteria": [
+        "Intercept phase completed successfully"
+      ],
       "rollback_triggers": [
         "Critical system failure",
         "Data corruption detected",
         "Performance degradation > 50%",
         "Business process failure"
       ],
-      "tasks": ["Complete intercept activities"],
+      "tasks": [
+        "Complete intercept activities"
+      ],
       "risk_level": "medium",
       "resources_required": [
         "Technical team availability",
@@ -31,15 +35,21 @@
       "name": "implement",
       "description": "Execute implement phase",
       "duration_hours": 100,
-      "dependencies": ["intercept"],
-      "validation_criteria": ["Implement phase completed successfully"],
+      "dependencies": [
+        "intercept"
+      ],
+      "validation_criteria": [
+        "Implement phase completed successfully"
+      ],
       "rollback_triggers": [
         "Critical system failure",
         "Data corruption detected",
         "Performance degradation > 50%",
         "Business process failure"
       ],
-      "tasks": ["Complete implement activities"],
+      "tasks": [
+        "Complete implement activities"
+      ],
       "risk_level": "medium",
       "resources_required": [
         "Technical team availability",
@@ -52,15 +62,21 @@
       "name": "redirect",
       "description": "Execute redirect phase",
       "duration_hours": 100,
-      "dependencies": ["implement"],
-      "validation_criteria": ["Redirect phase completed successfully"],
+      "dependencies": [
+        "implement"
+      ],
+      "validation_criteria": [
+        "Redirect phase completed successfully"
+      ],
       "rollback_triggers": [
         "Critical system failure",
         "Data corruption detected",
         "Performance degradation > 50%",
         "Business process failure"
       ],
-      "tasks": ["Complete redirect activities"],
+      "tasks": [
+        "Complete redirect activities"
+      ],
       "risk_level": "medium",
       "resources_required": [
         "Technical team availability",
@@ -73,15 +89,21 @@
       "name": "validate",
       "description": "Execute validate phase",
       "duration_hours": 100,
-      "dependencies": ["redirect"],
-      "validation_criteria": ["Validate phase completed successfully"],
+      "dependencies": [
+        "redirect"
+      ],
+      "validation_criteria": [
+        "Validate phase completed successfully"
+      ],
       "rollback_triggers": [
         "Critical system failure",
         "Data corruption detected",
         "Performance degradation > 50%",
         "Business process failure"
       ],
-      "tasks": ["Complete validate activities"],
+      "tasks": [
+        "Complete validate activities"
+      ],
       "risk_level": "medium",
       "resources_required": [
         "Technical team availability",
@@ -94,15 +116,21 @@
       "name": "retire",
       "description": "Execute retire phase",
       "duration_hours": 100,
-      "dependencies": ["validate"],
-      "validation_criteria": ["Retire phase completed successfully"],
+      "dependencies": [
+        "validate"
+      ],
+      "validation_criteria": [
+        "Retire phase completed successfully"
+      ],
       "rollback_triggers": [
         "Critical system failure",
         "Data corruption detected",
         "Performance degradation > 50%",
         "Business process failure"
       ],
-      "tasks": ["Complete retire activities"],
+      "tasks": [
+        "Complete retire activities"
+      ],
       "risk_level": "medium",
       "resources_required": [
         "Technical team availability",
@@ -263,7 +291,12 @@
       "high_severity": "Immediate rollback initiation",
       "critical_severity": "Emergency rollback - all hands"
     },
-    "rollback_contacts": ["Migration Lead", "Technical Lead", "Business Owner", "On-call Engineer"]
+    "rollback_contacts": [
+      "Migration Lead",
+      "Technical Lead",
+      "Business Owner",
+      "On-call Engineer"
+    ]
   },
   "stakeholders": [
     "Business Owner",

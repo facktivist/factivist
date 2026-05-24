@@ -17,7 +17,11 @@
       "medium": 3,
       "low": 1
     },
-    "highest_risk_categories": ["financial", "technical", "resource"],
+    "highest_risk_categories": [
+      "financial",
+      "technical",
+      "resource"
+    ],
     "key_recommendations": [
       "Focus mitigation efforts on financial risks - highest concentration of risk exposure",
       "Address overdue mitigation actions - more than 20% of risks are past their target resolution date"
@@ -121,7 +125,9 @@
         "priority": "medium"
       }
     ],
-    "key_recommendations": ["Focus improvement efforts on quality - weakest portfolio dimension"]
+    "key_recommendations": [
+      "Focus improvement efforts on quality - weakest portfolio dimension"
+    ]
   },
   "usage_examples": {
     "risk_analysis": {
