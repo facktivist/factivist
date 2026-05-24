@@ -44,3 +44,9 @@ docs/data-points/*.geojson
 docs/data-points/*.csv
 docs/data-points/*.tsv
 docs/data-points/*.parquet
+
+# Local ZKP prover artifacts — rapidsnark binary + AnonCitizen zkey live here.
+# Operators install them per apps/api/zkp-artifacts/README.md. Never commit.
+apps/api/zkp-artifacts/*
+!apps/api/zkp-artifacts/README.md
+!apps/api/zkp-artifacts/.gitkeep

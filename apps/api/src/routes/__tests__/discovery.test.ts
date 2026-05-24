@@ -268,7 +268,7 @@ describe('GET /complaints (discovery)', () => {
     const { createApp } = await import('../../app.ts')
     const res = await createApp().request('/complaints')
     const body = (await res.json()) as { items: { bodyExcerpt: string }[] }
-    expect(body.items[0]!.bodyExcerpt.endsWith('…')).toBe(true)
+    expect(body.items[0]?.bodyExcerpt.endsWith('…')).toBe(true)
   })
 
   it('handles rows where photoUrls is null', async () => {
@@ -277,7 +277,7 @@ describe('GET /complaints (discovery)', () => {
     const { createApp } = await import('../../app.ts')
     const res = await createApp().request('/complaints')
     const body = (await res.json()) as { items: { photoUrls: string[] }[] }
-    expect(body.items[0]!.photoUrls).toEqual([])
+    expect(body.items[0]?.photoUrls).toEqual([])
   })
 
   it('handles totalCount when totalRow is empty', async () => {
@@ -305,7 +305,7 @@ describe('GET /complaints (discovery)', () => {
     const { createApp } = await import('../../app.ts')
     const res = await createApp().request('/complaints')
     const body = (await res.json()) as { items: { bodyExcerpt: string }[] }
-    expect(body.items[0]!.bodyExcerpt).toBe('short')
+    expect(body.items[0]?.bodyExcerpt).toBe('short')
   })
 
   it('emits flagCount=0 when underlying row reports zero', async () => {
@@ -314,6 +314,6 @@ describe('GET /complaints (discovery)', () => {
     const { createApp } = await import('../../app.ts')
     const res = await createApp().request('/complaints')
     const body = (await res.json()) as { items: { flagCount: number }[] }
-    expect(body.items[0]!.flagCount).toBe(0)
+    expect(body.items[0]?.flagCount).toBe(0)
   })
 })

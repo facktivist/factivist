@@ -200,6 +200,7 @@ describe('auditEventSchema', () => {
       'feature_flag.disable',
       'admin.grant',
       'admin.revoke',
+      'identity.prove_attempt',
     ] as const) {
       const r = auditEventSchema.safeParse({
         actor: 'usr_dev',

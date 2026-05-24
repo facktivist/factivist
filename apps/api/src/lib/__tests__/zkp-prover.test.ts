@@ -18,8 +18,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   __prover,
   CircuitConstraintError,
+  classifyBinaryError,
   ProverNotConfiguredError,
   ProvingFailedError,
+  parseRapidsnarkOutput,
   proveServerSide,
   zeroiseWitness,
 } from '../zkp-prover.ts'
@@ -128,5 +130,64 @@ describe('proveServerSide — zeroisation runs even on failure', () => {
     })
     await expect(proveServerSide(witness)).rejects.toBeInstanceOf(ProvingFailedError)
     expect(zeroSpy.mock.calls.length).toBeGreaterThanOrEqual(4)
+  })
+})
+
+describe('parseRapidsnarkOutput', () => {
+  it('parses valid JSON proof + public-signal pair', () => {
+    const result = parseRapidsnarkOutput(
+      JSON.stringify(SAMPLE_RESULT.proof),
+      JSON.stringify(SAMPLE_RESULT.publicSignals),
+    )
+    expect(result.proof).toEqual(SAMPLE_RESULT.proof)
+    expect(result.publicSignals).toEqual(SAMPLE_RESULT.publicSignals)
+  })
+
+  it('throws ProvingFailedError on garbage proof JSON', () => {
+    expect(() => parseRapidsnarkOutput('not json', '[]')).toThrow(ProvingFailedError)
+  })
+
+  it('throws ProvingFailedError on garbage publicSignals JSON', () => {
+    expect(() =>
+      parseRapidsnarkOutput(JSON.stringify(SAMPLE_RESULT.proof), 'also not json'),
+    ).toThrow(ProvingFailedError)
+  })
+})
+
+describe('classifyBinaryError', () => {
+  it('returns CircuitConstraintError when stderr mentions constraint', () => {
+    const err = classifyBinaryError('Error: constraint at line 42', 'snarkjs failed')
+    expect(err).toBeInstanceOf(CircuitConstraintError)
+  })
+
+  it('returns ProvingFailedError on generic stderr', () => {
+    const err = classifyBinaryError('Error: segfault', 'rapidsnark exited non-zero')
+    expect(err).toBeInstanceOf(ProvingFailedError)
+    expect(err.message).toContain('rapidsnark exited non-zero')
+  })
+
+  it('is case-insensitive on the constraint keyword', () => {
+    const err = classifyBinaryError('CONSTRAINT violated', 'fail')
+    expect(err).toBeInstanceOf(CircuitConstraintError)
+  })
+})
+
+describe('proveServerSide — env-loaded backend', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('still throws ProverNotConfiguredError when env vars are unset', async () => {
+    vi.stubEnv('FACTIVIST_ZKP_PROVER_BIN', '')
+    vi.stubEnv('FACTIVIST_ZKP_ZKEY_PATH', '')
+    vi.stubEnv('FACTIVIST_ZKP_WASM_PATH', '')
+    await expect(proveServerSide(buildWitness())).rejects.toBeInstanceOf(ProverNotConfiguredError)
+  })
+
+  it('still throws ProverNotConfiguredError when only some env vars are set', async () => {
+    vi.stubEnv('FACTIVIST_ZKP_PROVER_BIN', '/usr/local/bin/rapidsnark')
+    vi.stubEnv('FACTIVIST_ZKP_ZKEY_PATH', '')
+    vi.stubEnv('FACTIVIST_ZKP_WASM_PATH', '')
+    await expect(proveServerSide(buildWitness())).rejects.toBeInstanceOf(ProverNotConfiguredError)
   })
 })

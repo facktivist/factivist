@@ -130,7 +130,7 @@ describe('POST /uploads/photo/sign', () => {
     issueUploadTokenMock.mockResolvedValue({
       uploadUrl: 'https://x/upload',
       token: 'tok',
-      path: validBody.slug + '/' + validBody.photoId,
+      path: `${validBody.slug}/${validBody.photoId}`,
       publicUrl: `https://cdn/b/${validBody.slug}/${validBody.photoId}`,
     })
     const { createApp } = await import('../../app.ts')

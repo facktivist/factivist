@@ -689,6 +689,23 @@ forbidden in production paths; allowed only against ephemeral preview envs.
 
 ---
 
+## Phase 9 — User Testing & Production-Side Validation
+
+**Goal:** Land the four items deliberately deferred from Phase 5 (because they depend on **external upstream**, **ops infrastructure**, or **legal counsel**) and validate the full S1 surface end-to-end before launch announcement.
+
+Triggers after Phase 8 (Infrastructure Cost & Deployment) closes and the user has exercised web + iOS + Android end-to-end without regressions.
+
+Scope + per-item plan + cited legal sources live in `docs/action-plans/season-1/phase-9-deferred.md`. Summary:
+
+1. **On-chain `verifyAndRecord`** via CitizenVerifier — blocked on AnonCitizen upstream Polygon Amoy/mainnet deployment ([[s1-zkp-findings]] OQ-1)
+2. **Rate limiter** — swap in-memory token bucket on `/identity/prove` for Cloudflare KV or Upstash Redis (decision falls out of Phase 8 deploy target)
+3. **DPDP §8(7) review** + `grievance_contacts` table split + retention raise to 365d general / 30d post-resolve PII (blocks on legal counsel)
+4. **Production rapidsnark distribution** — Docker layer / S3 init container / Lambda layer (local-dev contract already in `apps/api/zkp-artifacts/README.md`)
+
+Exit gate per `phase-9-deferred.md`.
+
+---
+
 ## S1 → S2 Graduation Triggers
 
 Per cost-scenarios.md, the swarm graduates to S2 planning when **any** of:

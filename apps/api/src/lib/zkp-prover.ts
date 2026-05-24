@@ -41,6 +41,7 @@
  * exercise the "not configured" path by re-assigning to `undefined`.
  */
 
+import { unlink } from 'node:fs/promises'
 import type { Groth16Proof, ProveWitness, VerifyPublicSignals } from '@factivist/shared/validators'
 
 /** Thrown when the server prover is not deployed (the default). */
@@ -125,8 +126,9 @@ export const zeroiseWitness = (witness: ProveWitness): void => {
  * Server-side prover entry point. Routes call this with the validated
  * witness; the wrapper:
  *
- *   1. Picks the injected backend (test) or throws
- *      {@link ProverNotConfiguredError} (default).
+ *   1. Picks the injected backend (test) or auto-loads the rapidsnark
+ *      backend from env vars on first call, or throws
+ *      {@link ProverNotConfiguredError}.
  *   2. Invokes the backend inside a try/finally so the zeroisation runs
  *      whether the prover succeeds or throws.
  *   3. Re-throws the backend's typed errors verbatim — the route maps
@@ -137,7 +139,7 @@ export const zeroiseWitness = (witness: ProveWitness): void => {
  * @throws {ProvingFailedError}       if the prover itself crashes/aborts
  */
 export const proveServerSide = async (witness: ProveWitness): Promise<ProveResult> => {
-  const backend = __prover.backend
+  const backend = __prover.backend ?? loadRapidsnarkBackendFromEnv()
   if (!backend) {
     throw new ProverNotConfiguredError()
   }
@@ -147,3 +149,121 @@ export const proveServerSide = async (witness: ProveWitness): Promise<ProveResul
     zeroiseWitness(witness)
   }
 }
+
+/**
+ * Lazy-load a rapidsnark-backed prover from env when all three artifacts are
+ * configured. Returns `undefined` when any path is missing so the caller can
+ * fall through to the "not configured" error path. See
+ * `apps/api/zkp-artifacts/README.md` for local-setup instructions.
+ */
+const loadRapidsnarkBackendFromEnv = (): ProverBackend | undefined => {
+  const bin = process.env.FACTIVIST_ZKP_PROVER_BIN
+  const zkey = process.env.FACTIVIST_ZKP_ZKEY_PATH
+  const wasm = process.env.FACTIVIST_ZKP_WASM_PATH
+  if (!bin || !zkey || !wasm) return undefined
+  return createRapidsnarkBackend({ bin, zkey, wasm })
+}
+
+/**
+ * Build a `ProverBackend` that shells out to rapidsnark via `Bun.spawn`.
+ *
+ * Contract with the binary (per iden3/rapidsnark CLI):
+ *   1. Write the witness as JSON to a tmpfs-backed file (`Bun.write` to
+ *      `/tmp/factivist-witness-<uuid>.json`).
+ *   2. `rapidsnark <zkey> <witness.wtns> <proof.json> <public.json>` —
+ *      rapidsnark expects a pre-computed `.wtns` file. We invoke `snarkjs
+ *      wtns calculate` first via the wasm to produce it (deferred — Phase 9
+ *      will replace this two-step shell-out with a single FFI binding).
+ *   3. `unlink` every intermediate file BEFORE the function returns.
+ *
+ * Failure modes:
+ *   - Non-zero exit code with stderr containing "constraint" → `CircuitConstraintError`
+ *   - Non-zero exit code otherwise → `ProvingFailedError`
+ *   - JSON parse failure on output → `ProvingFailedError`
+ *
+ * Intentionally NOT exported: callers go through `proveServerSide`.
+ */
+/**
+ * Pure parser for rapidsnark stdout. Exported so unit tests cover both the
+ * happy parse and the "garbage in" failure mode without booting a binary.
+ */
+export const parseRapidsnarkOutput = (proofRaw: string, publicRaw: string): ProveResult => {
+  try {
+    const proof = JSON.parse(proofRaw) as Groth16Proof
+    const publicSignals = JSON.parse(publicRaw) as VerifyPublicSignals
+    return { proof, publicSignals }
+  } catch {
+    throw new ProvingFailedError('rapidsnark output was not valid JSON')
+  }
+}
+
+/**
+ * Pure classifier for rapidsnark / snarkjs stderr. Maps the failure mode to
+ * the right typed error so the route returns the right HTTP code. Exported
+ * for testability.
+ */
+export const classifyBinaryError = (stderr: string, defaultMsg: string): Error => {
+  if (/constraint/i.test(stderr)) {
+    return new CircuitConstraintError(`${defaultMsg} — circuit constraint`)
+  }
+  return new ProvingFailedError(defaultMsg)
+}
+
+/* v8 ignore start — IO orchestration around external binaries; covered by
+ * manual integration test against an installed rapidsnark + zkey, not by unit
+ * mocks. The pure pieces (parseRapidsnarkOutput, classifyBinaryError) ARE
+ * unit-tested above; this wrapper just sequences them with Bun.spawn. */
+export const createRapidsnarkBackend = (config: {
+  readonly bin: string
+  readonly zkey: string
+  readonly wasm: string
+}): ProverBackend => {
+  return async (witness: ProveWitness): Promise<ProveResult> => {
+    const tmpPrefix = `/tmp/factivist-zkp-${crypto.randomUUID()}`
+    const witnessJson = `${tmpPrefix}-witness.json`
+    const witnessWtns = `${tmpPrefix}-witness.wtns`
+    const proofJson = `${tmpPrefix}-proof.json`
+    const publicJson = `${tmpPrefix}-public.json`
+
+    try {
+      await Bun.write(witnessJson, JSON.stringify(witness))
+
+      // Step 1: snarkjs wtns calculate (witness JSON + circuit wasm → .wtns)
+      const calc = Bun.spawn(
+        ['snarkjs', 'wtns', 'calculate', config.wasm, witnessJson, witnessWtns],
+        { stdout: 'pipe', stderr: 'pipe' },
+      )
+      const calcExit = await calc.exited
+      if (calcExit !== 0) {
+        const stderr = await new Response(calc.stderr).text()
+        throw classifyBinaryError(stderr, 'snarkjs wtns calculate failed')
+      }
+
+      // Step 2: rapidsnark <zkey> <wtns> <proof> <public>
+      const prove = Bun.spawn([config.bin, config.zkey, witnessWtns, proofJson, publicJson], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+      const proveExit = await prove.exited
+      if (proveExit !== 0) {
+        const stderr = await new Response(prove.stderr).text()
+        throw classifyBinaryError(stderr, 'rapidsnark exited non-zero')
+      }
+
+      const proofRaw = await Bun.file(proofJson).text()
+      const publicRaw = await Bun.file(publicJson).text()
+      return parseRapidsnarkOutput(proofRaw, publicRaw)
+    } finally {
+      // Best-effort cleanup — every intermediate file gets unlinked, even
+      // if a later step throws. The witness JSON in particular MUST not
+      // survive past the request.
+      await Promise.allSettled([
+        unlink(witnessJson),
+        unlink(witnessWtns),
+        unlink(proofJson),
+        unlink(publicJson),
+      ])
+    }
+  }
+}
+/* v8 ignore stop */

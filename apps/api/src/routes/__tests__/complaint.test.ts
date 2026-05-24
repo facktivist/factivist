@@ -537,6 +537,6 @@ describe('POST /complaints/:slug/flag', () => {
       body: JSON.stringify({ reason: 'pii-leak' }),
     })
     expect(state.txUpdateCalls.length).toBe(1)
-    expect((state.txUpdateCalls[0]!.values as { slaDueAt: Date }).slaDueAt).toBeInstanceOf(Date)
+    expect((state.txUpdateCalls[0]?.values as { slaDueAt: Date }).slaDueAt).toBeInstanceOf(Date)
   })
 })

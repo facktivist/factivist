@@ -118,6 +118,10 @@ export const auditEventSchema = z.object({
     'feature_flag.disable',
     'admin.grant',
     'admin.revoke',
+    // Wave 2C added this action when POST /identity/prove emits an audit
+    // breadcrumb. The DB enum carries it; the shared enum must enumerate it
+    // so the admin /audit-log filter can match.
+    'identity.prove_attempt',
   ]),
   targetKind: z.enum([
     'complaint',
@@ -126,6 +130,9 @@ export const auditEventSchema = z.object({
     'grievance',
     'feature_flag',
     'admin',
+    // Wave 2C added 'session' so the identity.prove_attempt audit row can
+    // bind to a per-request session UUID (not a citizen identifier).
+    'session',
   ]),
   targetId: z.string().min(1).max(128),
   payloadHash: z.string().regex(/^[0-9a-f]{64}$/i, 'payloadHash must be a 64-char hex SHA-256'),
