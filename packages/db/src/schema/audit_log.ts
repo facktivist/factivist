@@ -59,6 +59,16 @@ export const auditActionEnum = pgEnum('audit_action', [
   'feature_flag.disable',
   'admin.grant',
   'admin.revoke',
+  /**
+   * `identity.prove_attempt` — the ONE non-operator action that lives in
+   * this table. Server-side ZKP proving is the only citizen-facing write
+   * path that needs an immutable trail per identity-wiring.md §5.2 +
+   * zkp-key-custody.md §Server-side fallback rule #6 ("record outcome,
+   * never inputs"). The actor is the literal string `'anonymous'` and
+   * the `targetId` is an opaque request UUID — NEVER a citizen
+   * identifier — so the I-MOD-3 anonymity invariant holds.
+   */
+  'identity.prove_attempt',
 ])
 
 export const auditTargetKindEnum = pgEnum('audit_target_kind', [
@@ -68,6 +78,12 @@ export const auditTargetKindEnum = pgEnum('audit_target_kind', [
   'grievance',
   'feature_flag',
   'admin',
+  /**
+   * `session` — opaque per-request audit anchor for `identity.prove_attempt`.
+   * The `targetId` is a UUID generated inside the route, not derived from
+   * the witness or the citizen.
+   */
+  'session',
 ])
 
 export const auditLog = pgTable(

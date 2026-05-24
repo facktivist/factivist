@@ -9,11 +9,13 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "llm:log": "bun run llm-cost-logger.ts"
+    "llm:log": "bun run llm-cost-logger.ts",
+    "db:sweep-audit": "bun audit-log-sweep.ts"
   },
   "dependencies": {
     "@factivist/db": "workspace:*",
     "@factivist/shared": "workspace:*",
+    "drizzle-orm": "^0.45.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {

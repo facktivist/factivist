@@ -19,6 +19,8 @@
     "@factivist/ui-web": "workspace:*",
     "@factivist/zkp-client": "workspace:*",
     "@heroui/react": "~3.0.0",
+    "@supabase/ssr": "^0.10",
+    "@supabase/supabase-js": "^2.106",
     "@tanstack/react-query": "latest",
     "@tanstack/react-query-devtools": "latest",
     "next": "16.2.6",

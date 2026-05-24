@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 
+import { supabaseAuthMiddleware } from './lib/supabase-auth.ts'
 import { adminGrievanceRoute } from './routes/admin/grievance.ts'
 import { adminModerationRoute } from './routes/admin/moderation.ts'
 import { categoriesRoute } from './routes/categories.ts'
@@ -36,6 +37,10 @@ export function createApp(env?: AppEnv) {
         credentials: true,
       }),
     )
+    // Resolve Supabase Auth bearer BEFORE any route is mounted.
+    // No-op when SUPABASE_URL is unset; never 401s by itself —
+    // see apps/api/src/lib/supabase-auth.ts.
+    .use('*', supabaseAuthMiddleware())
     .route('/', healthRoute)
     .route('/', dbRoute)
     .route('/', identityRoute)

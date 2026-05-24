@@ -8,24 +8,25 @@
  * ## Auth model
  *
  *   - In production, the Hono app sits behind Supabase Auth. The JWT is
- *     forwarded via `Authorization: Bearer <jwt>` and decoded by the
- *     `supabase-js` server SDK in a wave-2 PR. For Phase 5 Pipeline C
- *     we accept the *resolved* identity via either:
- *       1. An `x-factivist-role` test header (only honoured when
- *          `process.env.FACTIVIST_TRUSTED_HEADER_AUTH === '1'`), OR
- *       2. A `factivist.actor` context value pre-populated by an upstream
- *          middleware (the Supabase decoder ships in a follow-up).
+ *     forwarded via `Authorization: Bearer <jwt>` and decoded ONCE per
+ *     request by `apps/api/src/lib/supabase-auth.ts`, which publishes
+ *     the resolved actor on `c.set('factivist.actor', …)`. This module
+ *     reads that value.
  *
- *   - This decouples route handlers + tests from the not-yet-shipped
- *     Supabase wiring while keeping the security boundary explicit and
- *     a single line away from production-grade auth.
+ *   - There is ALSO a test-only escape hatch on the
+ *     `x-factivist-role` / `x-factivist-actor-id` headers. It is
+ *     hard-gated by BOTH `process.env.FACTIVIST_TRUSTED_HEADER_AUTH === '1'`
+ *     AND `process.env.NODE_ENV === 'test'`. In any other environment
+ *     the headers are ignored — even with the env flag set — and a
+ *     warning is logged at first use so a misconfigured deploy fails
+ *     loud, not silent.
  *
  * ## Why no inline JWT decode here
  *
- * Pulling `@supabase/supabase-js` into this middleware would couple every
- * admin route to a network probe even on test runs. The wave-2 PR
- * introduces a `supabaseAuthMiddleware` that runs ONCE per request and
- * populates `c.set('factivist.actor', …)`; this module reads that value.
+ * Pulling `@supabase/supabase-js` into this middleware would re-verify
+ * the JWT on every guarded route. The per-request decode lives in
+ * `supabase-auth.ts`; this module's only job is to read the resolved
+ * actor and gate the request.
  *
  * ## Threat-model alignment
  *
@@ -65,6 +66,38 @@ const TRUSTED_HEADER_ENV = 'FACTIVIST_TRUSTED_HEADER_AUTH' as const
 const isRole = (value: string): value is Role => (ROLES as readonly string[]).includes(value)
 
 /**
+ * Has the misconfigured-flag warning already fired? Kept module-local so
+ * we don't spam logs on every request — exactly one stderr line per
+ * process when an operator accidentally enables the test escape hatch
+ * outside `NODE_ENV=test`.
+ */
+let warnedAboutMisconfiguredFlag = false
+
+/**
+ * True iff the test header escape hatch is permitted right now. Two
+ * gates must BOTH be on — the env opt-in AND `NODE_ENV === 'test'`.
+ * Misconfiguration (flag on, NODE_ENV !== 'test') logs once and returns
+ * false: a production deploy that accidentally ships the flag stays
+ * locked down, instead of silently honouring forged headers.
+ */
+const isTrustedHeaderHatchEnabled = (): boolean => {
+  if (process.env[TRUSTED_HEADER_ENV] !== '1') return false
+  if (process.env.NODE_ENV === 'test') return true
+  if (!warnedAboutMisconfiguredFlag) {
+    warnedAboutMisconfiguredFlag = true
+    console.warn(
+      '[factivist/rbac] FACTIVIST_TRUSTED_HEADER_AUTH=1 is set but NODE_ENV is not "test"; ignoring the trusted-header escape hatch.',
+    )
+  }
+  return false
+}
+
+/** Test seam — reset the one-shot warning between integration cases. */
+export const __resetWarnedForTests = (): void => {
+  warnedAboutMisconfiguredFlag = false
+}
+
+/**
  * Resolve the calling actor from (1) the upstream Supabase middleware,
  * falling back to (2) the trusted-header escape hatch when the env opt-in
  * is set, falling back to (3) a `public` anonymous actor.
@@ -78,8 +111,10 @@ export const resolveActor = (c: Context): Actor => {
     return Object.freeze({ id: upstream.id ?? null, role: upstream.role })
   }
 
-  // 2. Test escape hatch — only honoured when explicitly opted in.
-  if (process.env[TRUSTED_HEADER_ENV] === '1') {
+  // 2. Test escape hatch — only honoured when explicitly opted in AND
+  //    NODE_ENV is "test". Any other combination logs once and ignores
+  //    the headers — see `isTrustedHeaderHatchEnabled`.
+  if (isTrustedHeaderHatchEnabled()) {
     const headerRole = c.req.header(TRUSTED_HEADER_NAME)
     if (headerRole && isRole(headerRole)) {
       const headerId = c.req.header('x-factivist-actor-id') ?? null

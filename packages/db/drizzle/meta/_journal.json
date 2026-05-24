@@ -15,6 +15,13 @@
       "when": 1779524385479,
       "tag": "0001_sleepy_prism",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779573873591,
+      "tag": "0002_nappy_sway",
+      "breakpoints": true
     }
   ]
 }

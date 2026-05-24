@@ -140,6 +140,119 @@ export const sessionStatusSchema = z.object({
 
 export type SessionStatus = z.infer<typeof sessionStatusSchema>
 
+// ─── Server-side proving (POST /identity/prove) ──────────────────────────
+//
+// Per ADR-0011 (hybrid ZKP) + identity-wiring.md §5.2: low-end devices
+// post the raw circuit witness to the API and receive back the
+// `(proof, publicSignals)` envelope they then submit to `/identity/verify`.
+//
+// The witness contains the Aadhaar number (12 digits) plus the nullifier
+// seed and the two photo halves. The route MUST treat the witness as
+// transient memory only — see `apps/api/src/lib/zkp-prover.ts` for the
+// zeroisation contract (per OQ-4 in identity-wiring.md and
+// `zkp-key-custody.md` §Server-side fallback rule #4).
+
+/**
+ * 12-digit Aadhaar number, never persisted server-side. Pure validator
+ * — NO defaults, NO `transform()` that could mask malformed input — so a
+ * malformed payload always surfaces as a 400 with `code: 'PROOF_MALFORMED'`
+ * (the validator never silently coerces a citizen identifier).
+ */
+export const aadhaarNumberSchema = z.string().regex(/^\d{12}$/, 'Must be a 12-digit Aadhaar number')
+
+/**
+ * 0x-prefixed 32-byte hex string (the per-citizen nullifier seed). Pure
+ * validator, no preprocessing — same rationale as `aadhaarNumberSchema`.
+ */
+export const seedHexSchema = z
+  .string()
+  .regex(/^0x[0-9a-f]{64}$/, 'Must be a 0x-prefixed 32-byte hex string')
+
+/**
+ * Tuple of the two Poseidon-hashable photo halves, each 0x + 16 bytes hex
+ * (32 hex chars = 16 bytes, the canonical anoncitizen circuit shape).
+ */
+export const photoHalfHexSchema = z
+  .string()
+  .regex(/^0x[0-9a-f]{32}$/, 'Must be a 0x-prefixed 16-byte hex string')
+
+export const photoHashTupleSchema = z.tuple([photoHalfHexSchema, photoHalfHexSchema])
+
+/**
+ * Server-fallback witness — the raw circuit inputs. NEVER logged. NEVER
+ * persisted. Zeroed in memory once the prover returns.
+ *
+ * Strict mode: any extra field is rejected (the threat model treats
+ * unknown fields as tampering — see identity-wiring.md §6).
+ */
+export const proveWitnessSchema = z
+  .object({
+    aadhaarNumber: aadhaarNumberSchema,
+    seed: seedHexSchema,
+    photoHash: photoHashTupleSchema,
+  })
+  .strict()
+
+export type ProveWitness = z.infer<typeof proveWitnessSchema>
+
+export const proveRequestSchema = z
+  .object({
+    witness: proveWitnessSchema,
+  })
+  .strict()
+
+export type ProveRequest = z.infer<typeof proveRequestSchema>
+
+/** Success response — `{ proof, publicSignals }` ready for `/identity/verify`. */
+export const proveSuccessSchema = z.object({
+  proof: groth16ProofSchema,
+  publicSignals: verifyPublicSignalsSchema,
+})
+
+export type ProveSuccess = z.infer<typeof proveSuccessSchema>
+
+/**
+ * Typed prove-error codes — discriminated union surfaced by the route.
+ *
+ * Mapping (see `apps/api/src/routes/identity.ts`):
+ *   - `PROOF_MALFORMED`     → 400 (Zod validation failed)
+ *   - `CIRCUIT_CONSTRAINT`  → 400 (circuit rejected witness — bad Aadhaar checksum, etc.)
+ *   - `PROVING_FAILED`      → 422 (prover ran but produced no proof)
+ *   - `PROVER_NOT_CONFIGURED` → 503 (server prover not deployed)
+ *   - `S1_COMPLAINT_SUBMIT_OFF` → 503 (feature flag off)
+ *   - `RATE_LIMITED`        → 429 (per-IP token bucket exhausted)
+ *   - `INTERNAL`            → 500 (unknown — body carries NO `err.message` to
+ *                             prevent leaking Aadhaar bytes via stack)
+ */
+export const proveErrorCodeSchema = z.enum([
+  'PROOF_MALFORMED',
+  'CIRCUIT_CONSTRAINT',
+  'PROVING_FAILED',
+  'PROVER_NOT_CONFIGURED',
+  'S1_COMPLAINT_SUBMIT_OFF',
+  'RATE_LIMITED',
+  'INTERNAL',
+])
+
+export type ProveErrorCode = z.infer<typeof proveErrorCodeSchema>
+
+export const proveErrorSchema = z.object({
+  code: proveErrorCodeSchema,
+})
+
+export type ProveError = z.infer<typeof proveErrorSchema>
+
+/**
+ * Response envelope:
+ *   - 200 → `proveSuccessSchema` (`{ proof, publicSignals }`)
+ *   - non-200 → `proveErrorSchema` (`{ code }`)
+ *
+ * We keep these as separate schemas (not a discriminated union) because
+ * the HTTP status is the canonical discriminator — the route never returns
+ * a `code: 'OK'` body, only the proof envelope on success.
+ */
+export type ProveResponse = ProveSuccess | ProveError
+
 /**
  * Deterministic base32 handle derived from the nullifier.
  *

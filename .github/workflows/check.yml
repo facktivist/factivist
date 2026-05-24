@@ -35,6 +35,13 @@ jobs:
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: turbo-${{ runner.os }}-
 
+      # Cheapest gate first: a pure bash + grep + awk scan of the
+      # moderator-facing surface for citizen-identifier leaks
+      # (ADR-0010 + aggregates §4 I-MOD-2). Runs before `bun install`
+      # so a regression fails the workflow in seconds, not minutes.
+      - name: Anonymity floor (ADR-0010 grep guard)
+        run: bash scripts/anonymity-grep-guard.sh
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 

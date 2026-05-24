@@ -16,6 +16,7 @@ import { Hono } from 'hono'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  __resetWarnedForTests,
   ACTOR_KEY,
   type Actor,
   ROLES,
@@ -192,5 +193,68 @@ describe('requireRole / requireAdmin / requireModerator — middleware matrix', 
     const noAuth = await app.request('/probe')
     expect(wrongRole.status).toBe(noAuth.status)
     expect(await wrongRole.json()).toEqual(await noAuth.json())
+  })
+})
+
+describe('resolveActor — wave-2 NODE_ENV gate', () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs()
+    __resetWarnedForTests()
+  })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    __resetWarnedForTests()
+  })
+
+  it('ignores trusted header when env flag is on but NODE_ENV is "production"', async () => {
+    vi.stubEnv('FACTIVIST_TRUSTED_HEADER_AUTH', '1')
+    vi.stubEnv('NODE_ENV', 'production')
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const app = new Hono().get('/x', (c) => c.json(resolveActor(c)))
+    const res = await app.request('/x', {
+      headers: { 'x-factivist-role': 'admin', 'x-factivist-actor-id': 'usr_h' },
+    })
+    const body = (await res.json()) as Actor
+    expect(body.role).toBe('public')
+    expect(body.id).toBeNull()
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    warnSpy.mockRestore()
+  })
+
+  it('ignores trusted header when env flag is on but NODE_ENV is "development"', async () => {
+    vi.stubEnv('FACTIVIST_TRUSTED_HEADER_AUTH', '1')
+    vi.stubEnv('NODE_ENV', 'development')
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const app = new Hono().get('/x', (c) => c.json(resolveActor(c)))
+    const res = await app.request('/x', { headers: { 'x-factivist-role': 'admin' } })
+    expect(((await res.json()) as Actor).role).toBe('public')
+    warnSpy.mockRestore()
+  })
+
+  it('logs the misconfigured-flag warning only once per process', async () => {
+    vi.stubEnv('FACTIVIST_TRUSTED_HEADER_AUTH', '1')
+    vi.stubEnv('NODE_ENV', 'production')
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const app = new Hono().get('/x', (c) => c.json(resolveActor(c)))
+    await app.request('/x', { headers: { 'x-factivist-role': 'admin' } })
+    await app.request('/x', { headers: { 'x-factivist-role': 'admin' } })
+    await app.request('/x', { headers: { 'x-factivist-role': 'admin' } })
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    warnSpy.mockRestore()
+  })
+
+  it('upstream Supabase actor (factivist.actor on context) wins regardless of NODE_ENV', async () => {
+    // Simulates supabaseAuthMiddleware having decoded a real bearer in
+    // production — env flag stays off, NODE_ENV is production, but the
+    // upstream context actor still resolves admin.
+    vi.stubEnv('NODE_ENV', 'production')
+    const app = new Hono().get('/x', (c) => {
+      c.set(ACTOR_KEY, { id: 'usr_supabase_admin', role: 'admin' } as Actor)
+      return c.json(resolveActor(c))
+    })
+    const res = await app.request('/x')
+    const body = (await res.json()) as Actor
+    expect(body.role).toBe('admin')
+    expect(body.id).toBe('usr_supabase_admin')
   })
 })

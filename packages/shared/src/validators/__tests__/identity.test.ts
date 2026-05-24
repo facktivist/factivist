@@ -17,12 +17,15 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  aadhaarNumberSchema,
   citizenPublicViewSchema,
   deriveHandle,
   districtCodeSchema,
   groth16ProofSchema,
   type Nullifier,
   nullifierSchema,
+  proveErrorCodeSchema,
+  proveRequestSchema,
   sessionStatusSchema,
   stateCodeSchema,
   verifyProofErrorSchema,
@@ -397,5 +400,93 @@ describe('deriveHandle', () => {
     const a = nullifierSchema.parse(`0x${'a'.repeat(64)}`)
     const b = nullifierSchema.parse(`0x${'b'.repeat(64)}`)
     expect(deriveHandle(a)).not.toBe(deriveHandle(b))
+  })
+})
+
+// ─── Server-side prove (wave-2C) ─────────────────────────────────────────
+
+describe('aadhaarNumberSchema', () => {
+  it('accepts a 12-digit string (fake test value)', () => {
+    // 999999999999 is the project-wide fake-Aadhaar placeholder.
+    expect(aadhaarNumberSchema.parse('999999999999')).toBe('999999999999')
+  })
+
+  it('rejects 11 digits', () => {
+    expect(aadhaarNumberSchema.safeParse('99999999999').success).toBe(false)
+  })
+
+  it('rejects 13 digits', () => {
+    expect(aadhaarNumberSchema.safeParse('9999999999999').success).toBe(false)
+  })
+
+  it('rejects non-digits', () => {
+    expect(aadhaarNumberSchema.safeParse('99999999999a').success).toBe(false)
+  })
+
+  it('rejects non-strings', () => {
+    expect(aadhaarNumberSchema.safeParse(999999999999).success).toBe(false)
+    expect(aadhaarNumberSchema.safeParse(null).success).toBe(false)
+  })
+})
+
+describe('proveRequestSchema', () => {
+  const valid = {
+    witness: {
+      aadhaarNumber: '999999999999',
+      seed: `0x${'1'.repeat(64)}`,
+      photoHash: [`0x${'2'.repeat(32)}`, `0x${'3'.repeat(32)}`] as [string, string],
+    },
+  }
+
+  it('accepts a fully-valid request', () => {
+    expect(proveRequestSchema.parse(valid).witness.aadhaarNumber).toBe('999999999999')
+  })
+
+  it('rejects an extra field (strict mode — tampering shield)', () => {
+    const bad = { ...valid, somethingElse: 'oops' }
+    expect(proveRequestSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('rejects an extra witness field', () => {
+    const bad = { witness: { ...valid.witness, extra: 'x' } }
+    expect(proveRequestSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('rejects a photoHash with 1 half', () => {
+    const bad = {
+      witness: { ...valid.witness, photoHash: [`0x${'2'.repeat(32)}`] as never },
+    }
+    expect(proveRequestSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('rejects a photoHash half of the wrong length', () => {
+    const bad = {
+      witness: {
+        ...valid.witness,
+        photoHash: [`0x${'2'.repeat(31)}`, `0x${'3'.repeat(32)}`] as [string, string],
+      },
+    }
+    expect(proveRequestSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('rejects an upper-case hex seed (pure validator, no coercion)', () => {
+    const bad = { witness: { ...valid.witness, seed: `0x${'A'.repeat(64)}` } }
+    expect(proveRequestSchema.safeParse(bad).success).toBe(false)
+  })
+})
+
+describe('proveErrorCodeSchema', () => {
+  it('lists every documented error code', () => {
+    expect(proveErrorCodeSchema.options.slice().sort()).toEqual(
+      [
+        'PROOF_MALFORMED',
+        'CIRCUIT_CONSTRAINT',
+        'PROVING_FAILED',
+        'PROVER_NOT_CONFIGURED',
+        'S1_COMPLAINT_SUBMIT_OFF',
+        'RATE_LIMITED',
+        'INTERNAL',
+      ].sort(),
+    )
   })
 })

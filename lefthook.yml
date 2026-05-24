@@ -21,6 +21,13 @@ pre-commit:
     guardrails-age-ddl:
       glob: "*.{ts,tsx,sql}"
       run: cd packages/guardrails && bun run src/cli.ts check age-ddl-outside-migration --staged-files {staged_files}
+    # Anonymity floor (ADR-0010 + aggregates §4 I-MOD-2). Scans the
+    # moderator-facing surface for citizen-identifier leaks. The script
+    # already walks the full scope so we don't pass {staged_files} — a
+    # cross-file regression (e.g. a moved import) is still caught.
+    anonymity-grep-guard:
+      glob: "apps/{api,web}/src/**/*.{ts,tsx}"
+      run: bash scripts/anonymity-grep-guard.sh
 
 pre-push:
   parallel: false

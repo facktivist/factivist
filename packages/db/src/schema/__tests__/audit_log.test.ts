@@ -115,7 +115,7 @@ describe('AUDIT_LOG_RETENTION_DAYS', () => {
 })
 
 describe('auditActionEnum', () => {
-  it('covers every Phase 5 admin write path that must be audited', () => {
+  it('covers every Phase 5 admin write path plus the identity.prove_attempt audit anchor', () => {
     expect(auditActionEnum.enumValues.slice().sort()).toEqual(
       [
         'moderation.decide',
@@ -128,15 +128,28 @@ describe('auditActionEnum', () => {
         'feature_flag.disable',
         'admin.grant',
         'admin.revoke',
+        // wave-2C: the only non-operator action in this table; actor is the
+        // literal `'anonymous'` and the targetId is an opaque request UUID
+        // (never a citizen identifier — anonymity invariant preserved).
+        'identity.prove_attempt',
       ].sort(),
     )
   })
 })
 
 describe('auditTargetKindEnum', () => {
-  it('covers every artifact kind referenced by an admin write', () => {
+  it('covers every artifact kind referenced by an admin write plus session for prove_attempt', () => {
     expect(auditTargetKindEnum.enumValues.slice().sort()).toEqual(
-      ['complaint', 'comment', 'moderation_case', 'grievance', 'feature_flag', 'admin'].sort(),
+      [
+        'complaint',
+        'comment',
+        'moderation_case',
+        'grievance',
+        'feature_flag',
+        'admin',
+        // wave-2C: opaque per-request anchor for identity.prove_attempt rows.
+        'session',
+      ].sort(),
     )
   })
 })
