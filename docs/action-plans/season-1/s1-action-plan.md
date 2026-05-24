@@ -19,7 +19,7 @@
 | Concern | Tool | Notes |
 |---------|------|-------|
 | Planning, backlog, sprint board | **GitHub Projects** (v2) | Single source of truth for epics → stories → tasks; no Linear / Jira / Trello. Backlog from Phase 1 lives here. |
-| Research notes & briefs | **GitHub Wiki** (on this repo) | All research deliverables (anon-aadhaar, constituency dataset, IT Act posture, Polygon gas, etc.) are wiki pages, not `docs/research/*.md`. |
+| Research notes & briefs | **GitHub Wiki** (on this repo) | All research deliverables (anoncitizen, constituency dataset, IT Act posture, Polygon gas, etc.) are wiki pages, not `docs/research/*.md`. |
 | Design (flows, IA, hi-fi screens) | **Claude Design** | Replaces Figma for S1. Exports live in the repo under `design/`; Claude Design URLs linked from GitHub Projects cards. |
 | Deployment + CI/CD | **GitHub Actions** | Every workflow under `.github/workflows/`. No CircleCI, no Travis, no Buildkite. Staging + production deploys are tag- and approval-gated Actions runs. |
 
@@ -74,7 +74,7 @@ backlog the swarm can execute against.
 | Role | Agent type | Name | Responsibility |
 |------|-----------|------|----------------|
 | Lead | `planner` | `planner` | Decompose S1 into epics → stories → tasks |
-| Research — Identity | `researcher` | `zkp-researcher` | anon-aadhaar circuits, nullifier semantics, Polygon ZKP gas |
+| Research — Identity | `researcher` | `zkp-researcher` | anoncitizen circuits, nullifier semantics, Polygon ZKP gas |
 | Research — Civic data | `researcher` | `civic-researcher` | Constituency dataset (ECI delimitation), 36 category taxonomy, PIN-to-constituency mapping |
 | Research — Legal | `researcher` | `legal-researcher` | IT Act 2000 intermediary safe-harbour, IT Rules 2021 obligations for hosting outside India |
 | Specification | `specification` | `spec-writer` | Convert findings into testable acceptance criteria |
@@ -105,7 +105,7 @@ in this Project — there is **no** `s1-backlog.csv` file.
 **Research lives in the GitHub Wiki** on this repo. Required pages:
 
 1. `S1-PRD` — single-page PRD per the 8 S1 features.
-2. `Research-Aadhaar-ZKP` — anon-aadhaar integration brief (nullifier formula,
+2. `Research-Anoncitizen-ZKP` — anoncitizen integration brief (nullifier formula,
    on-chain verify gas, mobile feasibility).
 3. `Research-Constituency-Dataset` — chosen source, licence, refresh strategy,
    schema.
@@ -190,7 +190,7 @@ that S2's automated moderation has a calibrated baseline.
 
 ### 3.1 The 9 S1 surfaces
 
-1. Onboarding + Aadhaar ZKP verification (web + mobile)
+1. Onboarding + anoncitizen ZKP verification (web + mobile)
 2. Complaint composer (text + 1–3 photos + category + constituency)
 3. Complaint detail (read, comment, flag)
 4. Browse / filter by state → district → constituency
@@ -230,7 +230,7 @@ that S2's automated moderation has a calibrated baseline.
 - `packages/ui/theme` tokens locked (oklch primitives + semantic), generated
   from the Claude Design token sheet.
 - HeroUI compound-component map: `Complaint.Composer`, `Complaint.Card`,
-  `Filter.ConstituencyTree`, `Onboarding.AadhaarStep` etc.
+  `Filter.ConstituencyTree`, `Onboarding.VerifyStep` etc.
 - a11y baseline report (axe-core), zero **serious** or **critical** violations.
 
 ### 3.5 Exit gate
@@ -278,14 +278,14 @@ Development can run in parallel without integration friction.
 |-----|----------|
 | ADR-001 | Drizzle as the **only** DB access path. No raw SQL. No Prisma. |
 | ADR-002 | Zod schemas live in `packages/shared`, validate **both** client and server. |
-| ADR-003 | `CitizenVerifier.sol` is the **only** smart contract in S1. Forked from anon-aadhaar reference, audited as integration glue. |
+| ADR-003 | `CitizenVerifier.sol` is the **only** smart contract in S1. Forked from anoncitizen reference, audited as integration glue. |
 | ADR-004 | Supabase Storage for photos. No IPFS until S2. EXIF stripping is mandatory **server-side**. |
 | ADR-005 | Postgres full-text search via `tsvector` + GIN index. No Meilisearch until S3. |
 | ADR-006 | Manual moderation queue is a Postgres table, not Redis/Bull. No queue infra in S1. |
 | ADR-007 | Constituency hierarchy is a **closed reference dataset** loaded via Drizzle migration seed. |
 | ADR-008 | Mobile = single Expo + Expo Router codebase; Android + iOS share 100% of business logic. |
 | ADR-009 | All API endpoints behind Supabase custom domain (India ISP mitigation). |
-| ADR-010 | Citizen anonymity floor: never write Aadhaar, name, address, photo of citizen to **any** store. Nullifier only. |
+| ADR-010 | Citizen anonymity floor: never write national-ID, name, address, photo of citizen to **any** store. Nullifier only. |
 
 ### 4.4 Bounded contexts (S1)
 
@@ -342,7 +342,7 @@ sequential SendMessage chain.
 ```javascript
 // All in ONE message
 Agent({ name: "id-researcher", subagent_type: "researcher",
-        prompt: "anon-aadhaar wiring on Polygon PoS. SendMessage to 'id-architect'.",
+        prompt: "anoncitizen wiring on Polygon PoS. SendMessage to 'id-architect'.",
         run_in_background: true })
 Agent({ name: "id-architect", subagent_type: "system-architect",
         prompt: "Wait for 'id-researcher'. Design Citizen aggregate + verifier glue. SendMessage to 'id-coder'.",
