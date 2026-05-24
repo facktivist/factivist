@@ -33,3 +33,6 @@ CLAUDE.local.md
 ruvector.db
 *.rvf
 *.rvf.lock
+
+# TypeScript build cache
+*.tsbuildinfo
