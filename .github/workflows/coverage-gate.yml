@@ -1,0 +1,123 @@
+# Explicit coverage hard gate (Phase 7 §7.3 row 5).
+#
+# ## Why this exists
+#
+# `bun run test:coverage` (invoked inside `ci.yml`) already enforces the
+# 95L/95F/95S/90B thresholds via `tooling/vitest-config/base.ts`. The gate
+# duplication here is intentional and provides three things `ci.yml` cannot:
+#
+#   1. A **named status check** that branch-protection rules can require
+#      independently — so a future relaxation of `ci.yml` cannot accidentally
+#      relax the coverage floor.
+#   2. A **per-package PR comment** with coverage deltas vs `main`, surfaced
+#      directly under the diff without digging through the upload artifact.
+#   3. A **single-purpose log** that incident-responders can grep without
+#      wading through lint/build noise.
+#
+# The gate reads each `coverage-summary.json` written by vitest-v8 and asserts
+# the workspace aggregate independently of the per-package thresholds inside
+# `base.ts`. If any package falls below floor, this job fails even if
+# `test:coverage` somehow passed (e.g. a config drift bypassed the threshold).
+
+name: coverage-gate
+
+on:
+  pull_request:
+
+concurrency:
+  group: coverage-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  coverage:
+    name: Coverage hard gate (95L/95F/95S/90B)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2  # need HEAD + merge base for delta comparison
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-coverage-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-coverage-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run test:coverage across workspace
+        run: bun run test:coverage
+
+      - name: Assert coverage gate + collect summary
+        id: gate
+        run: bun run scripts/ci/coverage-gate.ts
+
+      - name: Comment coverage summary on PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const path = 'coverage-gate-report.md'
+            if (!fs.existsSync(path)) {
+              core.info('coverage-gate-report.md not produced — skipping comment')
+              return
+            }
+            const body = fs.readFileSync(path, 'utf8')
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const marker = '<!-- coverage-gate -->'
+            const existing = comments.find((c) => c.body && c.body.includes(marker))
+            const fullBody = `${marker}\n${body}`
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: fullBody,
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: fullBody,
+              })
+            }
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-gate-reports
+          path: |
+            apps/*/coverage
+            packages/**/coverage
+            scripts/coverage
+            coverage-gate-report.md
+          if-no-files-found: ignore
+          retention-days: 7

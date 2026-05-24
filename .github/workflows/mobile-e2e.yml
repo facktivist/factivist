@@ -1,18 +1,33 @@
 name: mobile-e2e
 
+# Heavy end-to-end gate for mobile — Detox against iOS simulator (macos-14)
+# and Android emulator (ubuntu + KVM). Two-tier mobile CI design:
+#   - `mobile-ci.yml`  → fast PR gate (typecheck + lint + vitest), Ubuntu, ~5 min.
+#   - `mobile-e2e.yml` → slow E2E gate (this file), macOS + KVM, ~45 min cold start.
+# This split keeps backend / web PRs cheap while still gating mobile-touching
+# PRs on a full simulator round-trip.
+#
+# `workflow_dispatch` is available so the user can manually re-run after a
+# flaky simulator boot or after fixing an upstream artifact without pushing
+# a new commit.
+
 on:
   pull_request:
     paths:
       - 'apps/mobile/**'
       - 'packages/ui/native/**'
       - 'packages/ui/theme/**'
-      - 'packages/shared/**'
+      - 'packages/shared/src/validators/complaint.ts'
+      - 'packages/shared/src/validators/uploads.ts'
       - '.github/workflows/mobile-e2e.yml'
       - 'bun.lock'
   push:
     branches: [main]
     paths:
       - 'apps/mobile/**'
+      - 'packages/ui/native/**'
+      - '.github/workflows/mobile-e2e.yml'
+  workflow_dispatch:
 
 concurrency:
   group: mobile-e2e-${{ github.ref }}

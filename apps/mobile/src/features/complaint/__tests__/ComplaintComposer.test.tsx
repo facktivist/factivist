@@ -287,6 +287,56 @@ describe('ComplaintComposer', () => {
     expect(mocks.createComplaint).not.toHaveBeenCalled()
   })
 
+  it('clicking a photo remove button drops the matching uri via the hook', async () => {
+    const user = userEvent.setup()
+    mocks.photos = [
+      { uri: 'file:///tmp/p1.jpg', mimeType: 'image/jpeg' },
+      { uri: 'file:///tmp/p2.jpg', mimeType: 'image/jpeg' },
+    ]
+    renderWithClient(<ComplaintComposer />)
+    await user.click(screen.getByTestId('photo-remove-file:///tmp/p1.jpg'))
+    expect(mocks.removePhoto).toHaveBeenCalledWith('file:///tmp/p1.jpg')
+  })
+
+  it('surfaces the Zod safeParse error when the title is whitespace-only', async () => {
+    // The shared schema uses `z.string().trim().min(1, ...)`, so a title
+    // composed of only spaces survives RHF (the UI guard accepts any
+    // character) but trips Zod inside `createComplaintInputSchema.safeParse`.
+    // This drives composer line 163-164 — the safeParse-fail branch.
+    const user = userEvent.setup()
+    mocks.listConstituency.mockImplementation((level: string) => {
+      if (level === 'state')
+        return Promise.resolve([
+          { code: 'ka', label: 'Karnataka', parentCode: null, level: 'state' },
+        ])
+      if (level === 'district')
+        return Promise.resolve([
+          { code: 'ka-560', label: 'Bangalore Urban', parentCode: 'ka', level: 'district' },
+        ])
+      if (level === 'pc')
+        return Promise.resolve([
+          { code: 'ka-pc-26', label: 'Bangalore South', parentCode: 'ka-560', level: 'pc' },
+        ])
+      return Promise.resolve([
+        { code: 'ka-ac-150', label: 'BTM Layout', parentCode: 'ka-pc-26', level: 'ac' },
+      ])
+    })
+    renderWithClient(<ComplaintComposer />)
+    await user.type(screen.getByTestId('complaint-title'), '   ')
+    await user.type(screen.getByTestId('complaint-body'), 'Body text adequate')
+    await user.click(await screen.findByTestId('category-roads'))
+    await user.click(await screen.findByTestId('option-state-ka'))
+    await user.click(await screen.findByTestId('option-district-ka-560'))
+    await user.click(await screen.findByTestId('option-pc-ka-pc-26'))
+    await user.click(await screen.findByTestId('option-ac-ka-ac-150'))
+    await user.click(screen.getByTestId('complaint-submit'))
+    // The safeParse error surfaces via setSubmitError; createComplaint must NOT fire.
+    await waitFor(() => {
+      expect(mocks.createComplaint).not.toHaveBeenCalled()
+    })
+    expect(await screen.findByText(/add a one-line title|validation failed/i)).toBeInTheDocument()
+  })
+
   it('falls back to "Photo upload failed." when upload throws a non-Error', async () => {
     const user = userEvent.setup()
     mocks.photos = [{ uri: 'file:///tmp/p.jpg', mimeType: 'image/jpeg' }]

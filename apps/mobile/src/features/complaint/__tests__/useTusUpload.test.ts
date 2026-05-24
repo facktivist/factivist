@@ -13,23 +13,36 @@ interface FakeTusOpts {
   onSuccess: () => void
 }
 
-const tusInstances: { opts: FakeTusOpts; start: () => void; abort: () => void }[] = []
+const tusInstances: {
+  opts: FakeTusOpts
+  start: () => void
+  abort: () => void
+  abortCount: () => number
+}[] = []
 
 const mocks = vi.hoisted(() => ({
   fetch: vi.fn(),
-  uploadCtorBehavior: { mode: 'happy' as 'happy' | 'fail' },
+  uploadCtorBehavior: { mode: 'happy' as 'happy' | 'fail' | 'hang' },
 }))
 
 vi.mock('tus-js-client', () => {
   class Upload {
     opts: FakeTusOpts
+    aborts = 0
     constructor(_blob: unknown, opts: FakeTusOpts) {
       this.opts = opts
-      tusInstances.push({ opts, start: () => this.start(), abort: () => this.abort() })
+      tusInstances.push({
+        opts,
+        start: () => this.start(),
+        abort: () => this.abort(),
+        abortCount: () => this.aborts,
+      })
     }
     start() {
       if (mocks.uploadCtorBehavior.mode === 'fail') {
         queueMicrotask(() => this.opts.onError(new Error('tus boom')))
+      } else if (mocks.uploadCtorBehavior.mode === 'hang') {
+        // No-op — leaves the promise pending so cancel() can hit the active branch.
       } else {
         queueMicrotask(() => {
           this.opts.onProgress(100, 100)
@@ -38,6 +51,7 @@ vi.mock('tus-js-client', () => {
       }
     }
     abort() {
+      this.aborts++
       return Promise.resolve()
     }
   }
@@ -179,6 +193,58 @@ describe('useTusUpload', () => {
       result.current.reset()
     })
     expect(result.current.progress).toEqual([])
+  })
+
+  it('cancel() runs the active.abort() branch when an upload is mid-flight', async () => {
+    // Hold the upload open by switching the tus mock into 'hang' mode —
+    // start() becomes a noop so neither onSuccess nor onError fires, and
+    // activeUploadRef.current stays populated until cancel() reaches it.
+    mocks.uploadCtorBehavior.mode = 'hang'
+    mocks.fetch.mockImplementation(async (url: string) => {
+      if (url.endsWith('/uploads/photo/sign')) {
+        return signSuccessResponse('slug', 'pid')
+      }
+      return new Response(new Blob(['xx']), { status: 200 })
+    })
+    const originalLen = tusInstances.length
+    const { result } = renderHook(() => useTusUpload())
+    // Kick off but DON'T await — uploadAll is intentionally stalled at
+    // `await uploadOne(...)` because the hung tus instance never resolves.
+    void result.current.uploadAll('slug', [makePhoto(0)]).catch(() => undefined)
+    await waitFor(() => {
+      expect(tusInstances.length).toBeGreaterThan(originalLen)
+    })
+    const latest = tusInstances[tusInstances.length - 1]
+    expect(latest?.abortCount()).toBe(0)
+    act(() => {
+      result.current.cancel()
+    })
+    // Active-branch proof: the tus instance saw an abort() invocation.
+    expect(latest?.abortCount()).toBe(1)
+    expect(result.current.isUploading).toBe(false)
+  })
+
+  it('randomPhotoId falls back to Math.random when crypto is unavailable', async () => {
+    const originalCrypto = (globalThis as { crypto?: unknown }).crypto
+    // Drop crypto for the duration of this test to exercise the fallback path
+    // in randomPhotoId (line 53 of useTusUpload.ts).
+    Object.defineProperty(globalThis, 'crypto', { value: undefined, configurable: true })
+    try {
+      mocks.fetch.mockImplementation(async (url: string) => {
+        if (url.endsWith('/uploads/photo/sign')) {
+          return signSuccessResponse('slug', 'pid')
+        }
+        return new Response(new Blob(['xx']), { status: 200 })
+      })
+      const { result } = renderHook(() => useTusUpload())
+      let urls: string[] = []
+      await act(async () => {
+        urls = await result.current.uploadAll('slug', [makePhoto(0)])
+      })
+      expect(urls.length).toBe(1)
+    } finally {
+      Object.defineProperty(globalThis, 'crypto', { value: originalCrypto, configurable: true })
+    }
   })
 
   it('uploads multiple photos sequentially', async () => {

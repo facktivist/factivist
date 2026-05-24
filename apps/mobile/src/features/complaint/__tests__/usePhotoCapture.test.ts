@@ -222,6 +222,26 @@ describe('usePhotoCapture', () => {
     expect(result.current.libraryPermission).toBe('undetermined')
   })
 
+  it('falls back to "Photo pick failed." when launchImageLibraryAsync rejects with non-Error', async () => {
+    mocks.requestMediaLibraryPermissionsAsync.mockResolvedValue({ status: 'granted' })
+    mocks.launchImageLibraryAsync.mockRejectedValue('not-an-Error')
+    const { result } = renderHook(() => usePhotoCapture())
+    await act(async () => {
+      await result.current.pickFromLibrary()
+    })
+    expect(result.current.error).toBe('Photo pick failed.')
+  })
+
+  it('falls back to "Camera capture failed." when launchCameraAsync rejects with non-Error', async () => {
+    mocks.requestCameraPermissionsAsync.mockResolvedValue({ status: 'granted' })
+    mocks.launchCameraAsync.mockRejectedValue(42)
+    const { result } = renderHook(() => usePhotoCapture())
+    await act(async () => {
+      await result.current.takePhoto()
+    })
+    expect(result.current.error).toBe('Camera capture failed.')
+  })
+
   it('camera path canceled === true is a noop', async () => {
     mocks.requestCameraPermissionsAsync.mockResolvedValue({ status: 'granted' })
     mocks.launchCameraAsync.mockResolvedValue({ canceled: true })

@@ -1,3 +1,21 @@
+# Local-dev observability gate.
+#
+# ## Relationship to `ci.yml`
+#
+# This workflow runs on every push to a feature branch so contributors get
+# fast per-commit feedback **without** waiting for a PR to be opened. It is
+# intentionally narrower than `ci.yml`:
+#
+#   * `check.yml` (this file) — runs on PRs and pushes; mobile paths excluded
+#     to keep the loop fast. NOT the branch-protection gate.
+#   * `ci.yml`                — runs on every PR (all paths) + `main` push;
+#     this IS the branch-protection gate. Mirrors `bun run check` 1:1.
+#
+# Both files run `bun run check`. They overlap on PR runs by design: `check.yml`
+# catches drift early on feature branches; `ci.yml` is the named status check
+# enforced at merge time. Kept separate so we can tune their triggers
+# independently (e.g. exclude `apps/mobile/**` here without weakening the gate).
+
 name: check
 
 on:

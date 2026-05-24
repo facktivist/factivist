@@ -1,0 +1,83 @@
+name: mobile-ci
+
+# Fast PR gate for mobile work — typecheck + lint + unit tests + coverage
+# for `apps/mobile` and `packages/ui/native`, plus shared validators that
+# the mobile composer + photo flow consume. Mirrors `s1-action-plan.md` §7.3
+# row 2. Intentionally selective via `paths:` so backend / web PRs don't
+# burn macOS/Linux minutes here — Detox E2E lives in `mobile-e2e.yml`
+# (the slow, full-emulator job).
+#
+# EAS build (Android + iOS internal) is documented as a follow-up step
+# below — gated behind the `EXPO_TOKEN` secret which Phase 8 ops will
+# provision once the EAS project + Apple/Google credentials exist.
+
+on:
+  pull_request:
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/ui/native/**'
+      - 'packages/shared/src/validators/complaint.ts'
+      - 'packages/shared/src/validators/uploads.ts'
+      - '.github/workflows/mobile-ci.yml'
+      - 'bun.lock'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/ui/native/**'
+      - 'packages/shared/src/validators/complaint.ts'
+      - 'packages/shared/src/validators/uploads.ts'
+      - '.github/workflows/mobile-ci.yml'
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Mobile typecheck + lint + unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      EXPO_NO_TELEMETRY: 1
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck mobile app
+        working-directory: apps/mobile
+        run: bunx tsc --noEmit
+
+      - name: Lint mobile app
+        run: bun run lint --filter=@factivist/mobile
+
+      - name: Unit tests + coverage (mobile + ui-native)
+        run: bun run test --filter=@factivist/mobile --filter=@factivist/ui-native
+
+      # ─── Phase 8 follow-ups (intentionally non-blocking on PRs today) ───
+      #
+      # 1. EAS internal build (Android + iOS) — requires the `EXPO_TOKEN`
+      #    secret. Once Phase 8 ops provision the EAS project + credentials,
+      #    drop the `if: false` gate. Until then, this step is documentation
+      #    rather than execution so PR CI stays green.
+      #
+      #    Recommended snippet:
+      #      - name: EAS internal build (Android + iOS)
+      #        if: ${{ secrets.EXPO_TOKEN != '' }}
+      #        env:
+      #          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      #        working-directory: apps/mobile
+      #        run: bunx eas-cli build --profile development --platform all --non-interactive
+      #
+      # 2. Full Detox build/run on iOS sim + Android emulator lives in
+      #    `mobile-e2e.yml` (macOS + KVM jobs). That workflow is the heavy
+      #    end-to-end gate; `mobile-ci.yml` is the fast feedback loop.
+      - name: Phase 8 EAS placeholder
+        if: false
+        run: echo "EAS build deferred until EXPO_TOKEN is provisioned (Phase 8 ops)."

@@ -17,7 +17,7 @@ export default mergeConfig(
     test: {
       include: ['__tests__/**/*.test.ts'],
       coverage: {
-        include: ['*.ts'],
+        include: ['*.ts', 'ci/*.ts'],
         exclude: [
           '**/*.test.*',
           '**/*.spec.*',
