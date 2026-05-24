@@ -1,0 +1,52 @@
+# Knowledge-graph drift guard.
+#
+# Fails the build if `docs/architecture/**` or `docs/adr/**` changed without
+# a corresponding update to `docs/knowledge-graph/pr-reviewer-kg.md` (the
+# index the pr-reviewer agent uses).
+#
+# Override: label the PR `kg-drift-ok` for changes that genuinely don't
+# affect the KG (typo fixes, formatting, internal-only sections).
+#
+# Not a branch-protection gate by default — promote in repo settings if you
+# want it blocking. See `docs/operations/pr-review-agent.md` §11.
+
+name: kg-drift-guard
+
+on:
+  pull_request:
+    paths:
+      - 'docs/architecture/**'
+      - 'docs/adr/**'
+      - 'docs/knowledge-graph/pr-reviewer-kg.md'
+      - 'scripts/ci/kg-drift-guard.sh'
+      - '.github/workflows/kg-drift-guard.yml'
+
+concurrency:
+  group: kg-drift-guard-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: kg drift guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # need git diff vs base ref
+
+      - name: Ensure base ref fetched
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=200 origin \
+            "${BASE_REF}:refs/remotes/origin/${BASE_REF}" || true
+
+      - name: Check KG drift
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: bash scripts/ci/kg-drift-guard.sh
