@@ -692,7 +692,11 @@ forbidden in production paths; allowed only against ephemeral preview envs.
 ### 8.8 Exit gate
 
 - [ ] Production stack live behind primary domain + 2 backup domains
-- [ ] Monthly cost reconciled to ≤ $110 actual for two consecutive months
+- [ ] Monthly cost reconciled to ≤ **$115** actual (Amber ceiling) for two
+      consecutive months. *(Amended from "≤ $110" on 2026-05-25 to align with
+      the post-Chicago Polygon-gas volatility band $95 / $113 / $151 and the
+      tolerance bands in `reference_s1_cost_drift`: Green ≤$105 / Amber
+      $105–$115 / Red >$115. See `docs/data-points/s1-cost-reconciliation-phase-8.md`.)*
 - [ ] Audit report for `CitizenVerifier.sol` integration glue: **no high or
       critical** findings open
 - [ ] Disaster drill: nuke Fly.io app, restore from main + Supabase backup, in
