@@ -17,3 +17,5 @@
 {"type":"edit","file":"/Users/allan/Projects/factivist/packages/db/vitest.config.ts","timestamp":1779450032542,"sessionId":null}
 {"type":"edit","file":"/Users/allan/Projects/factivist/packages/db/src/migrate-age.ts","timestamp":1779450045995,"sessionId":null}
 {"type":"edit","file":"/Users/allan/Projects/factivist/packages/db/src/migrate.ts","timestamp":1779450048146,"sessionId":null}
+{"type":"edit","file":"/Users/allan/Projects/factivist/packages/db/src/__tests__/rls.test.ts","timestamp":1779752362682,"sessionId":null}
+{"type":"edit","file":"/Users/allan/Projects/factivist/docs/architecture/threat-model.md","timestamp":1779752394586,"sessionId":null}
