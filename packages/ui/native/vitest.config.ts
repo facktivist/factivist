@@ -22,6 +22,7 @@ export default mergeConfig(
           'src/complaint/Complaint.tsx',
           'src/filter/Filter.tsx',
           'src/onboarding/Onboarding.tsx',
+          'src/profile/Profile.tsx',
           'src/search/Search.tsx',
         ],
       },
