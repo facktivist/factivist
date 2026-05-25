@@ -114,6 +114,75 @@ This was previously item #1 in the wave-1/2 deferred list. Per user direction 20
 
 ---
 
+## 5. Production deployment provisioning (absorbed from Phase 8 user-ops)
+
+**Origin:** Phase 8 closed 2026-05-25 with 4/4 exit-gate items in PENDING-OPS state by design — every account / domain / secret / multisig / audit is an action only the user can take. Captured here so Phase 9 ownership is unambiguous.
+
+**What ships:** see [[s1-phase-8-done]] for the full code surface. SDK wiring (`@sentry/nextjs`, `@sentry/node`, `@sentry/react-native`) is done in code with `process.env.SENTRY_DSN` no-op guards — once DSNs land in the vaults the SDKs activate automatically. No further code change required for Sentry; only configuration.
+
+**User-side actions (ordered):**
+
+| # | Action | Time | $/mo or $-one-shot |
+|---|--------|------|--------------------|
+| 5.1 | GitHub repo secrets — 13 total per `docs/operations/deploy-runbook.md`; `production` env with 1 required reviewer | 30 + 2 min | $0 |
+| 5.2 | Vercel Pro project linked to `apps/web` + Preview Branch Protection ON | 20 min | $20/mo |
+| 5.3 | Fly.io account + 2 apps (`factivist-api-staging`, `factivist-api-prod`); import secrets manifest | 30 min | $10/mo |
+| 5.4 | Supabase Pro (staging + prod) + **custom domain** `api.factivist.example` per ADR-009 (India ISP mitigation — required, not optional) | 60 min | $25/mo |
+| 5.5 | Cloudflare account + DNS for 3 domains (`.org` / `.io` / `.is`) + proxy ON + API token in `~/.factivist/cf-token` (`Zone.DNS:Edit` scope only) | 45 min | $0/mo + ~$80/yr domains |
+| 5.6 | EAS account + projects; paste Apple Team ID, ASC App ID, Service Account JSON into `apps/mobile/eas.json` + EAS secrets | 30 min | $19/mo + $99/yr Apple + $25 one-shot Google |
+| 5.7 | Sentry org + 3 projects (web / api / mobile); set `SENTRY_DSN` in Vercel + Fly secrets, `EXPO_PUBLIC_SENTRY_DSN` in EAS secrets | 20 min | $0 (free tier) |
+| 5.8 | Cloudflare Workers deploy of uptime cron: `cd apps/api && bunx wrangler deploy` after `UPTIME_WEBHOOK_URL` secret set | 15 min | $0 (free tier) |
+| 5.9 | Apply migration `0004_enable_rls.sql` via `db-migrate.yml` → `production` env → type `YES MIGRATE` | 5 min | $0 |
+
+**Recurring monthly:** ~$74 fixed + $18.76 Polygon (standard) ≈ **$113/mo** (matches `cost-scenarios.md` S1 baseline + the §8.8 amended ≤$115 Amber ceiling).
+
+**New env vars** to add to the appropriate vault (never the repo):
+
+| Var | Where | Purpose |
+|-----|-------|---------|
+| `SENTRY_DSN` | Vercel + Fly secrets | server + browser error tracker (init is a no-op when unset) |
+| `EXPO_PUBLIC_SENTRY_DSN` | EAS secrets | mobile error tracker (init is a no-op when unset) |
+| `UPTIME_WEBHOOK_URL` | Cloudflare wrangler secret | downtime alert webhook |
+| `UPTIME_WEBHOOK_SECRET` | Cloudflare wrangler secret | optional shared secret |
+| `FLY_ORG`, `CF_ZONE_ID`, `CF_API_TOKEN` | Maintainer's shell + `~/.factivist/cf-token` | DR drill + DDoS runbook automation |
+| `MAINTENANCE_MODE` | Fly secret (temporary, set-only-during-incident) | DDoS mitigation kill-switch |
+
+**Owner:** maintainer (single-maintainer S1 baseline).
+
+---
+
+## 6. Polygon multisig + CitizenVerifier integration audit
+
+**Origin:** Phase 8 §8.6 deployment checklist + §8.8 exit gate.
+
+**Why deferred:** Multisig setup is wallet/key ceremony only the maintainer can do; audit engagement is a commercial action with $3,000–$10,000 in spend.
+
+**Actions:**
+
+1. Spin up a **3/5 Safe** on Polygon PoS, fund it for deployment + 6 months of gas (~$60 one-shot + recurring $113/mo budget covers gas line).
+2. Engage `CitizenVerifier.sol` integration auditor (Code4rena Solo / Cantina / boutique). 30 min outreach + 1–2 week audit window.
+3. Audit report must show **no high or critical findings open** before the first prod release tag is cut (§8.8 exit gate).
+
+**Blocked on:** Section 1 above (upstream AnonCitizen `CitizenVerifier.sol` deployment) — multisig + audit only make sense once there's a contract to govern.
+
+**Owner:** maintainer + retained Solidity reviewer.
+
+---
+
+## 7. First disaster recovery drill + two-month cost reconciliation
+
+**Origin:** Phase 8 §8.8 exit-gate items 3 & 4.
+
+**Drill:** Execute end-to-end per `docs/operations/dr-drill-s1.md`: nuke Fly app → recreate from secrets manifest → fresh tag deploy → optional Supabase PITR → verify health. Budget ≤ 30 min. Append a results row (start ts, end ts, duration, anomalies, sign-off) to the Drill log section.
+
+**Reconciliation:** After two complete billing cycles post-launch, sum invoices from Stripe (Vercel/EAS) + Fly.io + Supabase + Polygon RPC for **2026-06** and **2026-07**. Confirm monthly total ≤ **$115** Amber ceiling. Append a row to `docs/data-points/s1-cost-reconciliation-phase-8.md` §7. If breached, file a `risk:budget` issue per `reference_s1_cost_drift`.
+
+**Time:** Drill ≤30 min; reconciliation 30 min × 2.
+
+**Owner:** maintainer.
+
+---
+
 ## Exit criteria for Phase 9
 
 - [ ] On-chain `verifyAndRecord` integration shipped + Hardhat contract tests passing against Polygon Amoy
@@ -121,4 +190,8 @@ This was previously item #1 in the wave-1/2 deferred list. Per user direction 20
 - [ ] Legal counsel sign-off on the new `grievance_contacts` table + revised retention (1 year general / 30 days post-resolve grievance PII)
 - [ ] Migration applied + production data verified
 - [ ] [[s1-cost-drift]] reconciled with any new SaaS spend (Upstash if chosen)
+- [ ] All 9 user-ops actions in §5 complete; production stack live behind primary + 2 backup domains
+- [ ] Polygon 3/5 Safe deployed; `CitizenVerifier.sol` integration audit returns **no high or critical findings**
+- [ ] First DR drill executed in <30 min; Drill log row signed off
+- [ ] Two consecutive months of cost reconciliation at ≤ $115 (Amber ceiling)
 - [ ] User runs full end-to-end exercise of the S1 surface (web + iOS + Android) without regressions

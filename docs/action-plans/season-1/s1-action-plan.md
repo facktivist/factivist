@@ -633,21 +633,23 @@ forbidden in production paths; allowed only against ephemeral preview envs.
 
 ### 8.4 Monthly cost target (pilot ≈ 1k MAU) — must match cost-scenarios.md S1
 
-| Line | Amount |
-|------|--------|
-| Supabase Pro | $25 |
-| Vercel Pro (web) | $20 |
-| Fly.io shared-cpu-1x × 1 + tiny Postgres-free | $10 |
-| EAS Starter | $19 |
-| Polygon gas (ZKP verify, batched) | $5 |
-| The Graph hosted | $0 |
-| Cloudflare free | $0 |
-| Backups (Supabase included) | $0 |
-| Misc (domains, sentry free, etc.) | $20 |
-| **Total** | **≈ $99/mo** |
+| Line | Amount | Note |
+|------|--------|------|
+| Supabase Pro | $25 | |
+| Vercel Pro (web) | $20 | |
+| Fly.io shared-cpu-1x × 1 + tiny Postgres-free | $10 | |
+| EAS Starter | $19 | |
+| Polygon gas (ZKP verify, batched) | $18.76 | Post-Chicago hardfork (PIP-88, 2026-05-21). Rebaselined from $5 in Phase 2 reconciliation per [[s2-polygon-gas]]. |
+| The Graph hosted | $0 | |
+| Cloudflare free | $0 | |
+| Backups (Supabase included) | $0 | |
+| Misc (domains, sentry free, etc.) | $20 | |
+| **Total (standard)** | **≈ $113/mo** | Volatility band: off-peak $95 / standard $113 / spike $151. |
 
-> If any line drifts > 15% from target, `cost-analyst` opens an issue and
-> stores a `[[s1-cost-drift]]` memory.
+> Drift tolerance bands (per [[s1-cost-drift]]): Green ≤ $105 / Amber
+> $105–$115 / Red > $115. If total > $115 for two consecutive weeks,
+> `cost-analyst` files a `risk:budget` issue and updates the drift memo.
+> Full reconciliation in `docs/data-points/s1-cost-reconciliation-phase-8.md`.
 
 ### 8.5 One-time spend
 
@@ -716,6 +718,9 @@ Scope + per-item plan + cited legal sources live in `docs/action-plans/season-1/
 2. **Rate limiter** — swap in-memory token bucket on `/identity/prove` for Cloudflare KV or Upstash Redis (decision falls out of Phase 8 deploy target)
 3. **DPDP §8(7) review** + `grievance_contacts` table split + retention raise to 365d general / 30d post-resolve PII (blocks on legal counsel)
 4. **Production rapidsnark distribution** — Docker layer / S3 init container / Lambda layer (local-dev contract already in `apps/api/zkp-artifacts/README.md`)
+5. **Production deployment provisioning** — absorbed from Phase 8 user-ops: 9 ordered actions (GitHub secrets / Vercel / Fly / Supabase + custom domain / Cloudflare / EAS / Sentry DSNs / Cloudflare Workers uptime deploy / migration 0004). Recurring ≈ $113/mo within the §8.8 amended ≤ $115 Amber ceiling.
+6. **Polygon multisig + CitizenVerifier integration audit** — 3/5 Safe + boutique reviewer engagement ($3,000–$10,000 one-shot). Blocks the first prod release tag.
+7. **First DR drill + two-month cost reconciliation** — §8.8 exit-gate items 3 & 4.
 
 Exit gate per `phase-9-deferred.md`.
 
