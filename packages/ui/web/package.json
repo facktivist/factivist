@@ -15,6 +15,42 @@
     "./hooks": {
       "types": "./src/hooks/index.ts",
       "default": "./src/hooks/index.ts"
+    },
+    "./comment": {
+      "types": "./src/comment/index.ts",
+      "default": "./src/comment/index.ts"
+    },
+    "./complaint": {
+      "types": "./src/complaint/index.ts",
+      "default": "./src/complaint/index.ts"
+    },
+    "./filter": {
+      "types": "./src/filter/index.ts",
+      "default": "./src/filter/index.ts"
+    },
+    "./legal": {
+      "types": "./src/legal/index.ts",
+      "default": "./src/legal/index.ts"
+    },
+    "./moderation": {
+      "types": "./src/moderation/index.ts",
+      "default": "./src/moderation/index.ts"
+    },
+    "./onboarding": {
+      "types": "./src/onboarding/index.ts",
+      "default": "./src/onboarding/index.ts"
+    },
+    "./profile": {
+      "types": "./src/profile/index.ts",
+      "default": "./src/profile/index.ts"
+    },
+    "./search": {
+      "types": "./src/search/index.ts",
+      "default": "./src/search/index.ts"
+    },
+    "./shell": {
+      "types": "./src/shell/index.ts",
+      "default": "./src/shell/index.ts"
     }
   },
   "files": [

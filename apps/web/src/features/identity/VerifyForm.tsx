@@ -2,6 +2,7 @@
 
 import type { Groth16Proof, VerifyProofRequest, VerifyProofResponse } from '@factivist/shared/types'
 import { Button } from '@factivist/ui-web/components'
+import { Onboarding } from '@factivist/ui-web/onboarding'
 import { useState } from 'react'
 
 /**
@@ -11,6 +12,11 @@ import { useState } from 'react'
  * (snarkjs wiring + circuit hosting lands in a later wave). It accepts a
  * pre-generated proof envelope from `props` or from a `data-proof` payload
  * so QA/Detox can exercise the route end-to-end without a real circuit.
+ *
+ * Frames itself in the `Onboarding.VerifyStep` compound so loading,
+ * error, and success states render with design-system tokens + a11y
+ * affordances. On success it renders `Onboarding.SuccessConfirmation`
+ * with the citizen's anonymous handle + first-8-char nullifier excerpt.
  */
 interface VerifyFormProps {
   readonly preGeneratedProof?: VerifyProofRequest
@@ -20,8 +26,34 @@ interface VerifyFormProps {
 type FormState =
   | { kind: 'idle' }
   | { kind: 'submitting' }
-  | { kind: 'success'; handle: string }
+  | { kind: 'success'; handle: string; nullifierExcerpt: string }
   | { kind: 'error'; code: string; message: string }
+
+const toOnboardingStep = (s: FormState): 'intro' | 'proof-verifying' | 'success' | 'error' => {
+  switch (s.kind) {
+    case 'submitting':
+      return 'proof-verifying'
+    case 'success':
+      return 'success'
+    case 'error':
+      return 'error'
+    default:
+      return 'intro'
+  }
+}
+
+const toOnboardingStatus = (s: FormState): 'idle' | 'loading' | 'success' | 'error' => {
+  switch (s.kind) {
+    case 'submitting':
+      return 'loading'
+    case 'success':
+      return 'success'
+    case 'error':
+      return 'error'
+    default:
+      return 'idle'
+  }
+}
 
 export function VerifyForm({ preGeneratedProof, apiBaseUrl = '' }: VerifyFormProps) {
   const [state, setState] = useState<FormState>({ kind: 'idle' })
@@ -44,14 +76,15 @@ export function VerifyForm({ preGeneratedProof, apiBaseUrl = '' }: VerifyFormPro
       })
       const body = (await res.json()) as VerifyProofResponse
       if (body.verified) {
-        setState({ kind: 'success', handle: body.handle })
+        const [nullifier] = preGeneratedProof.publicSignals
+        setState({
+          kind: 'success',
+          handle: body.handle,
+          nullifierExcerpt: nullifier.slice(0, 8),
+        })
         return
       }
-      setState({
-        kind: 'error',
-        code: body.code,
-        message: body.error,
-      })
+      setState({ kind: 'error', code: body.code, message: body.error })
     } catch (err) {
       setState({
         kind: 'error',
@@ -61,27 +94,50 @@ export function VerifyForm({ preGeneratedProof, apiBaseUrl = '' }: VerifyFormPro
     }
   }
 
+  const errorPayload =
+    state.kind === 'error'
+      ? { code: state.code, message: state.message, retryable: state.code !== 'NO_PROOF' }
+      : undefined
+
   return (
-    <div className="flex flex-col gap-4" data-testid="verify-form">
-      <Button
-        onPress={onSubmit}
-        isDisabled={state.kind === 'submitting'}
-        data-testid="verify-submit"
+    <div data-testid="verify-form">
+      <Onboarding.VerifyStep
+        step={toOnboardingStep(state)}
+        status={toOnboardingStatus(state)}
+        error={errorPayload}
+        onStepChange={() => {
+          // No step-machine yet — Phase 5 wave 3 will wire a stepper.
+        }}
       >
-        {state.kind === 'submitting' ? 'Verifying…' : 'Generate & submit proof'}
-      </Button>
-
-      {state.kind === 'success' && (
-        <p className="text-sm text-success" data-testid="verify-success">
-          Verified — your handle is <code>{state.handle}</code>.
-        </p>
-      )}
-
-      {state.kind === 'error' && (
-        <p className="text-sm text-danger" data-testid="verify-error">
-          {state.message} ({state.code})
-        </p>
-      )}
+        {state.kind === 'success' ? (
+          <Onboarding.SuccessConfirmation
+            handle={state.handle}
+            nullifierExcerpt={state.nullifierExcerpt}
+            onContinue={() => {
+              // Caller wires the next route (feed) once the success state
+              // is observed by a higher-level handler. Phase 5 wave 3.
+            }}
+          />
+        ) : (
+          <Button
+            onPress={onSubmit}
+            isDisabled={state.kind === 'submitting'}
+            data-testid="verify-submit"
+          >
+            {state.kind === 'submitting' ? 'Verifying…' : 'Generate & submit proof'}
+          </Button>
+        )}
+        {state.kind === 'success' ? (
+          <p className="sr-only" data-testid="verify-success">
+            Verified — your handle is {state.handle}.
+          </p>
+        ) : null}
+        {state.kind === 'error' ? (
+          <p className="sr-only" data-testid="verify-error">
+            {state.message} ({state.code})
+          </p>
+        ) : null}
+      </Onboarding.VerifyStep>
     </div>
   )
 }
