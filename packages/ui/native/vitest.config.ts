@@ -20,6 +20,7 @@ export default mergeConfig(
         exclude: [
           'src/comment/Comment.tsx',
           'src/complaint/Complaint.tsx',
+          'src/filter/Filter.tsx',
           'src/onboarding/Onboarding.tsx',
         ],
       },
