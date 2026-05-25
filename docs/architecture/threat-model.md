@@ -113,7 +113,7 @@ LEVEL 3).
 | **R**epudiation | Operator denies a moderation decision | Admin disputes a removal. | `audit_log` middleware on every admin route ([s1-c4.md L3.3](./s1-c4.md#l33--moderation), [L3.7](./s1-c4.md#l37--admin)) writes append-only row with `actor`, `action`, `target_kind`, `target_id`, `payload_hash`, `ts`. Operator identity is the Supabase Auth JWT subject (operators **are** identified — citizens are not). | [[ADR-006]] |
 | **I**nformation Disclosure | SQL injection leaks `citizens.nullifier` set | Unparameterised query. | Drizzle ORM is the only DB access path ([[ADR-001]]); no raw SQL outside reviewed migrations; lint rule blocks `sql.raw` outside `packages/db/src/migrations`. | [[ADR-001]] |
 | **D**oS | Single-machine API saturated | `min_machines_running=1` is the cap (cost). | Cloudflare rate-limit per-IP + per-route; Fly.io scale-up to `max_machines=3` on burst; CERT-In log buffer must not block requests (write-through to local file, async ship). | [[ADR-009]] |
-| **E**oP | Citizen JWT used on admin route | Misconfigured guard. | Admin middleware `a_auth` checks `role=admin` claim from Supabase Auth and rejects anonymous / citizen sessions; contract test in `apps/api/__tests__/admin-guard.test.ts` asserts 403 for every non-admin principal class. | [[ADR-010]] |
+| **E**oP | Citizen JWT used on admin route | Misconfigured guard. | Admin middleware `a_auth` checks `role=admin` claim from Supabase Auth and rejects anonymous / citizen sessions; contract test in `apps/api/src/lib/__tests__/rbac.test.ts` asserts 403 for every non-admin principal class. | [[ADR-010]] |
 
 ### 4. Postgres — Supabase ap-south-1
 

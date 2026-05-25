@@ -32,7 +32,7 @@
  *
  *   - Citizen JWTs (nullifier-bound, no `role=admin`) MUST NOT satisfy
  *     `requireAdmin` — verified by ATID-ADMIN-001 (forthcoming) and the
- *     contract test in `apps/api/src/__tests__/admin-guard.test.ts`.
+ *     contract test in `apps/api/src/lib/__tests__/rbac.test.ts`.
  *   - A leaked admin JWT without the `role=admin` claim hits the same
  *     401 path (no enumeration of which roles exist).
  */
