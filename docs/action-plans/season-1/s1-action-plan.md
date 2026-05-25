@@ -715,7 +715,7 @@ Triggers after Phase 8 (Infrastructure Cost & Deployment) closes and the user ha
 Scope + per-item plan + cited legal sources live in `docs/action-plans/season-1/phase-9-deferred.md`. Summary:
 
 1. **On-chain `verifyAndRecord`** via CitizenVerifier — blocked on AnonCitizen upstream Polygon Amoy/mainnet deployment ([[s1-zkp-findings]] OQ-1)
-2. **Rate limiter** — swap in-memory token bucket on `/identity/prove` for Cloudflare KV or Upstash Redis (decision falls out of Phase 8 deploy target)
+2. **Rate limiter** — Upstash Redis (Mumbai) chosen 2026-05-26. Code complete (`apps/api/src/lib/upstash-rate-limiter.ts` + auto-select). Activation = user creates Upstash Redis + sets two Fly secrets.
 3. **DPDP §8(7) review** + `grievance_contacts` table split + retention raise to 365d general / 30d post-resolve PII (blocks on legal counsel)
 4. **Production rapidsnark distribution** — Docker layer / S3 init container / Lambda layer (local-dev contract already in `apps/api/zkp-artifacts/README.md`)
 5. **Production deployment provisioning** — absorbed from Phase 8 user-ops: 9 ordered actions (GitHub secrets / Vercel / Fly / Supabase + custom domain / Cloudflare / EAS / Sentry DSNs / Cloudflare Workers uptime deploy / migration 0004). Recurring ≈ $113/mo within the §8.8 amended ≤ $115 Amber ceiling.

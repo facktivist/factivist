@@ -76,17 +76,22 @@ const TEST_MODE = (): boolean => process.env.NODE_ENV === 'test'
 /**
  * Token bucket for `POST /identity/prove`.
  *
- * 10 requests / 60s / source IP. The S1 deploy is single-instance, so the
- * default backend is in-memory. Phase 9 §2 swaps to Cloudflare KV or
- * Upstash Redis the day the API goes multi-instance — `RateLimiter` is
- * the interface that lets that be a one-file change. Tests reset the
- * bucket via `__resetRateLimit()`.
+ * 10 requests / 60s / source IP. Backend selection follows the env:
+ *   - `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` both set →
+ *     `@upstash/ratelimit` sliding-window (Phase 9 §2 closure).
+ *   - either absent → in-memory limiter (S1 single-instance dev /
+ *     staging path).
+ *
+ * Tests reset state via `__resetRateLimit()`. Phase-9 swap of either
+ * backend now happens entirely inside `selectProveRateLimiter()` —
+ * the route itself is backend-agnostic.
  */
-import { createInMemoryRateLimiter, type RateLimiter } from '../lib/rate-limiter.ts'
+import type { RateLimiter } from '../lib/rate-limiter.ts'
+import { selectProveRateLimiter } from '../lib/upstash-rate-limiter.ts'
 
 const RATE_LIMIT_MAX = 10
 const RATE_LIMIT_WINDOW_MS = 60_000
-let proveRateLimiter: RateLimiter = createInMemoryRateLimiter({
+let proveRateLimiter: RateLimiter = selectProveRateLimiter({
   max: RATE_LIMIT_MAX,
   windowMs: RATE_LIMIT_WINDOW_MS,
 })
@@ -96,18 +101,13 @@ export const __resetRateLimit = (): void => {
   proveRateLimiter.reset()
 }
 
-/** Test seam for Phase 9 KV/Upstash swap — production wiring will read from env. */
+/** Test seam — override the limiter for a scenario, then call `__resetRateLimit()` to clean up. */
 export const __setProveRateLimiter = (next: RateLimiter): void => {
   proveRateLimiter = next
 }
 
-const consumeRateLimit = (ip: string, now: number = Date.now()): boolean => {
-  const decision = proveRateLimiter.consume(ip, now)
-  // The in-memory limiter returns synchronously; KV/Upstash will return a
-  // Promise. The route is async, so callers can `await` once we swap.
-  if (decision instanceof Promise) {
-    throw new Error('async rate limiter wired without awaiting — fix route handler')
-  }
+const consumeRateLimit = async (ip: string, now: number = Date.now()): Promise<boolean> => {
+  const decision = await proveRateLimiter.consume(ip, now)
   return decision.allowed
 }
 
@@ -309,7 +309,7 @@ export const identityRoute = new Hono()
     async (c) => {
       // ─── Rate limit (10 req / min / source IP) ─────────────────────
       const ip = sourceIp(c)
-      if (!consumeRateLimit(ip)) {
+      if (!(await consumeRateLimit(ip))) {
         return c.json({ code: 'RATE_LIMITED' as const }, 429)
       }
 

@@ -24,32 +24,44 @@
 
 ---
 
-## 2. Cloudflare KV / Upstash Redis rate limiter for `/identity/prove`
+## 2. Upstash Redis rate limiter for `/identity/prove`
 
-**Origin:** Phase 5 wave-2C handoff; the current in-memory token bucket on the prove route is single-instance only.
+**Origin:** Phase 5 wave-2C handoff; the in-memory token bucket on the prove route is single-instance only.
 
-**What ships in S1 today:** `apps/api/src/routes/identity.ts` POST `/identity/prove` enforces 10 req/min per source IP via an in-process `Map<string, number[]>`. Tests use `x-test-client-id` for isolation. Works correctly on a single API instance.
+**Status:** CODE COMPLETE 2026-05-26. Activation gated on user-side Upstash provisioning.
 
-**Why it's safe to defer:** S1 launch is **single-instance** (single Bun process on a small Mumbai-region VPS or Cloudflare Worker). The in-memory limiter is the right thing at that scale. The multi-instance failure mode (limiter races across pods) only matters once the API horizontally scales.
+**Decision (2026-05-26):** Upstash Redis chosen over Cloudflare KV. The API targets Fly.io (Bun-on-VPS) per [[s1-phase-8-done]] §5.3, not Cloudflare Workers, so Upstash's **strict-consistency** Redis (atomic `INCR` + `EXPIRE` via Lua, ~5–15 ms from Mumbai region) is a cleaner fit than KV's eventual consistency. Free tier (10k commands / day) covers the S1 1k-MAU pilot with substantial headroom.
 
-**What Phase 9 does — two viable approaches:**
+**What ships today (in code):**
 
-| Approach | Setup | Latency | Cost (S1 scale) | Notes |
-|---|---|---|---|---|
-| **Cloudflare KV** (Workers KV) | Bind a namespace + key per IP; atomic `put` with TTL = window | ~10-30ms read (eventual consistency between regions) | Free tier covers S1 (100k ops/day) | If the API is already on Cloudflare Workers, zero new infra. Eventual consistency is fine for a 60s rate window. |
-| **Upstash Redis** (REST API) | Spin up a Mumbai-region instance; use `INCR` + `EXPIRE` for atomic counter per IP | ~5-15ms from Mumbai region | Free tier covers S1 (10k commands/day) | Strict consistency. Adds one external dep. Better if the API stays on Bun-on-VPS rather than Workers. |
+| File | Role |
+|------|------|
+| `apps/api/src/lib/rate-limiter.ts` | `RateLimiter` interface + `createInMemoryRateLimiter` (S1 single-instance default) |
+| `apps/api/src/lib/upstash-rate-limiter.ts` | `createUpstashRedisRateLimiter` wrapping `@upstash/ratelimit` sliding-window + `selectProveRateLimiter` factory that picks backend based on env |
+| `apps/api/src/routes/identity.ts` | Calls `selectProveRateLimiter()` at module load — no route change needed when env flips |
 
-**Recommendation:** wait until the deploy target is locked (Phase 8 picks VPS vs Workers vs Lambda); the choice falls out naturally. Until then, document the abstraction so the swap is a one-file change.
+**Selection:** at module load, the API reads `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`. Both present → Upstash backend. Either absent → in-memory fallback (dev / staging / single-instance prod).
 
-**What Phase 9 actually delivers:**
-1. Refactor `apps/api/src/routes/identity.ts` rate limiter behind a `RateLimiter` interface (small change — currently inlined).
-2. Implement `cloudflareKvRateLimiter` OR `upstashRedisRateLimiter` per the deploy choice.
-3. Wire env vars (`UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` OR Cloudflare KV namespace binding).
-4. Integration test against a real instance (Upstash has a free Mumbai tier).
+**What the user must do to activate (≤ 30 min, $0/mo):**
 
-**Blocked on:** Phase 8 deploy target decision (VPS vs Workers vs Lambda).
+1. Sign up at https://upstash.com → create a Redis database in **Mumbai (ap-south-1)** region. Free tier is sufficient.
+2. Copy the database's `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` from the Upstash dashboard.
+3. Set both as Fly.io secrets:
+   ```bash
+   flyctl secrets set \
+     UPSTASH_REDIS_REST_URL=https://...upstash.io \
+     UPSTASH_REDIS_REST_TOKEN=AY...== \
+     -a factivist-api-prod
+   ```
+4. Re-deploy the API (or wait for next deploy). On boot, the API auto-switches to the Upstash backend; no code change required.
 
-**Owner:** ops/devops on deployment cutover.
+**Verifying the switch worked:** hit `/identity/prove` 11 times within 60 s from the same IP — the 11th must return `429 RATE_LIMITED`. Across two Fly instances, the limit should still cap at 10 (not 20 = 10 × pods), confirming the cross-pod Redis backing is live.
+
+**Cost line impact:** $0/mo at S1 scale (free tier covers 10k commands / day vs. expected ~144 commands / day at 1k MAU / 10 req cap). If MAU grows past ~50k, Upstash's "Pay-as-you-go" tier kicks in at ~$0.20 per 100k commands — still under $5/mo at 500k MAU. Recurring monthly stays inside the §8.8 ≤ $115 Amber ceiling.
+
+**Rollback:** unset both env vars + redeploy → in-memory limiter resumes (single-instance correctness only; multi-instance gets the limiter race back). The code path is identical.
+
+**Owner:** maintainer for Upstash account + Fly secrets.
 
 ---
 
@@ -186,7 +198,7 @@ This was previously item #1 in the wave-1/2 deferred list. Per user direction 20
 ## Exit criteria for Phase 9
 
 - [ ] On-chain `verifyAndRecord` integration shipped + Hardhat contract tests passing against Polygon Amoy
-- [ ] Rate limiter swapped to Cloudflare KV or Upstash per deploy target; integration-tested live
+- [ ] Upstash Redis (Mumbai) provisioned + `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` set on Fly.io; cross-pod rate-limit verified live
 - [ ] Legal counsel sign-off on the new `grievance_contacts` table + revised retention (1 year general / 30 days post-resolve grievance PII)
 - [ ] Migration applied + production data verified
 - [ ] [[s1-cost-drift]] reconciled with any new SaaS spend (Upstash if chosen)
