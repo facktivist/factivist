@@ -1,0 +1,73 @@
+# Factivist S1 — Fly.io app config (apps/api).
+#
+# Phase 8 §8.6 settings:
+#   - 256MB RAM, 1 shared-cpu
+#   - Region `bom` (Mumbai) primary, `sin` (Singapore) failover
+#   - min_machines_running = 1 (no cold-starts; matches rollback runbook)
+#
+# Per ADR-009 the API origin sits behind a Supabase custom domain proxied
+# through Cloudflare, so this app is NOT directly exposed under
+# `<app>.fly.dev` in production — Cloudflare resolves to the Fly anycast
+# edge instead. Local/staging may still hit `<app>.fly.dev` directly.
+#
+# Deploys are triggered exclusively by `.github/workflows/deploy-staging.yml`
+# and `.github/workflows/deploy-prod.yml` (per Phase 7). Manual `flyctl
+# deploy` from a developer laptop is forbidden in production paths.
+#
+# Two app slugs (selected per environment via FLY_APP_NAME / FLY_APP_NAME_PROD):
+#   - staging:    factivist-api-staging
+#   - production: factivist-api-prod
+#
+# The `app` field below is staging by default. The production deploy
+# workflow passes `--app $FLY_APP_NAME_PROD` so this default is only used
+# as a fallback if the env var is missing.
+
+app = "factivist-api-staging"
+primary_region = "bom"
+kill_signal = "SIGINT"
+kill_timeout = "5s"
+
+[build]
+  # Bun-based image. We rely on `bun build --target=bun` in CI to produce
+  # `dist/index.js`; the Dockerfile only needs Bun + the dist artifact.
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
+  # Concrete URLs land in Fly Secrets via:
+  #   flyctl secrets set DATABASE_URL=... CORS_ORIGIN=... SUPABASE_* ...
+  # NEVER commit live values. See `docs/operations/deploy-runbook.md`.
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/healthz"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
+
+[[regions]]
+  primary = "bom"
+  backup = ["sin"]
+
+[deploy]
+  strategy = "rolling"
+  # Fail the deploy fast if /healthz never comes up.
+  wait_timeout = "5m"
+
+[metrics]
+  port = 9091
+  path = "/metrics"

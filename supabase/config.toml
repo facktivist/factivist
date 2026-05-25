@@ -1,0 +1,78 @@
+# Supabase CLI project config — Factivist S1.
+#
+# This file pins the Supabase project shape (auth providers, storage
+# buckets, schemas exposed via PostgREST) so two environments
+# (`factivist-staging`, `factivist-prod`) stay in sync without
+# dashboard drift. Migrations live in `packages/db/drizzle/*.sql` and are
+# applied via `db-migrate.yml`, not through `supabase db push`.
+#
+# Project link command (run once per env):
+#   supabase link --project-ref <staging-ref>
+#   supabase link --project-ref <prod-ref>
+#
+# Custom-domain configuration (per ADR-009) lives only in the dashboard
+# because the CLI does not expose the API yet. See deploy-runbook.md.
+
+project_id = "factivist"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+site_url = "https://factivist.example"
+additional_redirect_urls = [
+  "https://staging.factivist.example",
+  "https://factivist.org",
+  "https://factivist.io",
+  "https://factivist.is",
+  "factivist://auth/callback",
+]
+jwt_expiry = 3600
+enable_signup = false
+enable_anonymous_sign_ins = false
+
+[auth.email]
+enable_signup = false
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = true
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+
+[storage]
+enabled = true
+file_size_limit = "10MiB"
+
+[[storage.buckets]]
+name = "complaint-photos"
+public = false
+file_size_limit = "10MiB"
+allowed_mime_types = ["image/jpeg", "image/png", "image/heic", "image/heif"]
+# EXIF strip is enforced server-side by `acceptUpload` in
+# apps/api/src/lib/upload.ts — bucket policy alone is insufficient
+# because Supabase does not expose a pre-write transform hook. The
+# webhook in apps/api/src/lib/storage-webhook.ts is the enforcement
+# point. See docs/architecture/threat-model.md §T-04 (EXIF leakage).
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = true
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[functions]
+enabled = false
+# S1 ships no Edge Functions — webhooks are handled by apps/api on Fly.

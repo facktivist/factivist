@@ -19,6 +19,10 @@
     "./constants": {
       "types": "./src/constants/index.ts",
       "default": "./src/constants/index.ts"
+    },
+    "./observability": {
+      "types": "./src/observability/sentry-scrub.ts",
+      "default": "./src/observability/sentry-scrub.ts"
     }
   },
   "files": [

@@ -206,3 +206,52 @@ jobs:
         working-directory: apps/mobile
         continue-on-error: true
         run: eas submit --platform android --latest --non-interactive
+
+  # Phase 8 carry-over from Phase 7: surface staging preview URLs as a
+  # comment on the merge-commit's originating PR (best-effort, never
+  # fails the workflow). Looks up the PR by SHA via the GH API.
+  post-preview-urls:
+    name: Post preview URLs to PR
+    needs: [deploy-web, deploy-api, deploy-mobile]
+    if: always() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Comment on originating PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const web = `${{ needs.deploy-web.outputs.deploy_url }}` || '(skipped)';
+            const api = `${{ needs.deploy-api.outputs.deploy_url }}` || '(skipped)';
+            const mobileBuild = `${{ needs.deploy-mobile.outputs.build_id }}` || '(skipped)';
+            const sha = context.sha;
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: sha,
+            });
+            if (prs.length === 0) {
+              core.notice('No PR associated with this commit — skipping preview comment.');
+              return;
+            }
+            const body = [
+              '### Staging preview',
+              '',
+              `- **web** (Vercel): ${web}`,
+              `- **api** (Fly.io): ${api}`,
+              `- **mobile** (EAS build id): \`${mobileBuild}\``,
+              '',
+              `Commit: \`${sha.slice(0, 7)}\``,
+            ].join('\n');
+            for (const pr of prs) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body,
+              });
+              core.notice(`Posted preview URLs to #${pr.number}`);
+            }
