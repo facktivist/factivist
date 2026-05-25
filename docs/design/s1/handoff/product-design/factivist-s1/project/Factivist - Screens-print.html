@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-screen-label="Factivist Screens · Print">
+<head>
+  <meta charset="utf-8">
+  <title>Factivist — Screens (PDF export)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="design-system/colors_and_type.css">
+  <link rel="stylesheet" href="design-system/_preview.css">
+  <style>
+    html, body { margin:0; padding:0; }
+    body {
+      background: #f0eee9;
+      font-family: var(--font-sans);
+      color: var(--color-foreground);
+      --fv-header-bg: rgba(255,255,255,0.85);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* On-screen: light gray surround so the user can visually preview pages */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 12mm auto;
+      background: var(--color-background);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 12mm 12mm 16mm;
+      box-sizing: border-box;
+      page-break-after: always;
+      break-after: page;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .page-cover {
+      background: var(--color-gray-950);
+      color: var(--color-gray-50);
+      padding: 0;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .page-cover .cover-inner {
+      padding: 24mm 18mm;
+    }
+    .page-divider {
+      background: var(--color-foreground);
+      color: var(--color-background);
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .page-divider .divider-inner {
+      padding: 20mm 16mm;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10mm;
+      flex-shrink: 0;
+    }
+    .page-head .h-section {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-muted-foreground);
+      margin-bottom: 4px;
+    }
+    .page-head h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--color-foreground);
+    }
+    .page-head .pagenum {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-muted-foreground);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .stage {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .stage-frame {
+      transform-origin: top center;
+      flex-shrink: 0;
+    }
+    .page-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8mm;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--color-muted-foreground);
+      letter-spacing: 0.04em;
+    }
+    .page-foot .fv-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      color: var(--color-foreground);
+    }
+    .page-foot .fv-mark .dot {
+      width: 8px; height: 8px; border-radius: 2px;
+      background: var(--color-brand-500);
+      display: inline-block;
+    }
+
+    /* Cover */
+    .cover-h1 {
+      font-size: 64px;
+      line-height: 1;
+      letter-spacing: -0.035em;
+      font-weight: 800;
+      margin: 0;
+      text-wrap: balance;
+      color: #fff;
+    }
+    .cover-brand {
+      color: oklch(0.78 0.16 250);
+    }
+    .cover-sub {
+      margin: 20px 0 0;
+      font-size: 16px;
+      line-height: 1.6;
+      color: oklch(0.78 0.01 270);
+      max-width: 540px;
+      text-wrap: pretty;
+    }
+    .cover-meta {
+      margin-top: 56px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: oklch(0.72 0.01 270);
+    }
+    .cover-meta strong {
+      display: block;
+      font-size: 18px;
+      color: #fff;
+      letter-spacing: -0.01em;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    /* Divider */
+    .divider-h1 {
+      font-size: 42px;
+      letter-spacing: -0.025em;
+      font-weight: 800;
+      line-height: 1.1;
+      margin: 0;
+      text-wrap: balance;
+    }
+    .divider-sub {
+      margin: 14px 0 0;
+      font-size: 15px;
+      line-height: 1.6;
+      opacity: 0.78;
+      max-width: 580px;
+      text-wrap: pretty;
+    }
+    .divider-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      opacity: 0.5;
+      margin-bottom: 18px;
+    }
+    .divider-list {
+      margin-top: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 14px;
+    }
+    .divider-list li {
+      list-style: none;
+      padding: 6px 0;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      gap: 12px;
+    }
+    .divider-list li:last-child { border-bottom: 1px solid rgba(255,255,255,0.15); }
+    .divider-list li .n {
+      width: 32px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      opacity: 0.5;
+      letter-spacing: 0.04em;
+    }
+
+    /* Print */
+    @page { size: A4 portrait; margin: 0; }
+
+    @media print {
+      body { background: white; }
+      .page {
+        margin: 0;
+        box-shadow: none;
+        width: 210mm;
+        height: 297mm;
+        min-height: 297mm;
+        padding: 12mm 12mm 12mm;
+      }
+      .page-cover, .page-divider {
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="render-root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+    integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+    integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
+    integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- Design system primitives + data -->
+  <script src="design-system/data.js"></script>
+  <script src="design-system/icons.js"></script>
+  <script src="screens/data-extra.js"></script>
+  <script src="screens/judicial-data.js"></script>
+  <script src="data/india-state-summary.js"></script>
+  <script src="screens/explorer-data.js"></script>
+
+  <script type="text/babel" src="design-system/components.jsx"></script>
+  <script type="text/babel" src="design-system/layout.jsx"></script>
+  <script type="text/babel" src="design-system/android-frame.jsx"></script>
+
+  <!-- Screens -->
+  <script type="text/babel" src="screens/shared.jsx"></script>
+  <script type="text/babel" src="screens/india-map.jsx"></script>
+  <script type="text/babel" src="screens/report-card.jsx"></script>
+  <script type="text/babel" src="screens/accused.jsx"></script>
+  <script type="text/babel" src="screens/constituency.jsx"></script>
+  <script type="text/babel" src="screens/ai-chat.jsx"></script>
+  <script type="text/babel" src="screens/notifications.jsx"></script>
+  <script type="text/babel" src="screens/comments.jsx"></script>
+  <script type="text/babel" src="screens/judicial.jsx"></script>
+  <script type="text/babel" src="screens/landing.jsx"></script>
+  <script type="text/babel" src="screens/analytics.jsx"></script>
+  <script type="text/babel" src="screens/onboarding-mobile.jsx"></script>
+  <script type="text/babel" src="screens/mobile-companions.jsx"></script>
+
+  <script type="text/babel">
+    // Print renderer — each artboard becomes a page sized A4 portrait.
+    // We compute a uniform scale that makes (artboard width × height) fit
+    // inside the safe area of the page. Artboards taller than fit_h get
+    // scaled by the height constraint; wider ones by the width constraint.
+
+    // A4 portrait page: 210×297mm. With 12mm side margin + ~30mm of head/foot,
+    // safe artwork area is roughly 186 × 235 mm at 96dpi → ~703 × 888 px.
+    const FIT_W = 700;
+    const FIT_H = 880;
+
+    function PageHead({ section, title, n, total }) {
+      return (
+        <div className="page-head">
+          <div>
+            <div className="h-section">{section}</div>
+            <h1>{title}</h1>
+          </div>
+          <div className="pagenum">{String(n).padStart(2,'0')} / {String(total).padStart(2,'0')}</div>
+        </div>
+      );
+    }
+    function PageFoot() {
+      return (
+        <div className="page-foot">
+          <span className="fv-mark"><span className="dot"/>FACTIVIST</span>
+          <span>SEASON 1 · DESIGN REVIEW · MAY 2026</span>
+        </div>
+      );
+    }
+
+    function Stage({ width, height, children }) {
+      const scale = Math.min(FIT_W / width, FIT_H / height, 1);
+      const scaledW = width * scale;
+      const scaledH = height * scale;
+      return (
+        <div className="stage" style={{ minHeight: scaledH }}>
+          <div className="stage-frame" style={{
+            width, height, transform: `scale(${scale})`,
+          }}>
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    // A bare Screen frame (no scroll, full content visible — page is "tall enough"
+    // because artboard heights are set to fit content in the main file).
+    const FixedScreen = ({ width, height, children }) => (
+      <div className="fv-screen" style={{
+        width, height, overflow:'hidden',
+        background:'var(--color-background)',
+        color:'var(--color-foreground)',
+        fontFamily:'var(--font-sans)',
+        position:'relative',
+      }}>
+        {children}
+      </div>
+    );
+
+    function makePages() {
+      const L = window.fvDataExtra.leaders[0];
+      return [
+        { kind:'cover' },
+
+        // PART I — Public
+        { kind:'divider', num:'PART · I', title:'Public surface', sub:'How a new citizen meets Factivist — and how the platform argues for itself before they hand over an Aadhaar QR.', items:[
+          ['01','Landing · marketing page'],
+        ]},
+        { kind:'art', section:'Public surface', title:'Landing · marketing', width:1280, height:2400, render: () => <LandingScreen/> },
+
+        // PART II — Accountability
+        { kind:'divider', num:'PART · II', title:'Accountability surfaces', sub:'The heart of the product: report cards on leaders, dossiers on the accused, the judiciary watching its own clock.', items:[
+          ['02','Leader report card · editorial'],
+          ['03','Leader report card · dashboard'],
+          ['04','Accused / Person-of-Interest profile'],
+          ['05','Judicial case tracking'],
+        ]},
+        { kind:'art', section:'Accountability', title:'Leader report card · editorial',  width:1280, height:1500, render: () => <ReportCardEditorial leader={L}/> },
+        { kind:'art', section:'Accountability', title:'Leader report card · dashboard',  width:1280, height:1100, render: () => <ReportCardDashboard leader={L}/> },
+        { kind:'art', section:'Accountability', title:'Accused / POI profile',           width:1280, height:1320, render: () => <AccusedScreen/> },
+        { kind:'art', section:'Accountability', title:'Judicial case tracking',          width:1280, height:1500, render: () => <JudicialCase/> },
+
+        // PART III — Discovery & query
+        { kind:'divider', num:'PART · III', title:'Discovery & query', sub:'Every Indian constituency on one map. Natural-language search across anchored complaints. A press dashboard for newsrooms.', items:[
+          ['06','Constituency explorer'],
+          ['07','Ask AI · grounded answer'],
+          ['08','Analytics dashboard · for press'],
+        ]},
+        { kind:'art', section:'Discovery', title:'Constituency explorer',           width:1280, height:1100, render: () => <ConstituencyExplorer/> },
+        { kind:'art', section:'Discovery', title:'Ask AI · grounded answer',        width:1280, height:1080, render: () => <AiChat/> },
+        { kind:'art', section:'Discovery', title:'Analytics dashboard · for press', width:1280, height:1320, render: () => <AnalyticsScreen/> },
+
+        // PART IV — Engagement loop
+        { kind:'divider', num:'PART · IV', title:'Engagement loop', sub:'What comes after the complaint: notifications that close the loop, threaded comments moderated by Llama Guard.', items:[
+          ['09','Notifications inbox'],
+          ['10','Threaded discussion'],
+        ]},
+        { kind:'art', section:'Engagement', title:'Notifications inbox',  width:820, height:1100, render: () => <NotificationsScreen/> },
+        { kind:'art', section:'Engagement', title:'Threaded discussion', width:880, height:1200, render: () => <CommentsScreen/> },
+
+        // PART V — Mobile
+        { kind:'divider', num:'PART · V', title:'Mobile', sub:'The ZKP onboarding the privacy story turns into a screen, plus the report card and inbox sized for a phone.', items:[
+          ['11','ZKP onboarding · 5-step flow'],
+          ['12','Leader card · mobile'],
+          ['13','Inbox · mobile'],
+        ]},
+        // 5-up phone strip for onboarding
+        { kind:'phonesRow', section:'Mobile', title:'ZKP onboarding · 5 steps',
+          steps:[0,1,2,3,4],
+        },
+        { kind:'phone', section:'Mobile', title:'Leader card · mobile', width:360, height:760, render: () => <MobileLeaderCard/> },
+        { kind:'phone', section:'Mobile', title:'Inbox · mobile',       width:360, height:760, render: () => <MobileNotifications/> },
+      ];
+    }
+
+    function PhoneRow({ steps }) {
+      // 5 mini-phones in one row, scaled to fit FIT_W
+      const phoneW = 280;
+      const phoneH = 580;
+      const gap = 20;
+      const totalW = phoneW * steps.length + gap * (steps.length - 1);
+      const scale = Math.min(FIT_W / totalW, FIT_H / phoneH, 1);
+      const scaledH = phoneH * scale;
+      return (
+        <div className="stage" style={{ minHeight: scaledH }}>
+          <div className="stage-frame" style={{
+            display:'flex', gap, width: totalW, height: phoneH,
+            transform:`scale(${scale})`,
+          }}>
+            {steps.map(s => (
+              <AndroidDevice key={s} width={phoneW} height={phoneH}>
+                <ZKP_Step step={s} onNext={()=>{}}/>
+              </AndroidDevice>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const pages = makePages();
+      // page numbering — count only "content" pages for the headers
+      let pn = 0;
+      const totalContent = pages.filter(p => p.kind === 'art' || p.kind === 'phone' || p.kind === 'phonesRow').length;
+
+      return (
+        <>
+          {pages.map((p, i) => {
+            if (p.kind === 'cover') {
+              return (
+                <section className="page page-cover" key={i}>
+                  <div className="cover-inner">
+                    <div style={{
+                      fontFamily:'var(--font-mono)', fontSize:11, letterSpacing:'0.12em',
+                      color:'oklch(0.78 0.16 250)', fontWeight:700, marginBottom:18,
+                    }}>FACTIVIST · SEASON ONE</div>
+                    <h1 className="cover-h1">The civic record<br/><span className="cover-brand">India can't ignore.</span></h1>
+                    <p className="cover-sub">A complete screen kit for the anonymous, verified, on-chain accountability platform — landing, leader report cards, accused profiles, constituency explorer, judicial tracking, AI search, analytics, and the privacy-first mobile flow.</p>
+                    <div className="cover-meta">
+                      <div><strong>{totalContent}</strong>SCREENS</div>
+                      <div><strong>4,182</strong>CONSTITUENCIES ON MAP</div>
+                      <div><strong>WEB · MOBILE</strong>BOTH PLATFORMS</div>
+                    </div>
+                    <div style={{
+                      position:'absolute', left:'18mm', bottom:'14mm',
+                      fontFamily:'var(--font-mono)', fontSize:10, letterSpacing:'0.06em',
+                      color:'oklch(0.68 0.01 270)',
+                    }}>DESIGN REVIEW · MAY 2026</div>
+                  </div>
+                </section>
+              );
+            }
+            if (p.kind === 'divider') {
+              return (
+                <section className="page page-divider" key={i}>
+                  <div className="divider-inner">
+                    <div className="divider-num">{p.num}</div>
+                    <h2 className="divider-h1">{p.title}</h2>
+                    <p className="divider-sub">{p.sub}</p>
+                    <ul className="divider-list">
+                      {p.items.map(([n,t]) => (
+                        <li key={n}><span className="n">{n}</span><span>{t}</span></li>
+                      ))}
+                    </ul>
+                  </div>
+                </section>
+              );
+            }
+            pn++;
+            return (
+              <section className="page" key={i}>
+                <PageHead section={p.section} title={p.title} n={pn} total={totalContent}/>
+                {p.kind === 'art' && (
+                  <Stage width={p.width} height={p.height}>
+                    <FixedScreen width={p.width} height={p.height}>{p.render()}</FixedScreen>
+                  </Stage>
+                )}
+                {p.kind === 'phone' && (
+                  <Stage width={p.width} height={p.height}>
+                    <AndroidDevice width={p.width} height={p.height}>{p.render()}</AndroidDevice>
+                  </Stage>
+                )}
+                {p.kind === 'phonesRow' && <PhoneRow steps={p.steps}/>}
+                <PageFoot/>
+              </section>
+            );
+          })}
+        </>
+      );
+    }
+
+    // Wait for fonts + topojson, then render, then auto-print.
+    (async () => {
+      // Wait for the babel-transpiled scripts above to register their globals.
+      // A short delay handles the JSX compile race.
+      await new Promise(r => setTimeout(r, 100));
+      // Pre-fetch the India topojson so the constituency map paints before print.
+      try {
+        await fetch('data/india-acs.topo.json').then(r => r.json());
+      } catch {}
+      ReactDOM.createRoot(document.getElementById('render-root')).render(<App/>);
+      // Give the map a tick to decode + paint, then trigger print
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      await new Promise(r => setTimeout(r, 2000));
+      window.print();
+    })();
+  </script>
+</body>
+</html>

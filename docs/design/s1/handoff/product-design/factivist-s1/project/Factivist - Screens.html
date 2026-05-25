@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-screen-label="Factivist Screens">
+<head>
+  <meta charset="utf-8">
+  <title>Factivist — Screens from the vision</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="design-system/colors_and_type.css">
+  <link rel="stylesheet" href="design-system/_preview.css">
+  <style>
+    html, body { height:100%; margin:0; }
+    body {
+      background: #f0eee9;
+      font-family: var(--font-sans);
+      color: var(--color-foreground);
+    }
+    body.fv-dark { background: oklch(0.12 0.005 270); }
+    /* Dark mode override applied via a body class — flips the surface
+       tokens and the gray scale so chip/avatar/badge components recolor
+       without touching their CSS. Brand + semantic tints (50/100/200,
+       700/800/900) are darkened/lightened to read correctly on dark
+       surfaces. */
+    body.fv-dark {
+      /* Surface tokens */
+      --color-background: oklch(0.155 0.005 270);
+      --color-foreground: oklch(0.96 0.003 250);
+      --color-card: oklch(0.195 0.005 270);
+      --color-card-foreground: oklch(0.96 0.003 250);
+      --color-muted: oklch(0.22 0.005 270);
+      --color-muted-foreground: oklch(0.66 0.01 270);
+      --color-border: oklch(0.27 0.006 270);
+      --color-input: oklch(0.22 0.006 270);
+      --fv-header-bg: oklch(0.18 0.005 270);
+      --fv-landing-nav-bg: oklch(0.155 0.005 270);
+
+      /* Gray scale inverted so chips / avatars / dividers stay legible */
+      --color-gray-50:  oklch(0.17 0.005 270);
+      --color-gray-100: oklch(0.21 0.005 270);
+      --color-gray-200: oklch(0.26 0.006 270);
+      --color-gray-300: oklch(0.34 0.008 270);
+      --color-gray-400: oklch(0.50 0.01 270);
+      --color-gray-500: oklch(0.62 0.012 270);
+      --color-gray-600: oklch(0.72 0.012 270);
+      --color-gray-700: oklch(0.80 0.010 270);
+      --color-gray-800: oklch(0.88 0.008 270);
+      --color-gray-900: oklch(0.94 0.005 270);
+      --color-gray-950: oklch(0.98 0.003 270);
+
+      /* Brand tints — 50/100/200 darkened; 800/900 lightened */
+      --color-brand-50:  oklch(0.23 0.04 250);
+      --color-brand-100: oklch(0.28 0.07 250);
+      --color-brand-200: oklch(0.34 0.09 250);
+      --color-brand-300: oklch(0.44 0.13 250);
+      --color-brand-700: oklch(0.80 0.09 250);
+      --color-brand-800: oklch(0.86 0.07 250);
+      --color-brand-900: oklch(0.92 0.05 250);
+
+      /* Warning */
+      --color-warning-50:  oklch(0.23 0.04 75);
+      --color-warning-100: oklch(0.28 0.07 75);
+      --color-warning-200: oklch(0.34 0.09 75);
+      --color-warning-700: oklch(0.82 0.10 75);
+      --color-warning-800: oklch(0.88 0.08 75);
+      --color-warning-900: oklch(0.93 0.06 75);
+
+      /* Danger */
+      --color-danger-50:  oklch(0.23 0.04 27);
+      --color-danger-100: oklch(0.28 0.07 27);
+      --color-danger-200: oklch(0.34 0.10 27);
+      --color-danger-700: oklch(0.82 0.11 27);
+      --color-danger-800: oklch(0.88 0.08 27);
+      --color-danger-900: oklch(0.93 0.06 27);
+
+      /* Success */
+      --color-success-50:  oklch(0.23 0.04 145);
+      --color-success-100: oklch(0.28 0.07 145);
+      --color-success-200: oklch(0.34 0.09 145);
+      --color-success-700: oklch(0.80 0.10 145);
+      --color-success-800: oklch(0.86 0.08 145);
+    }
+    body.fv-dark .fv-screen { color-scheme: dark; }
+
+    /* Default token so light-mode renders match what shipped before */
+    body { --fv-header-bg: rgba(255,255,255,0.85); --fv-landing-nav-bg: rgba(246,244,239,0.92); }
+    /* Compact density — applied per-artboard via .fv-density-compact, the
+       wrapping div around each screen. Pulls all of the screen content
+       tighter without changing component code. */
+    .fv-density-compact { --fv-pad: 0.85; }
+    .fv-density-compact .fv-screen [data-fv-pad] { padding-block: calc(20px * var(--fv-pad)); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+    integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+    integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
+    integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- Design system primitives + data -->
+  <script src="design-system/data.js"></script>
+  <script src="design-system/icons.js"></script>
+  <script src="screens/data-extra.js"></script>
+  <script src="screens/judicial-data.js"></script>
+  <script src="screens/complaint-data.js"></script>
+  <script src="screens/feed-me-data.js"></script>
+  <script src="screens/batch2-data.js"></script>
+  <script src="screens/finishers-data.js"></script>
+  <script src="screens/batch3-data.js"></script>
+  <script src="data/india-state-summary.js"></script>
+  <script src="screens/explorer-data.js"></script>
+
+  <script type="text/babel" src="design-system/components.jsx"></script>
+  <script type="text/babel" src="design-system/layout.jsx"></script>
+  <script type="text/babel" src="design-system/android-frame.jsx"></script>
+  <script type="text/babel" src="design-system/design-canvas.jsx"></script>
+  <script type="text/babel" src="design-system/tweaks-panel.jsx"></script>
+
+  <!-- Screens -->
+  <script type="text/babel" src="screens/shared.jsx"></script>
+  <script type="text/babel" src="screens/india-map.jsx"></script>
+  <script type="text/babel" src="screens/report-card.jsx"></script>
+  <script type="text/babel" src="screens/accused.jsx"></script>
+  <script type="text/babel" src="screens/constituency.jsx"></script>
+  <script type="text/babel" src="screens/ai-chat.jsx"></script>
+  <script type="text/babel" src="screens/notifications.jsx"></script>
+  <script type="text/babel" src="screens/comments.jsx"></script>
+  <script type="text/babel" src="screens/judicial.jsx"></script>
+  <script type="text/babel" src="screens/landing.jsx"></script>
+  <script type="text/babel" src="screens/analytics.jsx"></script>
+  <script type="text/babel" src="screens/onboarding-mobile.jsx"></script>
+  <script type="text/babel" src="screens/complaint-register.jsx"></script>
+  <script type="text/babel" src="screens/complaint-view.jsx"></script>
+  <script type="text/babel" src="screens/empty-and-endorse.jsx"></script>
+  <script type="text/babel" src="screens/discovery.jsx"></script>
+  <script type="text/babel" src="screens/profile-me.jsx"></script>
+  <script type="text/babel" src="screens/resolution-attestation.jsx"></script>
+  <script type="text/babel" src="screens/shareable-card.jsx"></script>
+  <script type="text/babel" src="screens/shame-index.jsx"></script>
+  <script type="text/babel" src="screens/critical-escalation.jsx"></script>
+  <script type="text/babel" src="screens/search-results.jsx"></script>
+  <script type="text/babel" src="screens/evidence-viewer.jsx"></script>
+  <script type="text/babel" src="screens/notification-prefs.jsx"></script>
+  <script type="text/babel" src="screens/shareable-complaint.jsx"></script>
+  <script type="text/babel" src="screens/promise-tracking.jsx"></script>
+  <script type="text/babel" src="screens/mobile-companions.jsx"></script>
+  <script type="text/babel" src="screens/mobile-extras.jsx"></script>
+  <script type="text/babel" src="screens/mobile-tier1.jsx"></script>
+  <script type="text/babel" src="screens/mobile-tier2.jsx"></script>
+  <script type="text/babel" src="screens/mobile-finishers.jsx"></script>
+  <script type="text/babel" src="screens/web-onboarding.jsx"></script>
+  <script type="text/babel" src="screens/moderation.jsx"></script>
+  <script type="text/babel" src="screens/undertrial.jsx"></script>
+  <script type="text/babel" src="screens/media-capture.jsx"></script>
+  <script type="text/babel" src="screens/mobile-batch3.jsx"></script>
+  <script type="text/babel" src="screens/partials.jsx"></script>
+  <script type="text/babel" src="screens/mobile-partials.jsx"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Tweak defaults (host rewrites this block when the user changes a tweak)
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "dark": true,
+      "density": "compact",
+      "reportCardVariant": "editorial"
+    }/*EDITMODE-END*/;
+
+    // Apply tweak side-effects to the document body
+    function useApplyTweaks(t) {
+      useEffect(() => {
+        document.body.classList.toggle('fv-dark', !!t.dark);
+        document.body.dataset.theme = t.dark ? 'dark' : 'light';
+      }, [t.dark]);
+    }
+
+    // Wrap a single screen with density + size locked
+    const Screen = ({ width, height, density='comfortable', children }) => (
+      <div className={'fv-screen ' + (density==='compact' ? 'fv-density-compact' : '')}
+        style={{
+          width, height, overflow:'hidden',
+          background:'var(--color-background)',
+          color:'var(--color-foreground)',
+          fontFamily:'var(--font-sans)',
+          position:'relative',
+        }}>
+        <div style={{ width, height, overflowY:'auto' }}>
+          {children}
+        </div>
+      </div>
+    );
+
+    // ─── Clickable mobile onboarding ────────────────────────────
+    // A single phone frame that advances through the 5 ZKP steps when
+    // the user taps Continue. Restartable. Lives inside an artboard.
+    const ClickableOnboarding = () => {
+      const [step, setStep] = useState(0);
+      const next = () => setStep(s => (s + 1) % 5);
+      return (
+        <div style={{ position:'relative' }}>
+          <AndroidDevice width={360} height={680}>
+            <ZKP_Step step={step} onNext={next}/>
+          </AndroidDevice>
+          <button onClick={()=>setStep(0)} style={{
+            position:'absolute', left:'50%', bottom:-32, transform:'translateX(-50%)',
+            padding:'5px 10px', borderRadius:9999, border:'1px solid rgba(0,0,0,.15)',
+            background:'rgba(255,255,255,0.85)', cursor:'pointer', fontFamily:'inherit',
+            fontSize:11, color:'rgba(40,30,20,.7)', fontWeight:600,
+          }}>↻ Restart flow</button>
+        </div>
+      );
+    };
+
+    // ─── Static onboarding step (used in the 5-step row) ────────
+    const StaticStep = ({ step }) => (
+      <AndroidDevice width={300} height={600}>
+        <ZKP_Step step={step} onNext={()=>{}}/>
+      </AndroidDevice>
+    );
+
+    function App() {
+      const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+      useApplyTweaks(t);
+
+      const density = t.density;
+
+      // Common artboard wrapper for a desktop screen
+      const Desktop = ({ children, width=1280, height=900 }) => (
+        <Screen width={width} height={height} density={density}>{children}</Screen>
+      );
+
+      return (
+        <>
+          <DesignCanvas>
+            <DCSection
+              id="discovery"
+              title="Discovery feed"
+              subtitle="The home surface a verified citizen lands on. Desktop puts filters left, feed centre, trending right. Mobile collapses to a single column with a sticky top bar and bottom nav.">
+              <DCArtboard id="feed-1" label="Web · Mumbai South · hot" width={1280} height={1500}>
+                <Desktop width={1280} height={1500}>
+                  <DiscoveryFeed/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-feed" label="Mobile · feed" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileDiscoveryFeed/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="me"
+              title="Profile · Me"
+              subtitle="The citizen's own record — civic score with tier progress, filed complaints, activity, badges, and a privacy report showing exactly what the platform knows.">
+              <DCArtboard id="me-1" label="Web · civic record" width={1280} height={1400}>
+                <Desktop width={1280} height={1400}>
+                  <ProfileMe/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-me" label="Mobile · me" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileProfileMe/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="attestation"
+              title="Resolution attestation"
+              subtitle="15-citizen consensus to move a complaint to Resolved. Hero with the claim, evidence carousel, three-way decision panel, and the live attester roll.">
+              <DCArtboard id="attest-1" label="Web · #4814 · 13 of 15 attested" width={1280} height={1600}>
+                <Desktop width={1280} height={1600}>
+                  <ResolutionAttestation/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-attest" label="Mobile · attestation" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileAttestation/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="landing"
+              title="Landing · marketing"
+              subtitle="Pre-verify public page. Pitches the privacy promise, the report-card mechanic, and the get-the-app CTA.">
+              <DCArtboard id="landing-1" label="Web · landing" width={1280} height={2400}>
+                <Desktop width={1280} height={2400}>
+                  <LandingScreen/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-landing" label="Mobile · landing" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileLanding/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="hero"
+              title="Leader report card"
+              subtitle="The political accountability money shot. Two layout directions on the same constituency.">
+
+              {t.reportCardVariant === 'editorial' && (
+                <DCArtboard id="rc-edit" label="A · Editorial — narrative scorecard" width={1280} height={1500}>
+                  <Desktop width={1280} height={1500}>
+                    <ReportCardEditorial leader={window.fvDataExtra.leaders[0]}/>
+                  </Desktop>
+                </DCArtboard>
+              )}
+              {t.reportCardVariant === 'dashboard' && (
+                <DCArtboard id="rc-dash" label="B · Dashboard — scanner grid" width={1280} height={1100}>
+                  <Desktop width={1280} height={1100}>
+                    <ReportCardDashboard leader={window.fvDataExtra.leaders[0]}/>
+                  </Desktop>
+                </DCArtboard>
+              )}
+              {t.reportCardVariant === 'both' && (
+                <>
+                  <DCArtboard id="rc-edit" label="A · Editorial" width={1280} height={1500}>
+                    <Desktop width={1280} height={1500}>
+                      <ReportCardEditorial leader={window.fvDataExtra.leaders[0]}/>
+                    </Desktop>
+                  </DCArtboard>
+                  <DCArtboard id="rc-dash" label="B · Dashboard" width={1280} height={1100}>
+                    <Desktop width={1280} height={1100}>
+                      <ReportCardDashboard leader={window.fvDataExtra.leaders[0]}/>
+                    </Desktop>
+                  </DCArtboard>
+                </>
+              )}
+
+              <DCPostIt rotate={-2} x={-340} y={40} width={260}>
+                <strong>Pick a variant</strong> from the Tweaks panel. Editorial reads like a dossier;
+                dashboard scans like a Bloomberg terminal. Same data, different reader.
+              </DCPostIt>
+              <DCArtboard id="mob-leader" label="Mobile · report card" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileLeaderCard/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="accused"
+              title="Accused / Person-of-Interest"
+              subtitle="Receipt page on a builder cluster. Politicians, officers, corporate heads work the same way.">
+              <DCArtboard id="accused-1" label="Web · POI · Pravin Rao" width={1280} height={1320}>
+                <Desktop width={1280} height={1320}>
+                  <AccusedScreen/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-accused" label="Mobile · POI" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileAccused/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="constituency"
+              title="Constituency explorer"
+              subtitle="All 4,182 assembly constituencies of India on one map. Tap a state to drill in; switch metric to recolor.">
+              <DCArtboard id="cons-1" label="Web · India view" width={1280} height={1100}>
+                <Desktop width={1280} height={1100}>
+                  <ConstituencyExplorer/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-constituency" label="Mobile · explorer" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileConstituency/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="ai-chat"
+              title="Ask AI"
+              subtitle="Natural-language civic query. Three columns: history · thread · cited sources. Grounded in anchored complaints only.">
+              <DCArtboard id="chat-1" label="Web · Maharashtra RTI thread" width={1280} height={1080}>
+                <Desktop width={1280} height={1080}>
+                  <AiChat/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-ai" label="Mobile · Ask AI" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileAiChat/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="analytics"
+              title="Analytics dashboard · for press"
+              subtitle="Journalists' surface. Filters, exportable counts, multi-line trends, methodology footer.">
+              <DCArtboard id="analytics-1" label="Web · press dashboard" width={1280} height={1320}>
+                <Desktop width={1280} height={1320}>
+                  <AnalyticsScreen/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-analytics" label="Mobile · analytics" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileAnalytics/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="judicial"
+              title="Judicial case tracking"
+              subtitle="Every listing, every adjournment, every order — with the judge's own analytics next to it. Pulled from eCourts, crowd-corrected.">
+              <DCArtboard id="judicial-1" label="WP-CRL/4821/2024 · Powai FIR refusal" width={1280} height={1500}>
+                <Desktop width={1280} height={1500}>
+                  <JudicialCase/>
+                </Desktop>
+              </DCArtboard>
+              <DCPostIt rotate={2} x={-340} y={40} width={260}>
+                <strong>Why this matters.</strong> Adjournments are the silent killer of accountability cases.
+                Surfacing the pattern by judge and case-type makes pressure observable.
+              </DCPostIt>
+              <DCArtboard id="mob-judicial" label="Mobile · case" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileJudicial/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="complaint-flow"
+              title="Complaint registration"
+              subtitle="4-step desktop flow — pick a category and severity, write the facts, attach evidence and tag the accused, review and anchor on Polygon. Sticky progress rail on the left.">
+              <DCArtboard id="reg-step-1" label="01 · Category & severity" width={1280} height={1100}>
+                <Desktop width={1280} height={1100}>
+                  <ComplaintRegister initialStep={0}/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="reg-step-2" label="02 · Story" width={1280} height={1100}>
+                <Desktop width={1280} height={1100}>
+                  <ComplaintRegister initialStep={1}/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="reg-step-3" label="03 · Evidence & location" width={1280} height={1300}>
+                <Desktop width={1280} height={1300}>
+                  <ComplaintRegister initialStep={2}/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="reg-step-4" label="04 · Review & anchor" width={1280} height={1400}>
+                <Desktop width={1280} height={1400}>
+                  <ComplaintRegister initialStep={3}/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-register" label="Mobile · register" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileComplaintRegister/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="complaint-view"
+              title="Complaint view"
+              subtitle="The detail page for an anchored complaint — status workflow, body, evidence carousel, endorsement progress and linked POI/court case.">
+              <DCArtboard id="view-1" label="Web · #4820" width={1280} height={1500}>
+                <Desktop width={1280} height={1500}>
+                  <ComplaintView/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-view" label="Mobile · #4820" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileComplaintView/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="endorse"
+              title="Endorse flow"
+              subtitle="Two-state confirmation modal — confirm with a reason, then a receipt anchored on chain.">
+              <DCArtboard id="endorse-1" label="Web · confirm + receipt" width={1100} height={780}>
+                <Desktop width={1100} height={780}>
+                  <EndorseFlowArtboard/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-endorse-confirm" label="Mobile · confirm sheet" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileEndorse stage="confirm"/></AndroidDevice>
+              </DCArtboard>
+              <DCArtboard id="mob-endorse-done" label="Mobile · receipt" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileEndorse stage="done"/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="empty"
+              title="Empty states"
+              subtitle="What the user sees before they have anything — feed, search, comments, inbox, drafts, already-endorsed. One concrete action per pattern.">
+              <DCArtboard id="empty-1" label="Web · all 6 patterns" width={1280} height={1500}>
+                <Desktop width={1280} height={1500}>
+                  <EmptyStates/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-empties" label="Mobile · 3 patterns" width={360} height={1100}>
+                <AndroidDevice width={360} height={1100}><MobileEmptyStates/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="discussion"
+              title="Notifications & discussion"
+              subtitle="Two single-column surfaces that complete the loop after a complaint is filed.">
+              <DCArtboard id="inbox-1" label="Web · inbox" width={820} height={1100}>
+                <Desktop width={820} height={1100}>
+                  <NotificationsScreen/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="thread-1" label="Web · discussion · #4820" width={880} height={1200}>
+                <Desktop width={880} height={1200}>
+                  <CommentsScreen/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-inbox" label="Mobile · inbox" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileNotifications/></AndroidDevice>
+              </DCArtboard>
+              <DCArtboard id="mob-comments" label="Mobile · discussion" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileComments/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="shareable"
+              title="Shareable report card"
+              subtitle="WhatsApp-shaped portrait and Twitter / OG landscape cards — generated from the anchored record, with QR back to the live page.">
+              <DCArtboard id="share-1" label="Web · portrait + landscape" width={1280} height={1100}>
+                <Desktop width={1280} height={1100}>
+                  <ShareableReportCardArtboard/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-share" label="Mobile · share sheet" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileShareCard/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="shame"
+              title="Constituency Shame Index"
+              subtitle="National leaderboard of the worst-performing constituencies. Designed to be screenshotted by journalists and circulated.">
+              <DCArtboard id="shame-1" label="Web · May 2026 top 10" width={1280} height={1500}>
+                <Desktop width={1280} height={1500}>
+                  <ShameIndex/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-shame" label="Mobile · shame index" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileShameIndex/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="critical"
+              title="Critical Issue escalation"
+              subtitle="The moment a complaint crosses 1,000 endorsements — ring fills, velocity chart spikes, five cascades unlock.">
+              <DCArtboard id="crit-1" label="Web · #4819 just crossed" width={1280} height={1500}>
+                <Desktop width={1280} height={1500}>
+                  <CriticalEscalation/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-critical" label="Mobile · takeover" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileCriticalEscalation/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="search"
+              title="Search results"
+              subtitle="Populated state of search — facets on the left, mixed-type results (complaints + POI + cases + comments) in the middle, spotlight rail on the right with the top leader hit and an &lsquo;open in Ask AI&rsquo; shortcut.">
+              <DCArtboard id="search-1" label="Web · &lsquo;powai station FIR refusal&rsquo;" width={1280} height={1400}>
+                <Desktop width={1280} height={1400}>
+                  <SearchResults/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-search" label="Mobile · search" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileSearch/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="evidence-viewer"
+              title="Evidence viewer"
+              subtitle="Universal viewer with format-specific renderers for image, video, audio, PDF, DOCX, XLSX, PPTX, TXT, CSV. File list left, viewer pane centre, metadata + anchor rail right.">
+              <DCArtboard id="ev-1" label="Web · 9 formats" width={1280} height={900}>
+                <Desktop width={1280} height={900}>
+                  <EvidenceViewer/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-evidence" label="Mobile · viewer" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileEvidenceViewer/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="notif-prefs"
+              title="Notification preferences"
+              subtitle="Channels, digest cadence, quiet hours, per-event push/email rules, subscribed areas — plus the privacy contract that explains what we don&rsquo;t do.">
+              <DCArtboard id="prefs-1" label="Web · settings" width={920} height={1500}>
+                <Desktop width={920} height={1500}>
+                  <NotificationPrefs/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-prefs" label="Mobile · settings" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileNotifPrefs/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="shareable-complaint"
+              title="Shareable complaint card"
+              subtitle="Complaint-side counterpart to the report-card share. WhatsApp portrait + Twitter landscape, anchored receipt and linked court case included.">
+              <DCArtboard id="shareC-1" label="Web · portrait + landscape" width={1280} height={1100}>
+                <Desktop width={1280} height={1100}>
+                  <ShareableComplaintArtboard/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-share-c" label="Mobile · share complaint" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileShareComplaint/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="promise-deep"
+              title="Promise tracking — deep view"
+              subtitle="Standalone manifesto-vs-delivery page for one leader. Each promise gets its own evidence chain (RTI, parliamentary, tender, press, citizen receipts) and a progress bar.">
+              <DCArtboard id="promise-1" label="Web · 17 promises" width={1100} height={1500}>
+                <Desktop width={1100} height={1500}>
+                  <PromiseTrackingDeep/>
+                </Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-promises" label="Mobile · promises" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobilePromiseTracking/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="web-onboarding"
+              title="ZKP onboarding · web + mobile"
+              subtitle="The verify-but-stay-anonymous funnel. Web: 5 desktop steps with a left rail navigator and a right-side privacy contract. Mobile: 5 phone screens of the same flow, plus a clickable hot path you can tap through.">
+              <DCArtboard id="webob-1" label="Web · 01 · Verify" width={1280} height={920}>
+                <Desktop width={1280} height={920}><WebOnboarding step={0}/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="webob-2" label="Web · 02 · Scan" width={1280} height={920}>
+                <Desktop width={1280} height={920}><WebOnboarding step={1}/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="webob-3" label="Web · 03 · Generate ZKP" width={1280} height={920}>
+                <Desktop width={1280} height={920}><WebOnboarding step={2}/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="webob-4" label="Web · 04 · Constituency" width={1280} height={920}>
+                <Desktop width={1280} height={920}><WebOnboarding step={3}/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="webob-5" label="Web · 05 · Done" width={1280} height={920}>
+                <Desktop width={1280} height={920}><WebOnboarding step={4}/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="zkp-step-0" label="Mobile · 01 · Intro" width={300} height={600}>
+                <StaticStep step={0}/>
+              </DCArtboard>
+              <DCArtboard id="zkp-step-1" label="Mobile · 02 · Scan QR" width={300} height={600}>
+                <StaticStep step={1}/>
+              </DCArtboard>
+              <DCArtboard id="zkp-step-2" label="Mobile · 03 · Generate ZKP" width={300} height={600}>
+                <StaticStep step={2}/>
+              </DCArtboard>
+              <DCArtboard id="zkp-step-3" label="Mobile · 04 · Constituency" width={300} height={600}>
+                <StaticStep step={3}/>
+              </DCArtboard>
+              <DCArtboard id="zkp-step-4" label="Mobile · 05 · Done" width={300} height={600}>
+                <StaticStep step={4}/>
+              </DCArtboard>
+              <DCArtboard id="zkp-clickable" label="▶ Clickable hot path · tap Continue" width={360} height={720}>
+                <div style={{ padding:'0px 30px 40px' }}>
+                  <ClickableOnboarding/>
+                </div>
+              </DCArtboard>
+              <DCPostIt rotate={-2} x={-340} y={40} width={260}>
+                <strong>One flow, two surfaces.</strong> The web steps mirror the mobile steps 1:1 — same privacy promise, same Bloomberg-clean ledger treatment.
+              </DCPostIt>
+            </DCSection>
+
+            <DCSection
+              id="moderation"
+              title="AI moderation queue · plus citizen appeal"
+              subtitle="The two surfaces that make Llama Guard 3 / IndicNER moderation transparent — a moderator-only queue and a citizen-facing appeal when a complaint is held.">
+              <DCArtboard id="mod-queue" label="Internal · moderator queue" width={1280} height={1500}>
+                <Desktop width={1280} height={1500}><ModerationQueue/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="mod-appeal" label="Citizen · my complaint was held" width={1280} height={1500}>
+                <Desktop width={1280} height={1500}><ModerationAppeal/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-mod-appeal" label="Mobile · appeal" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileModerationAppeal/></AndroidDevice>
+              </DCArtboard>
+              <DCPostIt rotate={2} x={-340} y={40} width={260}>
+                <strong>Why this matters.</strong> The platform's claim of fairness depends on this loop
+                being visible. Today it isn't — Llama Guard hides behind a chip.
+              </DCPostIt>
+            </DCSection>
+
+            <DCSection
+              id="undertrial"
+              title="Under-trial prisoner tracker"
+              subtitle="From §2.6 of the vision. One detainee's record surfaced as a civic-accountability case — days held vs §436A CrPC benchmark, every bail rejection, every adjournment — alongside the nationwide aggregate.">
+              <DCArtboard id="ut-1" label="UT-MH-29481 · 1,247 days held" width={1280} height={1700}>
+                <Desktop width={1280} height={1700}><UndertrialTracker/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-ut" label="Mobile · under-trial" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileUndertrial/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="capture"
+              title="Audio / video / photo capture"
+              subtitle="The §2.1 multi-format capture surface. Three modes, each with the metadata-strip pipeline (GPS, EXIF, voice-biometric, faces, plates) visible the whole time.">
+              <DCArtboard id="cap-1" label="Capture · audio / video / photo" width={1280} height={1500}>
+                <Desktop width={1280} height={1500}><MediaCapture/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-capture" label="Mobile · capture" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileMediaCapture/></AndroidDevice>
+              </DCArtboard>
+              <DCPostIt rotate={-2} x={-340} y={40} width={260}>
+                <strong>Text-only complaints rarely move.</strong> This surface is where evidence gets in —
+                and where the &lsquo;Aadhaar never leaves your phone&rsquo; promise has to hold for everything else
+                too.
+              </DCPostIt>
+            </DCSection>
+
+            <DCSection
+              id="consensus"
+              title="Constituency consensus health"
+              subtitle="§2.5 · The numbers behind every chip in the feed. Verified-citizen funnel, no-show rate, weekly endorsement velocity, category participation, and the anomalies the consensus service is watching.">
+              <DCArtboard id="consensus-1" label="Mumbai South · 30 days" width={1280} height={1700}>
+                <Desktop width={1280} height={1700}><ConsensusMetrics/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-consensus" label="Mobile · consensus" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileConsensus/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="evidence-strip"
+              title="Evidence strip confirmation"
+              subtitle="§2.1 · The before-vs-after diff a citizen sees right after upload — exactly what GPS, EXIF, device-ID and biometric fields were removed, what was rounded, what was added. Nothing has been uploaded yet at this point.">
+              <DCArtboard id="strip-1" label="Photo · 11 fields stripped" width={1280} height={1200}>
+                <Desktop width={1280} height={1200}><EvidenceStrip/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-strip" label="Mobile · strip" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileEvidenceStrip/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="trending-heat"
+              title="Trending issues · time-windowed heat"
+              subtitle="§2.7 · 24h / 7d / 30d / 90d switcher with a per-window normalised state heat map, hottest-categories breakdown, and spiking / cooling rails with sparklines.">
+              <DCArtboard id="trend-1" label="India · 7 days" width={1280} height={1300}>
+                <Desktop width={1280} height={1300}><TrendingHeat/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-trend" label="Mobile · trending" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileTrending/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="subscriptions"
+              title="Subscriptions manager"
+              subtitle="Phase 3 · One subscription per record (complaint, leader, court case, POI, constituency) with granular triggers, push/email toggles, quiet hours and daily digest — stored locally, never sent to a server.">
+              <DCArtboard id="subs-1" label="Settings · subscriptions" width={1280} height={1500}>
+                <Desktop width={1280} height={1500}><SubscriptionsManager/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-subs" label="Mobile · subscriptions" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobileSubscriptions/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection
+              id="promise-ingest"
+              title="Promise tracking · ingest & provenance"
+              subtitle="§2.3 · Where each promise came from — manifesto page, rally transcript, TV interview, X posts — every source hash-anchored on ingest. Plus the five-step evidence chain for one specific promise (manifesto → RTI → parliamentary → press → citizen receipts).">
+              <DCArtboard id="promise-i-1" label="Anant V. Kulkarni · 27 promises parsed" width={1280} height={1300}>
+                <Desktop width={1280} height={1300}><PromiseIngest/></Desktop>
+              </DCArtboard>
+              <DCArtboard id="mob-promise-i" label="Mobile · ingest" width={360} height={760}>
+                <AndroidDevice width={360} height={760}><MobilePromiseIngest/></AndroidDevice>
+              </DCArtboard>
+            </DCSection>
+
+          </DesignCanvas>
+
+          <TweaksPanel title="Tweaks">
+            <TweakSection label="System"/>
+            <TweakToggle  label="Dark mode" value={t.dark}
+                          onChange={(v)=>setTweak('dark', v)}/>
+            <TweakRadio   label="Density"   value={t.density}
+                          options={['compact','comfortable']}
+                          onChange={(v)=>setTweak('density', v)}/>
+            <TweakSection label="Report card"/>
+            <TweakSelect  label="Variant"   value={t.reportCardVariant}
+                          options={['editorial','dashboard','both']}
+                          onChange={(v)=>setTweak('reportCardVariant', v)}/>
+          </TweaksPanel>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
