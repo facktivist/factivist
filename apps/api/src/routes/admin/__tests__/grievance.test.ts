@@ -19,52 +19,67 @@
 import { Hono } from 'hono'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { insertedQueueRows, insertedAuditRows, rowRef, stubRef, createClientMock, txnCalls } =
-  vi.hoisted(() => {
-    const insertedQueueRows: unknown[] = []
-    const insertedAuditRows: unknown[] = []
-    const rowRef: { current: unknown } = { current: null }
-    const txnCalls: { count: number } = { count: 0 }
+const {
+  insertedQueueRows,
+  insertedAuditRows,
+  insertedContactRows,
+  rowRef,
+  stubRef,
+  createClientMock,
+  txnCalls,
+} = vi.hoisted(() => {
+  const insertedQueueRows: unknown[] = []
+  const insertedAuditRows: unknown[] = []
+  const insertedContactRows: unknown[] = []
+  const rowRef: { current: unknown } = { current: null }
+  const txnCalls: { count: number } = { count: 0 }
 
-    const buildInsertChain = (sink: unknown[], returningRow: () => unknown) => ({
-      values: (row: unknown) => {
-        sink.push(row)
-        return {
-          returning: async () => [returningRow()],
-        }
-      },
-    })
-
-    const makeDbStub = () => {
-      let callCount = 0
+  const buildInsertChain = (sink: unknown[], returningRow: () => unknown) => ({
+    values: (row: unknown) => {
+      sink.push(row)
       return {
-        transaction: async (cb: (tx: unknown) => Promise<unknown>) => {
-          txnCalls.count += 1
-          return cb({
-            insert: () => {
-              const isFirst = callCount === 0
-              callCount += 1
-              return isFirst
-                ? buildInsertChain(insertedQueueRows, () => rowRef.current)
-                : buildInsertChain(insertedAuditRows, () => ({}))
-            },
-          })
-        },
+        returning: async () => [returningRow()],
       }
-    }
-
-    const stubRef: { current: ReturnType<typeof makeDbStub> } = { current: makeDbStub() }
-    const createClientMock = () => stubRef.current
-    return {
-      insertedQueueRows,
-      insertedAuditRows,
-      rowRef,
-      stubRef,
-      createClientMock,
-      txnCalls,
-      makeDbStub,
-    }
+    },
   })
+
+  const makeDbStub = () => {
+    let callCount = 0
+    return {
+      transaction: async (cb: (tx: unknown) => Promise<unknown>) => {
+        txnCalls.count += 1
+        return cb({
+          insert: () => {
+            const slot = callCount
+            callCount += 1
+            // Insertion order matches the route: 1) moderation_queue,
+            // 2) audit_log, 3) grievance_contacts.
+            if (slot === 0) {
+              return buildInsertChain(insertedQueueRows, () => rowRef.current)
+            }
+            if (slot === 1) {
+              return buildInsertChain(insertedAuditRows, () => ({}))
+            }
+            return buildInsertChain(insertedContactRows, () => ({}))
+          },
+        })
+      },
+    }
+  }
+
+  const stubRef: { current: ReturnType<typeof makeDbStub> } = { current: makeDbStub() }
+  const createClientMock = () => stubRef.current
+  return {
+    insertedQueueRows,
+    insertedAuditRows,
+    insertedContactRows,
+    rowRef,
+    stubRef,
+    createClientMock,
+    txnCalls,
+    makeDbStub,
+  }
+})
 
 vi.mock('@factivist/db/client', () => ({
   createClient: createClientMock,
@@ -85,11 +100,15 @@ const makeDbStub = () => {
       txnCalls.count += 1
       return cb({
         insert: () => {
-          const isFirst = callCount === 0
+          const slot = callCount
           callCount += 1
-          return isFirst
-            ? buildInsertChain(insertedQueueRows, () => rowRef.current)
-            : buildInsertChain(insertedAuditRows, () => ({}))
+          if (slot === 0) {
+            return buildInsertChain(insertedQueueRows, () => rowRef.current)
+          }
+          if (slot === 1) {
+            return buildInsertChain(insertedAuditRows, () => ({}))
+          }
+          return buildInsertChain(insertedContactRows, () => ({}))
         },
       })
     },
@@ -114,6 +133,7 @@ beforeEach(() => {
   vi.stubEnv('DATABASE_URL', 'postgresql://test')
   insertedQueueRows.length = 0
   insertedAuditRows.length = 0
+  insertedContactRows.length = 0
   txnCalls.count = 0
   stubRef.current = makeDbStub()
   rowRef.current = {
@@ -149,7 +169,7 @@ describe('POST /grievance — happy path', () => {
     expect(body.acknowledgement).toContain('24 hours')
   })
 
-  it('writes BOTH the queue row and the ack audit row in one transaction', async () => {
+  it('writes queue + audit + grievance_contacts rows in one transaction (Phase 9 §3 DPDP split)', async () => {
     await mountApp().request('/grievance', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -158,13 +178,25 @@ describe('POST /grievance — happy path', () => {
     expect(txnCalls.count).toBe(1)
     expect(insertedQueueRows).toHaveLength(1)
     expect(insertedAuditRows).toHaveLength(1)
+    expect(insertedContactRows).toHaveLength(1)
+
     const ack = insertedAuditRows[0] as Record<string, unknown>
     expect(ack.action).toBe('grievance.acknowledge')
     expect(ack.targetKind).toBe('grievance')
     expect(ack.actor).toBe('system.grievance.intake')
-    expect(String(ack.rationale)).toContain('A. Journalist')
-    expect(String(ack.rationale)).toContain('journo@example.com')
+    // DPDP §8(7): audit row carries only the verifiable, non-recoverable
+    // SHA-256 of the email. Name + plaintext email MUST NOT appear here.
+    expect(String(ack.rationale)).toMatch(/^complainant_email_sha256=[0-9a-f]{64}$/)
+    expect(String(ack.rationale)).not.toContain('A. Journalist')
+    expect(String(ack.rationale)).not.toContain('journo@example.com')
     expect(String(ack.payloadHash)).toMatch(/^[0-9a-f]{64}$/)
+
+    // Recoverable contact PII lives in grievance_contacts with a
+    // 30-day post-resolve erase clock.
+    const contact = insertedContactRows[0] as Record<string, unknown>
+    expect(contact.grievanceId).toMatch(/^mq_/)
+    expect(contact.complainantName).toBe('A. Journalist')
+    expect(contact.complainantEmail).toBe('journo@example.com')
   })
 
   it('computes sla_due_at +24h for the NCII fast-track reason', async () => {

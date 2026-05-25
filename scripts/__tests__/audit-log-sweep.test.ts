@@ -13,11 +13,11 @@ describe('computeBoundaryTs', () => {
   it('subtracts exactly the retention window in UTC days', () => {
     const now = new Date('2026-05-24T03:00:00.000Z')
     const boundary = computeBoundaryTs(now, AUDIT_LOG_RETENTION_DAYS)
-    // 2026-05-24 - 180 days = 2025-11-25 (UTC)
-    expect(boundary.toISOString()).toBe('2025-11-25T03:00:00.000Z')
+    // 2026-05-24 - 365 days = 2025-05-24 (UTC)
+    expect(boundary.toISOString()).toBe('2025-05-24T03:00:00.000Z')
   })
 
-  it('uses the constant from the schema, not a hardcoded 180', () => {
+  it('uses the constant from the schema, not a hardcoded retention floor', () => {
     // If a future ADR moves the floor, the test moves with the constant.
     const now = new Date('2026-01-01T00:00:00.000Z')
     const boundary = computeBoundaryTs(now, AUDIT_LOG_RETENTION_DAYS)
@@ -27,7 +27,7 @@ describe('computeBoundaryTs', () => {
 
   it('is pure — repeated calls with the same input return equal Dates', () => {
     const now = new Date('2026-05-24T03:00:00.000Z')
-    expect(computeBoundaryTs(now, 180).getTime()).toBe(computeBoundaryTs(now, 180).getTime())
+    expect(computeBoundaryTs(now, 365).getTime()).toBe(computeBoundaryTs(now, 365).getTime())
   })
 })
 
@@ -122,11 +122,11 @@ describe('runSweep', () => {
     const { db } = makeDatabase({ deleteResult: { count: 1 } })
     const now = new Date('2026-05-24T03:00:00.000Z')
     const report = await runSweep(db, now)
-    expect(report.boundaryTs).toBe('2025-11-25T03:00:00.000Z')
+    expect(report.boundaryTs).toBe('2025-05-24T03:00:00.000Z')
   })
 
   it('echoes oldest/newest kept timestamps as ISO strings', async () => {
-    const oldest = new Date('2025-12-01T00:00:00.000Z')
+    const oldest = new Date('2025-06-01T00:00:00.000Z')
     const newest = new Date('2026-05-23T22:00:00.000Z')
     const { db } = makeDatabase({
       deleteResult: { count: 2 },
@@ -203,7 +203,7 @@ describe('main()', () => {
     const payload = JSON.parse(log.mock.calls[0]?.[0] ?? '{}')
     expect(payload).toMatchObject({
       deletedRows: 0,
-      boundaryTs: '2025-11-25T03:00:00.000Z',
+      boundaryTs: '2025-05-24T03:00:00.000Z',
     })
     expect(typeof payload.durationMs).toBe('number')
   })

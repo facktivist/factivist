@@ -56,6 +56,12 @@ export {
   type NewFeatureFlag,
 } from './feature_flags.ts'
 export {
+  GRIEVANCE_CONTACTS_ERASE_AFTER_DAYS,
+  type GrievanceContact,
+  grievanceContacts,
+  type NewGrievanceContact,
+} from './grievance_contacts.ts'
+export {
   computeSlaDueAt,
   type ModerationQueueItem,
   moderationQueue,

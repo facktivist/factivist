@@ -128,7 +128,24 @@ export type AuditLogEntry = typeof auditLog.$inferSelect
 export type NewAuditLogEntry = typeof auditLog.$inferInsert
 
 /**
- * CERT-In retention floor in days (ADR-0015). Exposed so the retention
- * sweeper script and any compliance test reference the same constant.
+ * Audit-log retention in days. The number reflects the **stricter** of the
+ * two regimes that apply to Factivist's audit_log:
+ *
+ *   - CERT-In direction 20(3)/2022-CERT-In (28 April 2022): 180 days floor
+ *     for system logs hosted within India (ADR-0015).
+ *   - DPDP Rules 2025 Rule 8(3): **1 year minimum** for personal-data
+ *     processing logs (even post account deletion).
+ *
+ * 365 days is the joint floor. Bumped from 180 → 365 as part of Phase 9
+ * §3 (grievance_contacts split) on 2026-05-25 — counsel sign-off on the
+ * joint reading is still pending; if counsel rejects, the constant moves
+ * to the new floor in one place.
+ *
+ * Complainant PII no longer lives in this table — see
+ * `grievance_contacts.ts`. The audit row carries
+ * `rationale = "complainant_email_sha256=<hex>"` so the audit trail
+ * remains immutable and verifiable, but the contact details can be
+ * erased per DPDP §8(7) on their own 30-day post-resolve clock without
+ * disturbing the 365-day audit floor.
  */
-export const AUDIT_LOG_RETENTION_DAYS = 180 as const
+export const AUDIT_LOG_RETENTION_DAYS = 365 as const

@@ -41,3 +41,20 @@ After 180 days logs are **hard-deleted**, not archived. PII redaction at the log
 - CERT-In Direction 20(3)/2022-CERT-In, dated 28 April 2022
 - Memory: S1 IT Act posture
 - Related: [[ADR-009]] (custom domain — India PoP), [[ADR-010]] (anonymity floor), [[ADR-016]] (DPDP)
+
+---
+
+## Amendment 2026-05-25 (Phase 9 §3 — DPDP joint floor)
+
+DPDP Rules 2025 **Rule 8(3)** sets a **1-year minimum** retention floor for personal-data processing logs, even post account deletion. Cyril Amarchand Mangaldas FAQs + Seclore compliance guide read this together with §8(7) to mean: keep the audit log ≥ 1 year, but erase recoverable PII (complainant name + email) as soon as the purpose is served.
+
+**Schema impact:**
+1. `AUDIT_LOG_RETENTION_DAYS` raised from **180 → 365** (joint CERT-In + DPDP floor).
+2. New `grievance_contacts` table holds the recoverable PII (complainant name + email) with `erase_after = resolved_at + 30 days` per DPDP §8(7) ("erase once purpose served").
+3. `audit_log.rationale` for grievance rows now stores `complainant_email_sha256=<hex>` — verifiable but non-recoverable.
+
+**Counsel sign-off:** PENDING per `docs/action-plans/season-1/phase-9-deferred.md` §3. If counsel rejects the 30-day post-resolve window or the 365-day audit floor, both numbers are exported constants (`GRIEVANCE_CONTACTS_ERASE_AFTER_DAYS`, `AUDIT_LOG_RETENTION_DAYS`) and can be amended in one place.
+
+**Migration:** `packages/db/drizzle/0005_dpdp_grievance_contacts.sql` (forward-only, additive — no existing rows touched).
+
+**Sweep:** `scripts/grievance-contacts-sweep.ts` (daily companion to `audit-log-sweep.ts`).

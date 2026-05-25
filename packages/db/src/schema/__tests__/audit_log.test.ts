@@ -1,5 +1,7 @@
 /**
- * Schema tests for `audit_log` (ADR-0015 INSERT-only / 180-day retention).
+ * Schema tests for `audit_log` (ADR-0015 INSERT-only / DPDP-joint 365-day
+ * retention; Phase 9 §3 raised the floor from 180 → 365 to satisfy DPDP
+ * Rules 2025 Rule 8(3)).
  *
  * The table is append-only at the application layer. There is no
  * `updatedAt`, no mutable field, and no FK relaxes the I-MOD-3 / X-7
@@ -8,7 +10,7 @@
  * These tests fail closed if a future refactor:
  *   - drops the (actor, ts) or (targetKind, targetId, ts) index, OR
  *   - adds an `updatedAt`/mutable column, OR
- *   - changes the retention floor away from 180 days, OR
+ *   - changes the retention floor away from 365 days, OR
  *   - omits the `payloadHash` column (the SHA-256 of the request body).
  */
 
@@ -103,14 +105,14 @@ describe('audit_log table', () => {
 })
 
 describe('AUDIT_LOG_RETENTION_DAYS', () => {
-  it('is exactly 180 days per ADR-0015 / CERT-In direction', () => {
-    expect(AUDIT_LOG_RETENTION_DAYS).toBe(180)
+  it('is exactly 365 days per DPDP Rules 2025 Rule 8(3) joint floor with CERT-In', () => {
+    expect(AUDIT_LOG_RETENTION_DAYS).toBe(365)
   })
 
   it('is a literal-typed constant', () => {
     // Type-level assertion via const expression — value is frozen.
-    const x: 180 = AUDIT_LOG_RETENTION_DAYS
-    expect(x).toBe(180)
+    const x: 365 = AUDIT_LOG_RETENTION_DAYS
+    expect(x).toBe(365)
   })
 })
 

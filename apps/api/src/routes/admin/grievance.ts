@@ -35,8 +35,10 @@ import { createClient } from '@factivist/db/client'
 import {
   auditLog,
   computeSlaDueAt,
+  grievanceContacts,
   moderationQueue,
   type NewAuditLogEntry,
+  type NewGrievanceContact,
   type NewModerationQueueItem,
 } from '@factivist/db/schema'
 import { grievanceIntakeSchema } from '@factivist/shared/validators'
@@ -52,6 +54,13 @@ const getDb = () => {
 const sha256Hex = async (body: unknown): Promise<string> => {
   const text = JSON.stringify(body)
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+const sha256HexOf = async (input: string): Promise<string> => {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input))
   return Array.from(new Uint8Array(buf))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
@@ -96,19 +105,30 @@ export const adminGrievanceRoute = new Hono().post(
        * the queue insert, we guarantee the ack is timestamped at the
        * moment of receipt, no race against a worker.
        *
-       * `rationale` carries the public complainant contact (name +
-       * email). The grievance officer reads it to issue the human-facing
-       * acknowledgement; it is NOT a citizen identifier.
+       * Phase 9 §3 — DPDP §8(7) split:
+       *   - `audit_log.rationale` holds `complainant_email_sha256=<hex>`,
+       *     a verifiable but non-recoverable anchor. Retention: 365 days.
+       *   - The recoverable contact PII lives in `grievance_contacts`
+       *     keyed by the same `grievance_id`. Retention: 30 days post
+       *     `resolved_at` (DPDP §8(7), pending counsel sign-off).
        */
+      const complainantEmailSha256 = await sha256HexOf(body.complainantEmail)
       const ackEntry: NewAuditLogEntry = {
         actor: 'system.grievance.intake',
         action: 'grievance.acknowledge',
         targetKind: 'grievance',
         targetId: queued.id,
         payloadHash,
-        rationale: `complainant=${body.complainantName} <${body.complainantEmail}>`,
+        rationale: `complainant_email_sha256=${complainantEmailSha256}`,
       }
       await tx.insert(auditLog).values(ackEntry)
+
+      const contactEntry: NewGrievanceContact = {
+        grievanceId: queued.id,
+        complainantName: body.complainantName,
+        complainantEmail: body.complainantEmail,
+      }
+      await tx.insert(grievanceContacts).values(contactEntry)
 
       return queued
     })
