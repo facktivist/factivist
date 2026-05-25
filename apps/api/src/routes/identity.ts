@@ -74,33 +74,41 @@ import {
 const TEST_MODE = (): boolean => process.env.NODE_ENV === 'test'
 
 /**
- * In-process token bucket for `POST /identity/prove`.
+ * Token bucket for `POST /identity/prove`.
  *
- * 10 requests / 60s / source IP. The bucket is intentionally in-memory:
- * Phase 5 ops will replace this with a Cloudflare KV or Upstash Redis
- * limiter once the API is multi-instance, but for the S1 single-instance
- * deployment this is sufficient and avoids the operational cost of a
- * shared store. Tests reset the bucket via `__resetRateLimit()`.
+ * 10 requests / 60s / source IP. The S1 deploy is single-instance, so the
+ * default backend is in-memory. Phase 9 §2 swaps to Cloudflare KV or
+ * Upstash Redis the day the API goes multi-instance — `RateLimiter` is
+ * the interface that lets that be a one-file change. Tests reset the
+ * bucket via `__resetRateLimit()`.
  */
+import { createInMemoryRateLimiter, type RateLimiter } from '../lib/rate-limiter.ts'
+
 const RATE_LIMIT_MAX = 10
 const RATE_LIMIT_WINDOW_MS = 60_000
-const rateLimitBuckets = new Map<string, number[]>()
+let proveRateLimiter: RateLimiter = createInMemoryRateLimiter({
+  max: RATE_LIMIT_MAX,
+  windowMs: RATE_LIMIT_WINDOW_MS,
+})
 
 /** Test-only — clear all rate-limit state between scenarios. */
 export const __resetRateLimit = (): void => {
-  rateLimitBuckets.clear()
+  proveRateLimiter.reset()
+}
+
+/** Test seam for Phase 9 KV/Upstash swap — production wiring will read from env. */
+export const __setProveRateLimiter = (next: RateLimiter): void => {
+  proveRateLimiter = next
 }
 
 const consumeRateLimit = (ip: string, now: number = Date.now()): boolean => {
-  const cutoff = now - RATE_LIMIT_WINDOW_MS
-  const bucket = (rateLimitBuckets.get(ip) ?? []).filter((t) => t > cutoff)
-  if (bucket.length >= RATE_LIMIT_MAX) {
-    rateLimitBuckets.set(ip, bucket)
-    return false
+  const decision = proveRateLimiter.consume(ip, now)
+  // The in-memory limiter returns synchronously; KV/Upstash will return a
+  // Promise. The route is async, so callers can `await` once we swap.
+  if (decision instanceof Promise) {
+    throw new Error('async rate limiter wired without awaiting — fix route handler')
   }
-  bucket.push(now)
-  rateLimitBuckets.set(ip, bucket)
-  return true
+  return decision.allowed
 }
 
 /**
