@@ -293,13 +293,79 @@ describe('helper formatters', () => {
   })
 })
 
+describe('Complaint.PhotoGallery', () => {
+  it('renders a button per photo url', () => {
+    render(
+      <Complaint.PhotoGallery
+        photoUrls={['https://a/1.jpg', 'https://a/2.jpg']}
+        onPhotoOpen={() => {}}
+      />,
+    )
+    expect(screen.getByRole('button', { name: 'Open photo 1' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open photo 2' })).toBeInTheDocument()
+  })
+
+  it('emits onPhotoOpen with the index when a photo is clicked', () => {
+    const onPhotoOpen = vi.fn()
+    render(
+      <Complaint.PhotoGallery
+        photoUrls={['https://a/1.jpg', 'https://a/2.jpg']}
+        onPhotoOpen={onPhotoOpen}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Open photo 2' }))
+    expect(onPhotoOpen).toHaveBeenCalledWith(1)
+  })
+
+  it('still renders without onPhotoOpen — clicks are silent', () => {
+    render(<Complaint.PhotoGallery photoUrls={['https://a/1.jpg']} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Open photo 1' }))
+    // No assertion needed — the test just confirms no throw.
+  })
+})
+
+describe('Complaint.FlagAction', () => {
+  it('opens the reason menu on Flag click', () => {
+    render(<Complaint.FlagAction complaintId="cmp_1" onFlag={() => {}} />)
+    expect(screen.queryByRole('dialog')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Flag this complaint' }))
+    expect(screen.getByRole('dialog', { name: 'Flag this complaint' })).toBeInTheDocument()
+  })
+
+  it('emits onFlag({ id, reason }) when a reason is picked + closes the dialog', () => {
+    const onFlag = vi.fn()
+    render(<Complaint.FlagAction complaintId="cmp_1" onFlag={onFlag} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Flag this complaint' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Leaks personal info' }))
+    expect(onFlag).toHaveBeenCalledWith({ id: 'cmp_1', reason: 'pii-leak' })
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('disables reason buttons while status=loading', () => {
+    render(<Complaint.FlagAction complaintId="cmp_1" status="loading" onFlag={() => {}} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Flag this complaint' }))
+    expect(screen.getByRole('button', { name: 'Spam' })).toBeDisabled()
+  })
+
+  it('cancel button closes the dialog without invoking onFlag', () => {
+    const onFlag = vi.fn()
+    render(<Complaint.FlagAction complaintId="cmp_1" onFlag={onFlag} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Flag this complaint' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(onFlag).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+})
+
 describe('Complaint compound namespace', () => {
-  it('exposes the six slots on the Complaint object', () => {
+  it('exposes the eight slots on the Complaint object', () => {
     expect(typeof Complaint.Composer).toBe('function')
     expect(typeof Complaint.PhotoTray).toBe('function')
     expect(typeof Complaint.CategoryPicker).toBe('function')
     expect(typeof Complaint.SubmitBar).toBe('function')
     expect(typeof Complaint.Card).toBe('function')
     expect(typeof Complaint.List).toBe('function')
+    expect(typeof Complaint.PhotoGallery).toBe('function')
+    expect(typeof Complaint.FlagAction).toBe('function')
   })
 })

@@ -40,6 +40,7 @@
  */
 
 import type * as React from 'react'
+import { useState } from 'react'
 
 import { Button, Card, Spinner } from '../components/index.ts'
 import type {
@@ -47,8 +48,11 @@ import type {
   ComplaintCategoryPickerProps,
   ComplaintComposerProps,
   Complaint as ComplaintDetailType,
+  ComplaintFlagActionProps,
+  ComplaintFlagReason,
   ComplaintListProps,
   ComplaintPhoto,
+  ComplaintPhotoGalleryProps,
   ComplaintPhotoTrayProps,
   ComplaintSubmitBarProps,
   ComplaintSummary,
@@ -380,6 +384,106 @@ const ComplaintList = ({
   )
 }
 
+// ─── Complaint.PhotoGallery ────────────────────────────────────────────
+
+const PhotoGallery = ({
+  photoUrls,
+  onPhotoOpen,
+  className,
+}: ComplaintPhotoGalleryProps): React.JSX.Element => (
+  <section
+    aria-label="Complaint photos"
+    className={cx('grid grid-cols-2 sm:grid-cols-3 gap-2', className)}
+  >
+    {photoUrls.map((url, idx) => (
+      <button
+        key={url}
+        type="button"
+        aria-label={`Open photo ${idx + 1}`}
+        onClick={() => onPhotoOpen?.(idx)}
+        className="aspect-square rounded-md overflow-hidden border border-[var(--color-border)] focus-visible:outline-2 focus-visible:outline-[var(--color-ring)]"
+      >
+        <div
+          role="img"
+          aria-label={`Photo ${idx + 1}`}
+          className="w-full h-full bg-cover bg-center"
+          style={{ backgroundImage: `url(${url})` }}
+        />
+      </button>
+    ))}
+  </section>
+)
+
+// ─── Complaint.FlagAction ──────────────────────────────────────────────
+
+const FLAG_REASONS: ReadonlyArray<{ readonly value: ComplaintFlagReason; readonly label: string }> =
+  [
+    { value: 'spam', label: 'Spam' },
+    { value: 'abuse', label: 'Abuse' },
+    { value: 'pii-leak', label: 'Leaks personal info' },
+    { value: 'off-topic', label: 'Off-topic' },
+    { value: 'duplicate', label: 'Duplicate' },
+    { value: 'other', label: 'Other' },
+  ]
+
+const FlagAction = ({
+  complaintId,
+  onFlag,
+  status = 'idle',
+  className,
+}: ComplaintFlagActionProps): React.JSX.Element => {
+  const [open, setOpen] = useState(false)
+  const submitting = status === 'loading'
+  return (
+    <div className={cx('relative inline-block', className)}>
+      <Button
+        variant="ghost"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label="Flag this complaint"
+      >
+        ⚑ Flag
+      </Button>
+      {open ? (
+        <div
+          role="dialog"
+          aria-label="Flag this complaint"
+          className="absolute right-0 mt-1 w-56 rounded-md border border-[var(--color-border)] bg-[var(--color-card)] shadow-md p-2 z-10"
+        >
+          <p className="text-xs text-[var(--color-muted-foreground)] mb-2 font-mono uppercase tracking-wider">
+            Pick a reason
+          </p>
+          <ul className="flex flex-col gap-1 list-none p-0">
+            {FLAG_REASONS.map((r) => (
+              <li key={r.value}>
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => {
+                    onFlag({ id: complaintId, reason: r.value })
+                    setOpen(false)
+                  }}
+                  className="w-full text-left text-sm px-2 py-1.5 rounded-md hover:bg-[var(--color-muted)] disabled:opacity-50"
+                >
+                  {r.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="mt-2 w-full text-xs text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 // ─── Compound export ───────────────────────────────────────────────────
 
 export const Complaint = {
@@ -389,6 +493,8 @@ export const Complaint = {
   SubmitBar,
   Card: ComplaintCard,
   List: ComplaintList,
+  PhotoGallery,
+  FlagAction,
 } as const
 
 export type ComplaintCompound = typeof Complaint
@@ -403,8 +509,10 @@ export {
   ComplaintCard,
   ComplaintList,
   Composer as ComplaintComposer,
+  FlagAction as ComplaintFlagAction,
   formatDate as formatComplaintDate,
   formatLocation as formatComplaintLocation,
+  PhotoGallery as ComplaintPhotoGallery,
   PhotoTray as ComplaintPhotoTray,
   SubmitBar as ComplaintSubmitBar,
 }

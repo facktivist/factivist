@@ -17,6 +17,7 @@
 
 import type * as React from 'react'
 import type { FC, ReactNode } from 'react'
+import { useState } from 'react'
 import {
   ActivityIndicator,
   type FlatListProps,
@@ -36,8 +37,11 @@ import type {
   ComplaintCardProps,
   ComplaintCategoryPickerProps,
   ComplaintComposerProps,
+  ComplaintFlagActionProps,
+  ComplaintFlagReason,
   ComplaintListProps,
   ComplaintPhoto,
+  ComplaintPhotoGalleryProps,
   ComplaintPhotoTrayProps,
   ComplaintSubmitBarProps,
   ComplaintSummary,
@@ -381,6 +385,117 @@ const ComplaintList = ({
   )
 }
 
+// ─── Complaint.PhotoGallery ────────────────────────────────────────────
+
+const PhotoGallery = ({
+  photoUrls,
+  onPhotoOpen,
+  style,
+  accessibilityLabel = 'Complaint photos',
+  testID,
+}: ComplaintPhotoGalleryProps): React.JSX.Element => (
+  <View
+    accessibilityLabel={accessibilityLabel}
+    testID={testID}
+    style={style as ViewStyle | undefined}
+    className="flex flex-row flex-wrap gap-2"
+  >
+    {photoUrls.map((url, idx) => (
+      <Pressable
+        key={url}
+        accessibilityRole="button"
+        accessibilityLabel={`Open photo ${idx + 1}`}
+        onPress={() => onPhotoOpen?.(idx)}
+        className="w-28 h-28 rounded-md overflow-hidden border border-border"
+        testID={testID ? `${testID}-photo-${idx}` : undefined}
+      >
+        <Image
+          source={{ uri: url }}
+          accessibilityLabel={`Photo ${idx + 1}`}
+          className="w-full h-full"
+        />
+      </Pressable>
+    ))}
+  </View>
+)
+
+// ─── Complaint.FlagAction ──────────────────────────────────────────────
+
+const FLAG_REASONS: ReadonlyArray<{ readonly value: ComplaintFlagReason; readonly label: string }> =
+  [
+    { value: 'spam', label: 'Spam' },
+    { value: 'abuse', label: 'Abuse' },
+    { value: 'pii-leak', label: 'Leaks personal info' },
+    { value: 'off-topic', label: 'Off-topic' },
+    { value: 'duplicate', label: 'Duplicate' },
+    { value: 'other', label: 'Other' },
+  ]
+
+const FlagAction = ({
+  complaintId,
+  onFlag,
+  status = 'idle',
+  style,
+  accessibilityLabel = 'Flag this complaint',
+  testID,
+}: ComplaintFlagActionProps): React.JSX.Element => {
+  const [open, setOpen] = useState(false)
+  const submitting = status === 'loading'
+  return (
+    <View
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+      style={style as ViewStyle | undefined}
+    >
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Flag"
+        onPress={() => setOpen((v) => !v)}
+        className="px-3 py-1.5 rounded-md border border-border"
+        testID={testID ? `${testID}-trigger` : undefined}
+      >
+        <Text className="text-sm text-muted-foreground">⚑ Flag</Text>
+      </Pressable>
+      {open ? (
+        <View
+          accessibilityLabel="Flag reasons"
+          className="mt-2 p-2 rounded-md border border-border bg-card"
+        >
+          <Text className="text-xs uppercase tracking-wider font-mono text-muted-foreground mb-1">
+            Pick a reason
+          </Text>
+          {FLAG_REASONS.map((r) => (
+            <Pressable
+              key={r.value}
+              accessibilityRole="button"
+              accessibilityLabel={r.label}
+              accessibilityState={{ disabled: submitting }}
+              disabled={submitting}
+              onPress={() => {
+                onFlag({ id: complaintId, reason: r.value })
+                setOpen(false)
+              }}
+              className="px-2 py-1.5 rounded-md"
+              testID={testID ? `${testID}-${r.value}` : undefined}
+            >
+              <Text className="text-sm text-foreground">{r.label}</Text>
+            </Pressable>
+          ))}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Cancel"
+            onPress={() => setOpen(false)}
+            className="mt-1 px-2 py-1.5"
+            testID={testID ? `${testID}-cancel` : undefined}
+          >
+            <Text className="text-xs text-muted-foreground">Cancel</Text>
+          </Pressable>
+        </View>
+      ) : null}
+    </View>
+  )
+}
+
 // ─── Compound export ───────────────────────────────────────────────────
 
 export const Complaint = {
@@ -390,6 +505,8 @@ export const Complaint = {
   SubmitBar,
   Card: ComplaintCard,
   List: ComplaintList,
+  PhotoGallery,
+  FlagAction,
 } as const
 
 export type ComplaintCompound = typeof Complaint
@@ -400,8 +517,10 @@ export {
   ComplaintCard,
   ComplaintList,
   Composer as ComplaintComposer,
+  FlagAction as ComplaintFlagAction,
   formatDate as formatComplaintDate,
   formatLocation as formatComplaintLocation,
+  PhotoGallery as ComplaintPhotoGallery,
   PhotoTray as ComplaintPhotoTray,
   SubmitBar as ComplaintSubmitBar,
 }

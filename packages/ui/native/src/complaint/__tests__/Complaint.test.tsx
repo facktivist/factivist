@@ -345,6 +345,46 @@ describe('Complaint.List (native)', () => {
   })
 })
 
+describe('Complaint.PhotoGallery (native)', () => {
+  it('renders a Pressable per photoUrl + a labelled image', async () => {
+    const { Complaint } = await import('../Complaint.tsx')
+    const tree = Complaint.PhotoGallery({
+      photoUrls: ['https://a/1.jpg', 'https://a/2.jpg'],
+      onPhotoOpen: () => {},
+    })
+    expect(findByLabel(tree, 'Open photo 1')).toBeTruthy()
+    expect(findByLabel(tree, 'Open photo 2')).toBeTruthy()
+    expect(findByLabel(tree, 'Photo 1')).toBeTruthy()
+  })
+
+  it('emits onPhotoOpen(idx) when a tile is pressed', async () => {
+    const { Complaint } = await import('../Complaint.tsx')
+    const onPhotoOpen = vi.fn()
+    const tree = Complaint.PhotoGallery({
+      photoUrls: ['https://a/1.jpg', 'https://a/2.jpg'],
+      onPhotoOpen,
+    })
+    findByLabel(tree, 'Open photo 2')?.props.onPress?.()
+    expect(onPhotoOpen).toHaveBeenCalledWith(1)
+  })
+
+  it('does not throw when onPhotoOpen is omitted', async () => {
+    const { Complaint } = await import('../Complaint.tsx')
+    const tree = Complaint.PhotoGallery({ photoUrls: ['u'] })
+    findByLabel(tree, 'Open photo 1')?.props.onPress?.()
+  })
+})
+
+describe('Complaint.FlagAction (native)', () => {
+  // FlagAction uses useState; calling it as a function without a React
+  // renderer throws. Detox covers the open/close + reason-pick paths.
+  // Here we only assert compound exposure.
+  it('exposes FlagAction as a function on the compound', async () => {
+    const { Complaint } = await import('../Complaint.tsx')
+    expect(typeof Complaint.FlagAction).toBe('function')
+  })
+})
+
 describe('helpers + namespace', () => {
   it('formatComplaintLocation joins state / district / constituency', async () => {
     const mod = await import('../Complaint.tsx')
@@ -359,7 +399,7 @@ describe('helpers + namespace', () => {
     expect(mod.formatComplaintDate('nonsense-string-here')).toBe('nonsense-s')
   })
 
-  it('exposes the six S1-scope slots on the Complaint compound', async () => {
+  it('exposes the eight S1-scope slots on the Complaint compound', async () => {
     const { Complaint } = await import('../Complaint.tsx')
     expect(typeof Complaint.Composer).toBe('function')
     expect(typeof Complaint.PhotoTray).toBe('function')
@@ -367,5 +407,7 @@ describe('helpers + namespace', () => {
     expect(typeof Complaint.SubmitBar).toBe('function')
     expect(typeof Complaint.Card).toBe('function')
     expect(typeof Complaint.List).toBe('function')
+    expect(typeof Complaint.PhotoGallery).toBe('function')
+    expect(typeof Complaint.FlagAction).toBe('function')
   })
 })
