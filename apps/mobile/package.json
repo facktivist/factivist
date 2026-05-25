@@ -24,6 +24,7 @@
     "@factivist/ui-theme": "workspace:*",
     "@factivist/zkp-client": "workspace:*",
     "@gorhom/bottom-sheet": "5.2.14",
+    "@sentry/react-native": "~7.4.0",
     "@tanstack/react-query": "latest",
     "expo": "56.0.3",
     "expo-camera": "~56.0.7",

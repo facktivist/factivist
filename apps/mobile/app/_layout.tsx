@@ -3,9 +3,11 @@ import { StatusBar } from 'expo-status-bar'
 import { HeroUINativeProvider } from 'heroui-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-
 import { Providers } from '../src/lib/providers.tsx'
+import { initSentry } from '../src/lib/sentry.ts'
 import '../global.css'
+
+initSentry()
 
 /**
  * Root layout for the Expo Router stack.

@@ -20,7 +20,7 @@
 
 **Blocked on:** AnonCitizen project shipping `CitizenVerifier.sol` to Amoy at minimum. As of 2026-05-24 no upstream deployment exists.
 
-**Owner:** identity team coordinating with AnonCitizen upstream.
+**Owner:** **maintainer (user)** executes the Amoy + Polygon PoS mainnet deployment from the 3/5 Safe set up in §6 once the AnonCitizen upstream lands. Code wiring (`apps/api/src/lib/citizen-verifier.ts` + viem calls) is shippable by Claude in a follow-up commit triggered by the user posting the deployed contract address. The maintainer is also responsible for paying the deploy gas (~$60 one-shot at standard congestion) and seeding the multisig with `verifyAndRecord`-callable signers.
 
 ---
 

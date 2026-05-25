@@ -56,6 +56,10 @@ describe('apps/mobile app.json — plugin permissions', () => {
     expect(findPlugin('@config-plugins/detox')).toBeDefined()
   })
 
+  it('preserves @sentry/react-native/expo in the plugins block (Phase 9 §5.7)', () => {
+    expect(findPlugin('@sentry/react-native/expo')).toBeDefined()
+  })
+
   it('registers expo-camera with a non-empty cameraPermission string', () => {
     const entry = findPlugin('expo-camera')
     expect(entry).toBeDefined()
