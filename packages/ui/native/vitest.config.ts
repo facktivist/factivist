@@ -24,6 +24,7 @@ export default mergeConfig(
           'src/onboarding/Onboarding.tsx',
           'src/profile/Profile.tsx',
           'src/search/Search.tsx',
+          'src/shell/Shell.tsx',
         ],
       },
     },
