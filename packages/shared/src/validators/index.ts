@@ -1,3 +1,4 @@
+export * from './comment.ts'
 export * from './complaint.ts'
 export * from './dev-metrics.ts'
 export * from './identity.ts'

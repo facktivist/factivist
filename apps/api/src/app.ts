@@ -8,6 +8,7 @@ import { adminGrievanceRoute } from './routes/admin/grievance.ts'
 import { adminGrievancesRoute } from './routes/admin/grievances.ts'
 import { adminModerationRoute } from './routes/admin/moderation.ts'
 import { categoriesRoute } from './routes/categories.ts'
+import { commentRoute } from './routes/comment.ts'
 import { complaintRoute } from './routes/complaint.ts'
 import { constituencyRoute } from './routes/constituency.ts'
 import { dbRoute } from './routes/db.ts'
@@ -50,6 +51,7 @@ export function createApp(env?: AppEnv) {
     .route('/', constituencyRoute)
     .route('/', discoveryRoute)
     .route('/', complaintRoute)
+    .route('/', commentRoute)
     .route('/', uploadsRoute)
     .route('/', adminModerationRoute)
     .route('/', adminGrievanceRoute)
