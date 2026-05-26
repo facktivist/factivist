@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -9,11 +9,13 @@ vi.mock('expo-router', () => ({
 
 const mocks = vi.hoisted(() => ({
   listComplaints: vi.fn(),
+  listCategories: vi.fn(),
 }))
 
 vi.mock('../../../lib/api/client.ts', () => ({
   apiClient: {
     listComplaints: mocks.listComplaints,
+    listCategories: mocks.listCategories,
   },
 }))
 
@@ -52,6 +54,11 @@ const renderWithClient = (node: ReactNode) => {
 describe('DiscoveryScreen', () => {
   beforeEach(() => {
     mocks.listComplaints.mockReset()
+    mocks.listCategories.mockReset()
+    mocks.listCategories.mockResolvedValue([
+      { slug: 'roads', label: 'Roads' },
+      { slug: 'health', label: 'Health' },
+    ])
   })
 
   it('shows the loading state', () => {
@@ -125,5 +132,38 @@ describe('DiscoveryScreen', () => {
     await waitFor(() => {
       expect(screen.getByText(/could not load complaints/i)).toBeInTheDocument()
     })
+  })
+
+  it('renders the Filter.SortToggle and Filter.CategoryChips compound slots', async () => {
+    mocks.listComplaints.mockResolvedValue(fixturePage)
+    renderWithClient(<DiscoveryScreen />)
+    await waitFor(() => {
+      expect(screen.getByText(/newest/i)).toBeInTheDocument()
+    })
+    await waitFor(() => {
+      expect(screen.getByText(/^roads$/i)).toBeInTheDocument()
+    })
+  })
+
+  it('re-queries with the new sort when SortToggle changes', async () => {
+    mocks.listComplaints.mockResolvedValue(fixturePage)
+    renderWithClient(<DiscoveryScreen />)
+    // Wait for the initial fetch to land so we can count subsequent calls.
+    await waitFor(() => expect(mocks.listComplaints).toHaveBeenCalledTimes(1))
+    // Click "Most commented".
+    fireEvent.click(await screen.findByText(/most commented/i))
+    await waitFor(() => expect(mocks.listComplaints).toHaveBeenCalledTimes(2))
+    const args = mocks.listComplaints.mock.calls[1][0] as Record<string, unknown>
+    expect(args.sort).toBe('most-commented')
+  })
+
+  it('re-queries with the new categorySlug when a chip is selected', async () => {
+    mocks.listComplaints.mockResolvedValue(fixturePage)
+    renderWithClient(<DiscoveryScreen />)
+    await waitFor(() => expect(mocks.listComplaints).toHaveBeenCalledTimes(1))
+    fireEvent.click(await screen.findByText(/^roads$/i))
+    await waitFor(() => expect(mocks.listComplaints).toHaveBeenCalledTimes(2))
+    const args = mocks.listComplaints.mock.calls[1][0] as Record<string, unknown>
+    expect(args.categorySlug).toBe('roads')
   })
 })

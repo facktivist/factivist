@@ -1,11 +1,15 @@
 import { discoveryFiltersSchema } from '@factivist/shared/validators'
 import { Card } from '@factivist/ui-native/components'
+import { Filter } from '@factivist/ui-native/filter'
 import { useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
+import { useState } from 'react'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { type ApiComplaintSummary, apiClient } from '../../lib/api/client.ts'
+
+type SortValue = 'newest' | 'most-commented' | 'most-flagged'
 
 /**
  * Discovery / browse screen (mobile).
@@ -50,12 +54,30 @@ function ComplaintListItem({ complaint }: { readonly complaint: ApiComplaintSumm
 }
 
 export function DiscoveryScreen() {
-  const filters = discoveryFiltersSchema.parse({})
+  const [sort, setSort] = useState<SortValue>('newest')
+  const [categorySlug, setCategorySlug] = useState<string | null>(null)
+
+  const categoriesQuery = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => apiClient.listCategories(),
+    staleTime: 60 * 60_000,
+  })
+
+  const filters = discoveryFiltersSchema.parse({
+    sort,
+    categorySlug: categorySlug ?? undefined,
+  })
+
   const query = useQuery({
     queryKey: ['discovery', filters],
     queryFn: () => apiClient.listComplaints(filters),
     staleTime: 30_000,
   })
+
+  const categoryList = categoriesQuery.data ?? []
+  const selectedIds: ReadonlyArray<number> = categorySlug
+    ? [categoryList.findIndex((c) => c.slug === categorySlug)].filter((i) => i >= 0)
+    : []
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} testID="discovery-screen">
@@ -66,6 +88,16 @@ export function DiscoveryScreen() {
             Filter by state, district, PC, AC or category.
           </Text>
         </View>
+
+        <Filter.SortToggle value={sort} onChange={setSort} />
+        <Filter.CategoryChips
+          categories={categoryList.map((c, i) => ({ id: i, slug: c.slug, label: c.label }))}
+          selectedIds={selectedIds}
+          onChange={(ids) => {
+            const firstId = ids[0]
+            setCategorySlug(firstId === undefined ? null : (categoryList[firstId]?.slug ?? null))
+          }}
+        />
 
         {query.isLoading ? <Text className="text-sm text-muted-foreground">Loading…</Text> : null}
         {query.isError ? (

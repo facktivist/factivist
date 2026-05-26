@@ -3,6 +3,7 @@ import { Card } from '@factivist/ui-web/components'
 
 import { apiClient } from '../../lib/api/client.ts'
 import { ComplaintCard } from '../complaint/ComplaintCard.tsx'
+import { DiscoveryFiltersClient } from './DiscoveryFiltersClient.tsx'
 
 /**
  * Discovery (browse) page. Server Component.
@@ -42,7 +43,12 @@ export async function DiscoveryPage({ searchParams }: DiscoveryPageProps) {
         </p>
       </header>
 
-      <DiscoveryFiltersBar filters={searchParams} />
+      <DiscoveryFiltersClient filters={searchParams} />
+      <noscript>
+        {/* Server-rendered fallback for users with JS disabled.
+            Same submit semantics as the client island. */}
+        <DiscoveryFiltersBar filters={searchParams} />
+      </noscript>
 
       <section className="mt-6 flex flex-col gap-3" aria-label="Complaint list">
         {page.items.length === 0 ? (

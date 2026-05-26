@@ -19,6 +19,13 @@ vi.mock('../../complaint/FlagButton.tsx', () => ({
   ),
 }))
 
+// Mock the client island — it depends on Next router context which is
+// not available in unit tests. The Server-Component test only proves
+// the page wires the island; the island itself has its own focused tests.
+vi.mock('../DiscoveryFiltersClient.tsx', () => ({
+  DiscoveryFiltersClient: () => <div data-testid="discovery-filters-client" />,
+}))
+
 const mocks = vi.hoisted(() => ({
   listComplaints: vi.fn(),
 }))
@@ -92,13 +99,14 @@ describe('DiscoveryPage (Server Component)', () => {
     expect(screen.getByText(/100 total/i)).toBeInTheDocument()
   })
 
-  it('renders the filter bar with the current sort selected', async () => {
+  it('mounts the client-island filters', async () => {
     mocks.listComplaints.mockResolvedValue(fixturePage)
     const ui = await DiscoveryPage({ searchParams: { sort: 'most-flagged' } })
     render(ui)
-    const bar = screen.getByTestId('discovery-filters')
-    expect(bar).toBeInTheDocument()
-    expect(bar.querySelector('select[name="sort"]')?.getAttribute('value') ?? '').toBe('')
+    // The client island is mocked at the top of the file; the page
+    // proves it was rendered. The interactive filter behaviour itself
+    // is exercised in DiscoveryFiltersClient.test.tsx.
+    expect(screen.getByTestId('discovery-filters-client')).toBeInTheDocument()
   })
 
   it('NEVER emits authorId / nullifier in the rendered list', async () => {
