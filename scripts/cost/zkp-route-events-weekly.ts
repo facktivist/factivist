@@ -180,7 +180,7 @@ const isCli = import.meta.main
 if (isCli) {
   if (!process.env.DATABASE_URL) {
     process.stderr.write(
-      JSON.stringify({ error: 'DATABASE_URL missing — cost scorecard cannot run' }) + '\n',
+      `${JSON.stringify({ error: 'DATABASE_URL missing — cost scorecard cannot run' })}\n`,
     )
     process.exit(1)
   }
@@ -194,7 +194,7 @@ if (isCli) {
     await client.end({ timeout: 1 })
     process.exit(0)
   } catch (err) {
-    process.stderr.write(JSON.stringify({ error: String(err) }) + '\n')
+    process.stderr.write(`${JSON.stringify({ error: String(err) })}\n`)
     await client.end({ timeout: 1 })
     process.exit(2)
   }
