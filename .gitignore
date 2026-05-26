@@ -55,3 +55,4 @@ apps/api/zkp-artifacts/*
 # changing the user's global default account. See CLAUDE.md "GitHub Identity".
 .envrc
 .direnv/
+docs/designs
