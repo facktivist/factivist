@@ -261,19 +261,19 @@ Time: 30 min per month × 2 months. Cost: $0.
 
 These don't block the launch but should land before declaring Phase 9 closed.
 
-### E1. RLS policy coverage test
+### E1. RLS policy coverage test — DONE 2026-05-26
 
-The Phase 8 audit removed the broken reference to `packages/db/__tests__/rls.test.ts`. The test should now be written so future migrations cannot regress RLS without CI noticing.
+The Phase 8 audit removed the broken reference to `packages/db/__tests__/rls.test.ts`. The test now lives at `packages/db/src/__tests__/rls.test.ts` and parses the SQL migrations as source of truth — fails closed if a new citizen-touching table lands without an RLS flip.
 
-- [ ] Create `packages/db/src/__tests__/rls.test.ts` (or similar location matching the existing convention).
-- [ ] For every table that touches citizen data, assert via the Drizzle snapshot that:
-  1. `isRLSEnabled` is true.
-  2. At least one policy exists per CRUD operation (or an explicit `default-deny` marker if intentional).
-- [ ] Wire into the existing CI matrix (`bun run check`).
+- [x] Create `packages/db/src/__tests__/rls.test.ts` — landed in the Wave 4a comments-table sweep.
+- [x] For every table that touches citizen data, assert via the Drizzle snapshot that `isRLSEnabled` is true + at least one policy exists per CRUD operation (or an explicit `default-deny` marker).
+- [x] Wired into the existing CI matrix via `bun run check` (38/38).
 
-### E2. Threat-model link sweep
+### E2. Threat-model link sweep — DONE 2026-05-26
 
-- [ ] Re-read [`docs/architecture/threat-model.md`](../../architecture/threat-model.md) after Group A lands and confirm no other broken `packages/db/__tests__/*.test.ts` references survive the Phase 8 fix-up.
+`docs/architecture/threat-model.md:127` already references the new path (`packages/db/src/__tests__/rls.test.ts`) under the RLS-misconfiguration row. No other broken `packages/db/__tests__/*.test.ts` references survive in the threat model.
+
+- [x] Verified no broken `packages/db/__tests__/*.test.ts` references survive the Phase 8 fix-up.
 
 ### E3. Phase-9 done memory
 
@@ -310,8 +310,8 @@ A live status table — update as each item completes. Counts at the bottom.
 | C4 | Wire on-chain verifyAndRecord | ☐ | Blocked on AnonCitizen upstream |
 | D1 | First DR drill < 30 min | ☐ | After first prod deploy |
 | D2 | Two-month cost reconciliation | ☐ | After 60d of prod |
-| E1 | RLS coverage test | ☐ | |
-| E2 | Threat-model link sweep | ☐ | |
+| E1 | RLS coverage test | ✅ | Closed 2026-05-26 by Wave 4a (`packages/db/src/__tests__/rls.test.ts`) |
+| E2 | Threat-model link sweep | ✅ | Closed 2026-05-26 — `threat-model.md:127` points at the new path |
 | E3 | Phase-9 done memory | ☐ | After A + B + C2 + C3 |
 
 **Done:** 0 / 24
