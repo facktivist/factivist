@@ -28,6 +28,7 @@ Tooling lives in `tooling/` shared config; per-surface baselines live alongside 
 
 ### Neutral
 - AAA promotion deferred to S2 per surface; some surfaces (e.g. composer) may go AAA earlier where the audience demands it.
+- S1 AAA opt-in surfaces (active 2026-05-26): `02-composer`, `08-legal`. Wired via per-surface `extraTags: ["wcag2aaa", "wcag21aaa", "wcag22aaa"]` in `scripts/a11y/a11y-baseline.json`; runner support lives in `resolveTagsForSurface()` in `scripts/a11y/run-axe-baseline.ts`. Baseline still applies — new AAA violations on these two surfaces fail CI, snapshotted ones do not.
 
 ## Alternatives considered
 - **Manual a11y review only**: rejected — doesn't scale, doesn't catch regressions in PRs.

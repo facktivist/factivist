@@ -64,6 +64,18 @@ export interface SurfaceConfig {
     appliesToUrl?: string
     reason: string
   }[]
+  /**
+   * Extra axe tag(s) to merge into the global `axeRunOptions.runOnly.values`
+   * list for this surface only. Used to opt a surface into AAA (or any
+   * other tag set) without forcing every other surface to follow.
+   *
+   * ADR-021 §"Consequences/Neutral": "AAA promotion deferred to S2 per
+   * surface; some surfaces (e.g. composer) may go AAA earlier where the
+   * audience demands it." That promotion is wired here.
+   *
+   * Example: ["wcag2aaa", "wcag21aaa", "wcag22aaa"]
+   */
+  extraTags?: readonly string[]
 }
 
 export interface BaselineConfig {
@@ -355,6 +367,29 @@ export async function runAll(
 
 // ─── Real axe runner (Playwright + @axe-core/playwright) ────────────────────
 
+/**
+ * Build the axe `withTags` argument for one surface — merges the global
+ * `axeRunOptions.runOnly.values` with the surface's optional `extraTags`,
+ * deduplicating while preserving global-first order.
+ *
+ * Exported for unit tests; the real runner calls it once per surface.
+ */
+export function resolveTagsForSurface(
+  surface: SurfaceConfig,
+  config: BaselineConfig,
+): readonly string[] {
+  const fallback = ['wcag2a', 'wcag2aa', 'wcag22aa']
+  const globalTags = ((config.axeRunOptions?.runOnly as { values?: string[] } | undefined)
+    ?.values ?? fallback) as readonly string[]
+  const extras = surface.extraTags ?? []
+  if (extras.length === 0) return globalTags
+  const merged: string[] = [...globalTags]
+  for (const t of extras) {
+    if (!merged.includes(t)) merged.push(t)
+  }
+  return merged
+}
+
 /* c8 ignore start — real runner exercised by Phase 7 CI, not unit tests */
 export async function realAxeRunner(
   surface: SurfaceConfig,
@@ -400,11 +435,7 @@ export async function realAxeRunner(
   const page = await context.newPage()
   await page.goto(surface.url)
 
-  const tags = ((config.axeRunOptions?.runOnly as { values?: string[] })?.values ?? [
-    'wcag2a',
-    'wcag2aa',
-    'wcag22aa',
-  ]) as string[]
+  const tags = resolveTagsForSurface(surface, config)
   const builder = new AxeBuilder.default({ page }).withTags(tags) as {
     disableRules: (ids: string[]) => unknown
     analyze: () => Promise<{ violations: AxeViolation[]; incomplete: AxeViolation[] }>

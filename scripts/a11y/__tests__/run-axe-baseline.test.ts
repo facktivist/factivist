@@ -11,6 +11,7 @@ import {
   main,
   parseArgs,
   type RunDeps,
+  resolveTagsForSurface,
   type SurfaceConfig,
   validateConfig,
 } from '../run-axe-baseline.ts'
@@ -103,6 +104,71 @@ function makeLogs(): FakeLogs {
 }
 
 // ─── parseArgs ──────────────────────────────────────────────────────────────
+
+describe('resolveTagsForSurface', () => {
+  const baseGlobal = {
+    runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa', 'best-practice'] },
+  }
+
+  it('returns the global tag list when the surface declares no extras', () => {
+    const surface = makeSurface('01-onboarding')
+    const config: BaselineConfig = { ...makeConfig([surface]), axeRunOptions: baseGlobal }
+    expect(resolveTagsForSurface(surface, config)).toEqual([
+      'wcag2a',
+      'wcag2aa',
+      'wcag22aa',
+      'best-practice',
+    ])
+  })
+
+  it('appends extraTags after the global tags', () => {
+    const surface: SurfaceConfig = {
+      ...makeSurface('02-composer'),
+      extraTags: ['wcag2aaa', 'wcag22aaa'],
+    }
+    const config: BaselineConfig = { ...makeConfig([surface]), axeRunOptions: baseGlobal }
+    expect(resolveTagsForSurface(surface, config)).toEqual([
+      'wcag2a',
+      'wcag2aa',
+      'wcag22aa',
+      'best-practice',
+      'wcag2aaa',
+      'wcag22aaa',
+    ])
+  })
+
+  it('deduplicates when an extraTag is already in the global list', () => {
+    const surface: SurfaceConfig = {
+      ...makeSurface('08-legal'),
+      // 'wcag2aa' is already in the global list — must not appear twice.
+      extraTags: ['wcag2aa', 'wcag2aaa'],
+    }
+    const config: BaselineConfig = { ...makeConfig([surface]), axeRunOptions: baseGlobal }
+    const tags = resolveTagsForSurface(surface, config)
+    expect(tags.filter((t) => t === 'wcag2aa')).toHaveLength(1)
+    expect(tags).toContain('wcag2aaa')
+  })
+
+  it('falls back to a built-in AA tag set when axeRunOptions has no runOnly', () => {
+    const surface = makeSurface('01-onboarding')
+    const config: BaselineConfig = { ...makeConfig([surface]), axeRunOptions: {} }
+    expect(resolveTagsForSurface(surface, config)).toEqual(['wcag2a', 'wcag2aa', 'wcag22aa'])
+  })
+
+  it('still applies extraTags on top of the fallback tag set', () => {
+    const surface: SurfaceConfig = {
+      ...makeSurface('02-composer'),
+      extraTags: ['wcag22aaa'],
+    }
+    const config: BaselineConfig = { ...makeConfig([surface]), axeRunOptions: {} }
+    expect(resolveTagsForSurface(surface, config)).toEqual([
+      'wcag2a',
+      'wcag2aa',
+      'wcag22aa',
+      'wcag22aaa',
+    ])
+  })
+})
 
 describe('parseArgs', () => {
   it('uses sensible defaults when no flags are passed', () => {

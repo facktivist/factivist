@@ -55,7 +55,8 @@
         "listitem",
         "list"
       ],
-      "disabled": []
+      "disabled": [],
+      "extraTags": ["wcag2aaa", "wcag21aaa", "wcag22aaa"]
     },
     {
       "id": "03-complaint-detail",
@@ -171,7 +172,8 @@
           "appliesToUrl": "http://localhost:3000/legal/grievance",
           "reason": "Third-party static-site iframe preview, owner does not control frame title. Tracked for S2."
         }
-      ]
+      ],
+      "extraTags": ["wcag2aaa", "wcag21aaa", "wcag22aaa"]
     },
     {
       "id": "09-app-shell",
