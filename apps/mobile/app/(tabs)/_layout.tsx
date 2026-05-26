@@ -1,5 +1,7 @@
 import { Tabs } from 'expo-router'
 
+import { ShellTabBarHost } from '../../src/components/ShellTabBarHost.tsx'
+
 /**
  * Bottom-tabs shell for the Factivist mobile app.
  *
@@ -25,6 +27,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
       }}
+      tabBar={(props) => <ShellTabBarHost {...props} />}
     >
       <Tabs.Screen
         name="index"
