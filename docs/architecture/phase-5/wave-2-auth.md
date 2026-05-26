@@ -475,6 +475,13 @@ should reference this table so the next cost-analyst review picks it up.
 The memory file lives outside the repo (`~/.claude/projects/...`) and is
 edited by the user, not by sub-agents.
 
+**Automation status (2026-05-26):** the query is now thread-automated via
+`scripts/cost/zkp-route-events-weekly.ts` + `.github/workflows/zkp-cost-scorecard.yml`
+(weekly Sunday 07:00 UTC cron). Output lands as a comment on issue
+`#${ZKP_COST_SCORECARD_ISSUE}` (default 116) so the cost-analyst
+scorecard refreshes without human intervention. Tests live at
+`scripts/cost/__tests__/zkp-route-events-weekly.test.ts`.
+
 ## Open items (wave 3 and beyond)
 
   - **A1 — Server-side prove path.** The admin shell fetch wrapper that

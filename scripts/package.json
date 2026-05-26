@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "llm:log": "bun run llm-cost-logger.ts",
     "db:sweep-audit": "bun audit-log-sweep.ts",
-    "db:sweep-grievance-contacts": "bun grievance-contacts-sweep.ts"
+    "db:sweep-grievance-contacts": "bun grievance-contacts-sweep.ts",
+    "cost:zkp-scorecard": "bun cost/zkp-route-events-weekly.ts"
   },
   "dependencies": {
     "@factivist/db": "workspace:*",
