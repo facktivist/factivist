@@ -196,7 +196,7 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
           <Card.Body>
             <View
               accessibilityRole="alert"
-              className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3"
+              className="mb-4 rounded-md border border-warning-300 bg-warning-100 p-3"
             >
               <Text className="text-sm">
                 <Text className="font-semibold">Disclaimer. </Text>
@@ -227,7 +227,7 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
               )}
             />
             {errors.title ? (
-              <Text accessibilityRole="alert" className="mt-1 text-sm text-red-600">
+              <Text accessibilityRole="alert" className="mt-1 text-sm text-destructive">
                 {errors.title.message}
               </Text>
             ) : null}
@@ -240,7 +240,7 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
               render={({ field: { value, onChange } }) => (
                 <View className="flex-row flex-wrap gap-2">
                   {categories.length === 0 ? (
-                    <Text className="text-sm text-zinc-500">Loading categories…</Text>
+                    <Text className="text-sm text-muted-foreground">Loading categories…</Text>
                   ) : null}
                   {categories.map((c) => {
                     const selected = value === c.slug
@@ -263,18 +263,18 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
               )}
             />
             {errors.categorySlug ? (
-              <Text accessibilityRole="alert" className="mt-1 text-sm text-red-600">
+              <Text accessibilityRole="alert" className="mt-1 text-sm text-destructive">
                 {errors.categorySlug.message}
               </Text>
             ) : null}
 
             <Text className="mt-4 mb-1 text-sm font-medium">Constituency</Text>
-            <Text className="mb-2 text-xs text-zinc-500">
+            <Text className="mb-2 text-xs text-muted-foreground">
               Manual pick — no GPS or location services used.
             </Text>
             <ConstituencyPickerNative value={constituency} onChange={setConstituency} />
             {constituencyError ? (
-              <Text accessibilityRole="alert" className="mt-1 text-sm text-red-600">
+              <Text accessibilityRole="alert" className="mt-1 text-sm text-destructive">
                 {constituencyError}
               </Text>
             ) : null}
@@ -302,11 +302,11 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
                 </TextField>
               )}
             />
-            <Text className="mt-1 text-right text-xs text-zinc-500" testID="body-counter">
+            <Text className="mt-1 text-right text-xs text-muted-foreground" testID="body-counter">
               {watchedBody.length}/{COMPLAINT_BODY_MAX}
             </Text>
             {errors.body ? (
-              <Text accessibilityRole="alert" className="mt-1 text-sm text-red-600">
+              <Text accessibilityRole="alert" className="mt-1 text-sm text-destructive">
                 {errors.body.message}
               </Text>
             ) : null}
@@ -355,12 +355,12 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
               </View>
             ) : null}
             {photoCapture.error ? (
-              <Text accessibilityRole="alert" className="mt-1 text-sm text-red-600">
+              <Text accessibilityRole="alert" className="mt-1 text-sm text-destructive">
                 {photoCapture.error}
               </Text>
             ) : null}
             {tusUpload.isUploading ? (
-              <Text className="mt-2 text-xs text-zinc-500" testID="photo-uploading">
+              <Text className="mt-2 text-xs text-muted-foreground" testID="photo-uploading">
                 Uploading photos…
               </Text>
             ) : null}
@@ -368,9 +368,9 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
             {submitError ? (
               <View
                 accessibilityRole="alert"
-                className="mt-4 rounded-md border border-red-300 bg-red-50 p-3"
+                className="mt-4 rounded-md border border-destructive bg-destructive/10 p-3"
               >
-                <Text className="text-sm text-red-700">{submitError}</Text>
+                <Text className="text-sm text-destructive">{submitError}</Text>
               </View>
             ) : null}
           </Card.Body>
