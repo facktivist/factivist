@@ -50,3 +50,8 @@ docs/data-points/*.parquet
 apps/api/zkp-artifacts/*
 !apps/api/zkp-artifacts/README.md
 !apps/api/zkp-artifacts/.gitkeep
+
+# direnv: per-repo GH_TOKEN export so gh CLI uses `facktivist` here without
+# changing the user's global default account. See CLAUDE.md "GitHub Identity".
+.envrc
+.direnv/
