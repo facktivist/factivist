@@ -170,7 +170,7 @@ export function ConstituencyPickerNative({ value, onChange }: ConstituencyPicker
         className="flex-row flex-wrap items-center gap-1 mb-2"
       >
         {breadcrumbs.length === 0 ? (
-          <Text className="text-sm italic text-zinc-500">No constituency selected</Text>
+          <Text className="text-sm italic text-muted-foreground">No constituency selected</Text>
         ) : null}
         {breadcrumbs.map((segment, i) => {
           const isLast = i === breadcrumbs.length - 1
@@ -216,7 +216,7 @@ export function ConstituencyPickerNative({ value, onChange }: ConstituencyPicker
               accessibilityRole="search"
             />
           </TextField>
-          <Text className="mt-1 text-xs text-zinc-500">
+          <Text className="mt-1 text-xs text-muted-foreground">
             We never use GPS. Pick your constituency manually.
           </Text>
 
@@ -225,9 +225,9 @@ export function ConstituencyPickerNative({ value, onChange }: ConstituencyPicker
             accessibilityLabel={`${LEVEL_LABEL[level]} options`}
             className="mt-2 rounded-md border border-zinc-300"
           >
-            {isLoading ? <Text className="p-2 text-sm text-zinc-500">Loading…</Text> : null}
+            {isLoading ? <Text className="p-2 text-sm text-muted-foreground">Loading…</Text> : null}
             {options.length === 0 && !isLoading ? (
-              <Text className="p-2 text-sm text-zinc-500">No matches.</Text>
+              <Text className="p-2 text-sm text-muted-foreground">No matches.</Text>
             ) : null}
             {options.map((node) => (
               <Pressable
@@ -239,7 +239,7 @@ export function ConstituencyPickerNative({ value, onChange }: ConstituencyPicker
                 className="border-b border-zinc-200 px-2 py-3"
               >
                 <Text className="text-sm font-medium">{node.label}</Text>
-                <Text className="text-xs text-zinc-500">{LEVEL_LABEL[node.level]}</Text>
+                <Text className="text-xs text-muted-foreground">{LEVEL_LABEL[node.level]}</Text>
               </Pressable>
             ))}
           </View>

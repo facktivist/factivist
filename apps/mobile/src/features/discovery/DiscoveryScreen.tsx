@@ -38,7 +38,7 @@ function ComplaintListItem({ complaint }: { readonly complaint: ApiComplaintSumm
         </Card.Header>
         <Card.Body>
           <Text className="text-sm">{complaint.bodyExcerpt}</Text>
-          <Text className="mt-2 text-xs text-zinc-500">
+          <Text className="mt-2 text-xs text-muted-foreground">
             by {complaint.authorHandle} · {complaint.commentCount} comment
             {complaint.commentCount === 1 ? '' : 's'}
             {complaint.flagCount > 0 ? ` · ${complaint.flagCount} flags` : ''}
@@ -62,18 +62,18 @@ export function DiscoveryScreen() {
       <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16, gap: 12 }}>
         <View>
           <Text className="text-2xl font-bold">Browse complaints</Text>
-          <Text className="mt-1 text-sm text-zinc-500">
+          <Text className="mt-1 text-sm text-muted-foreground">
             Filter by state, district, PC, AC or category.
           </Text>
         </View>
 
-        {query.isLoading ? <Text className="text-sm text-zinc-500">Loading…</Text> : null}
+        {query.isLoading ? <Text className="text-sm text-muted-foreground">Loading…</Text> : null}
         {query.isError ? (
           <View
             accessibilityRole="alert"
-            className="rounded-md border border-red-300 bg-red-50 p-3"
+            className="rounded-md border border-destructive bg-destructive/10 p-3"
           >
-            <Text className="text-sm text-red-700">
+            <Text className="text-sm text-destructive">
               {query.error instanceof Error ? query.error.message : 'Could not load complaints.'}
             </Text>
           </View>
@@ -81,7 +81,9 @@ export function DiscoveryScreen() {
         {query.data && query.data.items.length === 0 ? (
           <Card>
             <Card.Body>
-              <Text className="text-sm text-zinc-500">No complaints match your filters.</Text>
+              <Text className="text-sm text-muted-foreground">
+                No complaints match your filters.
+              </Text>
             </Card.Body>
           </Card>
         ) : null}

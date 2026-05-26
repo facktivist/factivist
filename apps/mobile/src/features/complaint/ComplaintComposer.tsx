@@ -252,7 +252,7 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
                         accessibilityState={{ selected }}
                         testID={`category-${c.slug}`}
                         className={`rounded-full border px-3 py-1 ${
-                          selected ? 'border-blue-600 bg-blue-50' : 'border-zinc-300'
+                          selected ? 'border-primary bg-primary/10' : 'border-border'
                         }`}
                       >
                         <Text className="text-sm">{c.label}</Text>
@@ -326,7 +326,7 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
                     onPress={() => photoCapture.removePhoto(p.uri)}
                     accessibilityRole="button"
                     accessibilityLabel="Remove photo"
-                    className="absolute right-1 top-1 rounded-full bg-zinc-900/70 px-2"
+                    className="absolute right-1 top-1 rounded-full bg-foreground/70 px-2"
                     testID={`photo-remove-${p.uri}`}
                   >
                     <Text className="text-xs text-white">×</Text>
