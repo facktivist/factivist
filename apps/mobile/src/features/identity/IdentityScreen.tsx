@@ -1,5 +1,4 @@
-import { Card } from '@factivist/ui-native/components'
-import { ScrollView } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { VerifyButton } from './VerifyButton.tsx'
@@ -7,10 +6,11 @@ import { VerifyButton } from './VerifyButton.tsx'
 /**
  * Identity onboarding screen for the Expo app.
  *
- * Wraps the HeroUI Native compound surfaces — full `Onboarding.*` compound
- * wiring (Aadhaar capture → proof progress → success) lands in a later
- * Phase 5 wave. This stub renders the framing + a submit affordance that
- * calls the same `/identity/verify` route as web.
+ * Hero copy is rendered here as the server-equivalent (RN has no SSR,
+ * but keeping the framing static + the proof submission inside
+ * VerifyButton mirrors the web layout). VerifyButton consumes
+ * Onboarding.VerifyStep from `@factivist/ui-native` so loading + error
+ * + success states ship the design-system framing.
  *
  * Per the apps/mobile rule, every screen wraps SafeAreaView + ScrollView.
  */
@@ -21,21 +21,15 @@ export function IdentityScreen() {
         contentContainerStyle={{ flexGrow: 1, padding: 24, gap: 24 }}
         testID="identity-scroll"
       >
-        <Card>
-          <Card.Header>
-            <Card.Title>Verify your citizenship</Card.Title>
-          </Card.Header>
-          <Card.Body>
-            <Card.Description>
-              You will run a zero-knowledge proof on this device. Factivist never sees your name,
-              Aadhaar number, address, or photo — only an opaque nullifier proving you are a unique
-              Indian citizen.
-            </Card.Description>
-          </Card.Body>
-          <Card.Footer>
-            <VerifyButton />
-          </Card.Footer>
-        </Card>
+        <View accessibilityRole="header" className="flex flex-col gap-2">
+          <Text className="text-2xl font-semibold text-foreground">Verify your citizenship</Text>
+          <Text className="text-sm text-muted-foreground">
+            You will run a zero-knowledge proof on this device. Factivist never sees your name,
+            Aadhaar number, address, or photo — only an opaque nullifier proving you are a unique
+            Indian citizen.
+          </Text>
+        </View>
+        <VerifyButton />
       </ScrollView>
     </SafeAreaView>
   )

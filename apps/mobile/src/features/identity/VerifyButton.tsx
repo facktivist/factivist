@@ -1,4 +1,5 @@
 import type { VerifyProofRequest, VerifyProofResponse } from '@factivist/shared/types'
+import { Onboarding } from '@factivist/ui-native/onboarding'
 import {
   setProverPlatform,
   verifyProofOnDevice,
@@ -8,13 +9,16 @@ import { useState } from 'react'
 import { Platform, Pressable, Text, View } from 'react-native'
 
 /**
- * Submits a pre-generated proof envelope to the API. Phase 5 wave 1 stub —
- * full Onboarding.AadhaarCapture + Onboarding.ProofProgress wiring lands in
- * a follow-up wave.
+ * Submits a pre-generated proof envelope to the API. Phase 5 wave 1
+ * stub — full Onboarding.AadhaarCapture + Onboarding.ProofProgress
+ * wiring lands in a follow-up wave. This commit migrates the framing
+ * onto Onboarding.VerifyStep so loading + error + success states
+ * render with design-system tokens; on success the
+ * Onboarding.SuccessConfirmation slot shows the handle + first-8
+ * nullifier excerpt.
  *
- * Selects the prover backend per ADR-0018 by telling `@factivist/zkp-client`
- * which platform we're on at boot. The client otherwise has no way to know,
- * since it doesn't ship a react-native dep.
+ * Selects the prover backend per ADR-0018 by telling
+ * `@factivist/zkp-client` which platform we're on at boot.
  */
 
 interface VerifyButtonProps {
@@ -25,10 +29,36 @@ interface VerifyButtonProps {
 type State =
   | { kind: 'idle' }
   | { kind: 'submitting' }
-  | { kind: 'success'; handle: string }
+  | { kind: 'success'; handle: string; nullifierExcerpt: string }
   | { kind: 'error'; code: string; message: string }
 
-// Declare platform once per app boot. Calling it again is a no-op (idempotent).
+const toStep = (s: State): 'intro' | 'proof-verifying' | 'success' | 'error' => {
+  switch (s.kind) {
+    case 'submitting':
+      return 'proof-verifying'
+    case 'success':
+      return 'success'
+    case 'error':
+      return 'error'
+    default:
+      return 'intro'
+  }
+}
+
+const toStatus = (s: State): 'idle' | 'loading' | 'success' | 'error' => {
+  switch (s.kind) {
+    case 'submitting':
+      return 'loading'
+    case 'success':
+      return 'success'
+    case 'error':
+      return 'error'
+    default:
+      return 'idle'
+  }
+}
+
+// Declare platform once per app boot. Idempotent.
 setProverPlatform(Platform.OS === 'ios' ? 'ios' : 'android')
 
 export function VerifyButton({ preGeneratedProof, apiBaseUrl = '' }: VerifyButtonProps) {
@@ -45,14 +75,13 @@ export function VerifyButton({ preGeneratedProof, apiBaseUrl = '' }: VerifyButto
     }
     setState({ kind: 'submitting' })
     try {
-      // Best-effort: verify locally first so we don't burn server CPU on a
-      // proof we already know is bad. Failure here is non-fatal — the server
-      // re-verifies authoritatively.
+      // Best-effort: verify locally first so we don't burn server CPU on
+      // a proof we already know is bad. Failure here is non-fatal — the
+      // server re-verifies authoritatively.
       try {
         await verifyProofOnDevice(preGeneratedProof.proof, preGeneratedProof.publicSignals)
       } catch (e) {
         if (!(e instanceof ZkpNotConfiguredError)) throw e
-        // No vKey on device yet — defer to server.
       }
 
       const res = await fetch(`${apiBaseUrl}/identity/verify`, {
@@ -62,7 +91,12 @@ export function VerifyButton({ preGeneratedProof, apiBaseUrl = '' }: VerifyButto
       })
       const body = (await res.json()) as VerifyProofResponse
       if (body.verified) {
-        setState({ kind: 'success', handle: body.handle })
+        const [nullifier] = preGeneratedProof.publicSignals
+        setState({
+          kind: 'success',
+          handle: body.handle,
+          nullifierExcerpt: nullifier.slice(0, 8),
+        })
         return
       }
       setState({ kind: 'error', code: body.code, message: body.error })
@@ -75,24 +109,49 @@ export function VerifyButton({ preGeneratedProof, apiBaseUrl = '' }: VerifyButto
     }
   }
 
+  const errorPayload =
+    state.kind === 'error'
+      ? { code: state.code, message: state.message, retryable: state.code !== 'NO_PROOF' }
+      : undefined
+
   return (
     <View testID="verify-button-root">
-      <Pressable
-        onPress={onPress}
-        disabled={state.kind === 'submitting'}
-        accessibilityRole="button"
-        accessibilityLabel="Generate and submit proof"
-        testID="verify-submit"
+      <Onboarding.VerifyStep
+        step={toStep(state)}
+        status={toStatus(state)}
+        error={errorPayload}
+        onStepChange={() => {
+          /* no-op until a stepper machine ships */
+        }}
+        testID="verify-step"
       >
-        <Text>{state.kind === 'submitting' ? 'Verifying…' : 'Generate & submit proof'}</Text>
-      </Pressable>
-
-      {state.kind === 'success' && (
-        <Text testID="verify-success">Verified — handle {state.handle}</Text>
-      )}
-      {state.kind === 'error' && (
-        <Text testID="verify-error">{`${state.message} (${state.code})`}</Text>
-      )}
+        {state.kind === 'success' ? (
+          <Onboarding.SuccessConfirmation
+            handle={state.handle}
+            nullifierExcerpt={state.nullifierExcerpt}
+            onContinue={() => {
+              /* caller wires the next route */
+            }}
+            testID="verify-success-card"
+          />
+        ) : (
+          <Pressable
+            onPress={onPress}
+            disabled={state.kind === 'submitting'}
+            accessibilityRole="button"
+            accessibilityLabel="Generate and submit proof"
+            testID="verify-submit"
+          >
+            <Text>{state.kind === 'submitting' ? 'Verifying…' : 'Generate & submit proof'}</Text>
+          </Pressable>
+        )}
+        {state.kind === 'success' ? (
+          <Text testID="verify-success">Verified — handle {state.handle}</Text>
+        ) : null}
+        {state.kind === 'error' ? (
+          <Text testID="verify-error">{`${state.message} (${state.code})`}</Text>
+        ) : null}
+      </Onboarding.VerifyStep>
     </View>
   )
 }

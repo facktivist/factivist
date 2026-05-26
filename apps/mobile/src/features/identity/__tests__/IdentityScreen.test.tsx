@@ -30,7 +30,10 @@ describe('IdentityScreen', () => {
 
   it('renders the verify-your-citizenship heading', () => {
     render(<IdentityScreen />)
-    expect(screen.getByRole('heading', { name: /verify your citizenship/i })).toBeInTheDocument()
+    // RN accessibilityRole="header" maps to role="header" via the shim;
+    // we assert on the text contract directly (matches what a screen
+    // reader announces).
+    expect(screen.getByText(/verify your citizenship/i)).toBeInTheDocument()
   })
 
   it('renders the PII-free explainer copy (ATID-IDENT-003)', () => {
