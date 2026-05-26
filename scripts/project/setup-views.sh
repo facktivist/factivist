@@ -50,7 +50,8 @@ query(\$owner: String!) {
         nodes {
           ... on ProjectV2FieldCommon { id name dataType }
           ... on ProjectV2SingleSelectField {
-            id name dataType options { id name }
+            id name dataType
+            options { id name color description }
           }
         }
       }
@@ -122,20 +123,81 @@ create_date_field() {
     | jq -r '.data.createProjectV2Field.projectV2Field.id'
 }
 
-# Ensure a single-select field exists; if it does, leave it. If not,
-# create it with the given option list.
+# Ensure a single-select field exists AND has every target option.
+#
+# - If the field doesn't exist, create it with the full option list.
+# - If the field exists, reconcile the option set: every target
+#   option name is checked against the field's current options; any
+#   missing names are appended. Existing options are replayed
+#   verbatim (preserving their original id, color, description) so
+#   no item value is orphaned.
+#
+# The mutation that GitHub exposes for editing the option set is
+# updateProjectV2Field with `singleSelectOptions: [Input!]`. That input
+# does NOT carry an `id` field — GitHub matches incoming entries to
+# existing options by name, so passing the existing names alongside
+# their original colour/description is what keeps stable IDs.
 ensure_single_select() {
   local name="$1"
   local options_json="$2"
-  local existing
-  existing="$(field_id_by_name "$name")"
-  if [[ -n "$existing" ]]; then
-    echo "  Field '${name}' already exists (${existing})."
+  local existing_id
+  existing_id="$(field_id_by_name "$name")"
+
+  if [[ -z "$existing_id" ]]; then
+    local new_id
+    new_id="$(create_single_select "$name" "$options_json")"
+    echo "  Created field '${name}' (${new_id})."
     return 0
   fi
-  local new_id
-  new_id="$(create_single_select "$name" "$options_json")"
-  echo "  Created field '${name}' (${new_id})."
+
+  # Reconcile: pull the field's current options (with real color +
+  # description), then append any target options whose names are
+  # missing.
+  local current_json
+  current_json="$(echo "$PROJECT_PAYLOAD" | jq -c --arg n "$name" '
+    .data.user.projectV2.fields.nodes[]
+    | select(.name == $n)
+    | [ .options[]? | {name: .name, color: .color, description: (.description // "")} ]
+  ')"
+
+  local missing_json
+  missing_json="$(jq -nc \
+    --argjson current "$current_json" \
+    --argjson target "$options_json" '
+    ($current | map(.name)) as $have
+    | $target | map(select(.name as $n | $have | index($n) | not))
+  ')"
+
+  local missing_count
+  missing_count="$(echo "$missing_json" | jq 'length')"
+  if [[ "$missing_count" -eq 0 ]]; then
+    echo "  Field '${name}' already exists (${existing_id}) — options already complete."
+    return 0
+  fi
+
+  echo "  Field '${name}' already exists (${existing_id}) — appending ${missing_count} missing option(s)."
+
+  local merged_json
+  merged_json="$(jq -nc \
+    --argjson current "$current_json" \
+    --argjson missing "$missing_json" '$current + $missing')"
+
+  # updateProjectV2Field expects a typed array; gh -f flattens lists,
+  # so POST a single-line JSON body via --input.
+  local tmp
+  tmp="$(mktemp -t setupopts-XXXXXX.json)"
+  trap 'rm -f "$tmp"' RETURN
+  jq -nc \
+    --arg fid "$existing_id" \
+    --argjson opts "$merged_json" \
+    '{
+       query: "mutation($fieldId: ID!, $opts: [ProjectV2SingleSelectFieldOptionInput!]!) { updateProjectV2Field(input: { fieldId: $fieldId, singleSelectOptions: $opts }) { projectV2Field { ... on ProjectV2SingleSelectField { options { id name } } } } }",
+       variables: {fieldId: $fid, opts: $opts}
+     }' > "$tmp"
+  gh api graphql --input "$tmp" > /dev/null
+
+  # Echo the newly-added option names for the operator log.
+  echo "$missing_json" | jq -r '.[] | "    + " + .name'
 }
 
 ensure_date_field() {
