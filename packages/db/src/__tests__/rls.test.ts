@@ -39,7 +39,11 @@ const dbRoot = resolve(dir, '..', '..')
 const readMigration = (name: string): string =>
   readFileSync(resolve(dbRoot, 'drizzle', name), 'utf8')
 
-const sqlEnableRlsMigrations = ['0004_enable_rls.sql', '0005_dpdp_grievance_contacts.sql']
+const sqlEnableRlsMigrations = [
+  '0004_enable_rls.sql',
+  '0005_dpdp_grievance_contacts.sql',
+  '0006_comments_table.sql',
+]
 
 const combinedSql = sqlEnableRlsMigrations.map((name) => readMigration(name)).join('\n')
 
@@ -164,5 +168,26 @@ describe('complaints — anon SELECT is predicated on status=published', () => {
     const re =
       /CREATE\s+POLICY\s+"[^"]+"\s+ON\s+"complaints"[^;]*FOR\s+SELECT\s+TO\s+anon[^;]*status\s*=\s*'published'/i
     expect(re.test(combinedSql)).toBe(true)
+  })
+})
+
+describe('comments — anon SELECT requires parent published + comment unflagged', () => {
+  it('has the conditional SELECT policy', () => {
+    // The predicate is multi-clause (flagged_state = 'ok' AND EXISTS …).
+    // We assert the two key fragments separately + the role.
+    const policyRe = /CREATE\s+POLICY\s+"[^"]+"\s+ON\s+"comments"[^;]*FOR\s+SELECT\s+TO\s+anon/i
+    expect(policyRe.test(combinedSql)).toBe(true)
+    // The flagged-state guard is required so flagged content can't
+    // leak via anon.
+    expect(/flagged_state\s*=\s*'ok'/i.test(combinedSql)).toBe(true)
+    // The parent-published guard prevents anon reads on draft/deleted
+    // complaints' comment threads.
+    expect(/c\.status\s*=\s*'published'/i.test(combinedSql)).toBe(true)
+  })
+
+  it('has no anon INSERT / UPDATE / DELETE policies', () => {
+    const writeRe =
+      /CREATE\s+POLICY\s+"[^"]+"\s+ON\s+"comments"[^;]*FOR\s+(INSERT|UPDATE|DELETE)[^;]*TO\s+anon/i
+    expect(writeRe.test(combinedSql)).toBe(false)
   })
 })

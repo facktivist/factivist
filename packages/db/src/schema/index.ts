@@ -14,6 +14,12 @@ export {
 export { type Category, categories, type NewCategory } from './categories.ts'
 export { type Citizen, citizens, type NewCitizen } from './citizens.ts'
 export {
+  COMMENT_BODY_MAX,
+  type Comment,
+  comments,
+  type NewComment,
+} from './comments.ts'
+export {
   type ComplaintFlag,
   complaintFlags,
   flagReasonEnum,
