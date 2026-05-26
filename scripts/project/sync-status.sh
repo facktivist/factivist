@@ -43,13 +43,16 @@ if ! gh api graphql -f query='{ viewer { projectsV2(first: 1) { totalCount } } }
 fi
 
 # --- Resolve the project + its Status field ---------------------------------
-PROJECT_PAYLOAD="$(gh api graphql -F owner="$OWNER" -F number:="$PROJECT_NUMBER" -f query='
-query($owner: String!, $number: Int!) {
-  user(login: $owner) {
-    projectV2(number: $number) {
+# The project number is inlined into the query string because
+# `gh api graphql -F number=N` returns N as a String, which GraphQL
+# then rejects against the `Int!` parameter type.
+PROJECT_PAYLOAD="$(gh api graphql -F owner="$OWNER" -f query="
+query(\$owner: String!) {
+  user(login: \$owner) {
+    projectV2(number: ${PROJECT_NUMBER}) {
       id
       title
-      field(name: "Status") {
+      field(name: \"Status\") {
         ... on ProjectV2SingleSelectField {
           id
           options { id name }
@@ -57,7 +60,7 @@ query($owner: String!, $number: Int!) {
       }
     }
   }
-}')"
+}")"
 
 PROJECT_ID="$(echo "$PROJECT_PAYLOAD" | jq -r '.data.user.projectV2.id')"
 STATUS_FIELD_ID="$(echo "$PROJECT_PAYLOAD" | jq -r '.data.user.projectV2.field.id')"
@@ -86,9 +89,11 @@ MOVED_DONE=0
 MOVED_P9=0
 
 while :; do
+  # See bootstrap.sh — `-F after=null` becomes actual GraphQL null on
+  # the first page; subsequent pages send a real cursor string.
   PAGE="$(gh api graphql \
     -F projectId="$PROJECT_ID" \
-    -f after="$CURSOR" \
+    -F after="$CURSOR" \
     -f query='
     query($projectId: ID!, $after: String) {
       node(id: $projectId) {

@@ -33,10 +33,13 @@ if ! gh api graphql -f query='{ viewer { projectsV2(first: 1) { totalCount } } }
 fi
 
 # --- Resolve project id -----------------------------------------------------
-PROJECT_ID="$(gh api graphql -F owner="$OWNER" -F number:="$PROJECT_NUMBER" -f query='
-query($owner: String!, $number: Int!) {
-  user(login: $owner) { projectV2(number: $number) { id title } }
-}' | jq -r '.data.user.projectV2.id')"
+# The project number is inlined into the query string because
+# `gh api graphql -F number=N` returns N as a String, which GraphQL
+# then rejects against the `Int!` parameter type.
+PROJECT_ID="$(gh api graphql -F owner="$OWNER" -f query="
+query(\$owner: String!) {
+  user(login: \$owner) { projectV2(number: ${PROJECT_NUMBER}) { id title } }
+}" | jq -r '.data.user.projectV2.id')"
 
 if [[ -z "$PROJECT_ID" || "$PROJECT_ID" == "null" ]]; then
   echo "::error::Could not resolve Project #${PROJECT_NUMBER} on ${OWNER}." >&2
@@ -50,7 +53,9 @@ TOTAL=0
 ATTACHED=0
 
 while :; do
-  PAGE="$(gh api graphql -F owner="$REPO_OWNER" -F repo="$REPO_NAME" -f after="$CURSOR" -f query='
+  # `-F after=null` is sent as actual GraphQL null on the first page;
+  # on subsequent pages it's a real cursor string, which -F keeps as string.
+  PAGE="$(gh api graphql -F owner="$REPO_OWNER" -F repo="$REPO_NAME" -F after="$CURSOR" -f query='
   query($owner: String!, $repo: String!, $after: String) {
     repository(owner: $owner, name: $repo) {
       issues(first: 100, after: $after, orderBy: { field: CREATED_AT, direction: ASC }) {
