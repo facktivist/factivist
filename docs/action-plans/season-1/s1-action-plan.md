@@ -418,10 +418,10 @@ GrowthBook / LaunchDarkly — overkill for S1.
 
 ### 5.5 Exit gate
 
-- [ ] All three pipelines green on main
-- [ ] `bun run check` passes
-- [ ] `aidefence_scan` shows no medium+ findings on the cumulative diff
-- [ ] `ruflo doctor --fix` reports clean
+- [ ] All three pipelines green on main — pending first-merge CI run (Phase 9 Group A1)
+- [x] `bun run check` passes — 38/38 every commit since wave 3 (`pattern_s1_phase_5_done`)
+- [x] `aidefence_scan` shows no medium+ findings on the cumulative diff — closed by wave-1 review (`pattern_s1_phase_5_wave_1_done`)
+- [x] `ruflo doctor --fix` reports clean — closed wave 1
 
 ---
 
@@ -492,10 +492,10 @@ Per project rule `argent.md`:
 
 ### 6.6 Exit gate
 
-- [ ] Coverage thresholds met across all packages
-- [ ] All E2E suites pass on CI (web + iOS + Android)
-- [ ] Hardhat contract tests pass against Polygon Amoy
-- [ ] `prod-validator` posts a green production-readiness report
+- [x] Coverage thresholds met across all packages — 95L/95F/95S/90B enforced (`bun run check` 38/38)
+- [ ] All E2E suites pass on CI (web + iOS + Android) — pending first-merge run (Phase 9 Group A1)
+- [ ] Hardhat contract tests pass against Polygon Amoy — deferred to Phase 9 §1 (no upstream deployment)
+- [x] `prod-validator` posts a green production-readiness report — closed by `pattern_s1_phase_6_done` (GO verdict)
 
 ---
 
@@ -551,11 +551,11 @@ reviewers configured in repo settings → Environments → `production`.
 
 ### 7.5 Exit gate
 
-- [ ] All 8 workflows green for two consecutive PRs [^p7-contracts]
-- [ ] Staging deploy round-trip < 7 minutes
-- [ ] Production deploy gated by manual approval + audit-pass artifact
-- [ ] `release.yml` (Wave 7B) opens a rolling release PR on every push to
-      `main`; merging it cuts tags + attaches `prod-validator-<sha>.json`
+- [ ] All 8 workflows green for two consecutive PRs [^p7-contracts] — pending first-merge run (Phase 9 Group A1)
+- [ ] Staging deploy round-trip < 7 minutes — pending Vercel/Fly.io provisioning (Phase 9 Group B2-B3)
+- [ ] Production deploy gated by manual approval + audit-pass artifact — wired (`deploy-prod.yml`); activation pending audit (Phase 9 Group C2)
+- [x] `release.yml` (Wave 7B) opens a rolling release PR on every push to
+      `main`; merging it cuts tags + attaches `prod-validator-<sha>.json` — shipped wave 7B (`pattern_s1_phase_7_done`)
 
 [^p7-contracts]: Wave 7A authored 8 of the 9 workflows in §7.3 + added
     `release.yml` in Wave 7B. `contracts.yml` is deferred to **Phase 9**
