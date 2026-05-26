@@ -37,7 +37,7 @@ describe('scrubString', () => {
   })
 
   it('leaves nullifiers and tx hashes alone (they are public)', () => {
-    const tx = '0x' + 'a'.repeat(64)
+    const tx = `0x${'a'.repeat(64)}`
     expect(scrubString(tx)).toBe(tx)
   })
 
@@ -97,12 +97,14 @@ describe('beforeSend', () => {
       tags: { region: 'bom' },
     }
     const out = beforeSend(event)
-    expect(out).not.toBeNull()
-    expect((out!.request as Record<string, string>).data).toContain('[redacted]')
-    const crumbs = out!.breadcrumbs as Array<{ message: string }>
+    // Narrow once so the subsequent property reads don't need
+    // `!`-assertions (biome lint/style/noNonNullAssertion).
+    if (out === null) throw new Error('beforeSend returned null for a non-synthetic event')
+    expect((out.request as Record<string, string>).data).toContain('[redacted]')
+    const crumbs = out.breadcrumbs as Array<{ message: string }>
     expect(crumbs[0].message).toContain('[redacted]')
     // Non-PII tags survive
-    expect((out!.tags as Record<string, string>).region).toBe('bom')
+    expect((out.tags as Record<string, string>).region).toBe('bom')
   })
 })
 

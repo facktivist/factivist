@@ -22,7 +22,7 @@
       "!**/test-results",
       "!**/artifacts",
       "!**/drizzle/meta",
-      "!docs/design/s1/handoff/**",
+      "!docs/design/s1/handoff",
       "!**/.agents",
       "!**/.claude",
       "!**/.claude-flow",
