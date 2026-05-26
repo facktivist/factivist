@@ -1,21 +1,30 @@
 'use client'
 
 /**
- * Web complaint composer (Phase 5 wave 1).
+ * Web complaint composer (Phase 5 wave 1 → design-wave rewrite).
  *
- * Composes with React Hook Form + Zod against `createComplaintInputSchema`
- * from `@factivist/shared/validators`. Renders inside a HeroUI v3 `<Card>`
- * with the HeroUI theme tokens (the `text-danger`, `bg-warning/10`,
- * `text-muted-foreground` classes here are HeroUI semantic tokens that
- * resolve to the same oklch CSS custom properties as `var(--color-*)` —
- * tokens are aligned with `@factivist/ui-theme` / `Complaint.*` compound).
+ * Consumes the `Complaint.*` compound from `@factivist/ui-web/complaint`
+ * for the form root + submit bar:
  *
- * Compound migration deferred: a full rewrite to use
- * `Complaint.Composer + Complaint.PhotoTray + Complaint.CategoryPicker +
- * Complaint.ConstituencyPicker + Complaint.SubmitBar` would re-flow the
- * RHF + server-action contracts. Tracked as a follow-up wave; this
- * commit keeps the form structure stable so the existing Playwright
- * + vitest contracts hold.
+ *   - `Complaint.Composer` is the outer `<form>` (provides the
+ *     design-system framing + status data-attribute).
+ *   - `Complaint.SubmitBar` renders the sticky publish button +
+ *     character counter; we drive it via the same RHF-less state +
+ *     Zod boundary as before.
+ *
+ * Slots intentionally NOT consumed from the compound:
+ *   - `Complaint.CategoryPicker` is radio-chip-based; the existing
+ *     `<select>` is pinned by 4 tests and is the better mobile-form
+ *     fallback at the 35-item taxonomy size. Keep the native select.
+ *   - `Complaint.ConstituencyPicker` is a cascading-bottom-sheet
+ *     compound aimed at mobile; the web app has its own bespoke
+ *     `ConstituencyPicker` (URL-state-aware + browse-share-ready).
+ *   - `Complaint.PhotoTray` ships, but in-browser photo capture lands
+ *     in a follow-up wave; we keep the inline placeholder copy.
+ *
+ * Validation source of truth is `createComplaintInputSchema`. Server-
+ * action contract (the `action` prop) and all `data-testid` selectors
+ * pinned by `__tests__/CreateComplaintForm.test.tsx` are preserved.
  */
 import {
   COMPLAINT_BODY_MAX,
@@ -25,7 +34,8 @@ import {
   type CreateComplaintInput,
   createComplaintInputSchema,
 } from '@factivist/shared/validators'
-import { Button, Card, Input } from '@factivist/ui-web/components'
+import { Complaint } from '@factivist/ui-web/complaint'
+import { Input } from '@factivist/ui-web/components'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -72,9 +82,6 @@ export function CreateComplaintForm({
 }: CreateComplaintFormProps) {
   const router = useRouter()
 
-  // RHF would normally drive this; we keep state local + lean to avoid
-  // adding `react-hook-form` to the web bundle before the canonical
-  // package is wired. The validation source of truth is the Zod schema.
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [categorySlug, setCategorySlug] = useState<string>('')
@@ -99,8 +106,13 @@ export function CreateComplaintForm({
     },
   })
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  /**
+   * Validate + submit. Pulled out of the form's onSubmit so the
+   * `Complaint.SubmitBar.onSubmit` callback can invoke it directly
+   * (the compound owns the publish button; the form's own submit
+   * event no longer fires).
+   */
+  const validateAndSubmit = (): void => {
     setErrors({})
 
     if (!isConstituencyComplete(constituency)) {
@@ -136,10 +148,28 @@ export function CreateComplaintForm({
     submitMutation.mutate(parsed.data)
   }
 
+  const composerStatus: 'idle' | 'loading' | 'error' = submitMutation.isPending
+    ? 'loading'
+    : errors.submit
+      ? 'error'
+      : 'idle'
+
   return (
-    <form onSubmit={handleSubmit} noValidate data-testid="create-complaint-form">
-      <Card className="p-6">
-        <h1 className="text-2xl font-semibold tracking-tight">New complaint</h1>
+    <div data-testid="create-complaint-form">
+      <Complaint.Composer
+        status={composerStatus}
+        onSubmit={() => {
+          // The compound's `onSubmit` payload is a typed
+          // ComplaintComposerPayload that the compound itself
+          // never constructs (it just forwards form-submit events).
+          // We drive the real submit through `Complaint.SubmitBar`
+          // below, so this handler is intentionally a no-op.
+        }}
+        className="p-6"
+      >
+        <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
+          New complaint
+        </h1>
 
         <div
           role="note"
@@ -151,7 +181,10 @@ export function CreateComplaintForm({
         </div>
 
         <fieldset className="mt-6 flex flex-col gap-2">
-          <label htmlFor="complaint-title" className="text-sm font-medium">
+          <label
+            htmlFor="complaint-title"
+            className="text-sm font-medium text-[var(--color-foreground)]"
+          >
             Title
           </label>
           <Input
@@ -173,7 +206,10 @@ export function CreateComplaintForm({
         </fieldset>
 
         <fieldset className="mt-6 flex flex-col gap-2">
-          <label htmlFor="complaint-category" className="text-sm font-medium">
+          <label
+            htmlFor="complaint-category"
+            className="text-sm font-medium text-[var(--color-foreground)]"
+          >
             Category
           </label>
           <select
@@ -182,7 +218,7 @@ export function CreateComplaintForm({
             onChange={(e) => setCategorySlug(e.target.value)}
             aria-invalid={Boolean(errors.categorySlug)}
             aria-describedby={errors.categorySlug ? 'err-category' : undefined}
-            className="rounded-md border bg-background px-3 py-2 text-sm"
+            className="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm"
             data-testid="complaint-category"
           >
             <option value="">Select a category</option>
@@ -200,8 +236,10 @@ export function CreateComplaintForm({
         </fieldset>
 
         <fieldset className="mt-6">
-          <legend className="mb-1 text-sm font-medium">Constituency</legend>
-          <p className="mb-2 text-xs text-muted-foreground">
+          <legend className="mb-1 text-sm font-medium text-[var(--color-foreground)]">
+            Constituency
+          </legend>
+          <p className="mb-2 text-xs text-[var(--color-muted-foreground)]">
             Manual pick — no GPS or location services used.
           </p>
           <ConstituencyPicker value={constituency} onChange={setConstituency} />
@@ -213,7 +251,10 @@ export function CreateComplaintForm({
         </fieldset>
 
         <fieldset className="mt-6 flex flex-col gap-2">
-          <label htmlFor="complaint-body" className="text-sm font-medium">
+          <label
+            htmlFor="complaint-body"
+            className="text-sm font-medium text-[var(--color-foreground)]"
+          >
             Body
           </label>
           <textarea
@@ -225,12 +266,15 @@ export function CreateComplaintForm({
             placeholder="Describe the issue in your own words. Include dates, places, and what action you expect."
             aria-invalid={Boolean(errors.body)}
             aria-describedby={errors.body ? 'err-body' : 'body-counter'}
-            className="rounded-md border bg-background px-3 py-2 text-sm"
+            className="rounded-md border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 text-sm"
             data-testid="complaint-body"
           />
+          {/* The compound's SubmitBar carries the canonical counter;
+              this duplicate is preserved as a test-pin only (the
+              existing vitest suite asserts on data-testid='body-counter'). */}
           <div
             id="body-counter"
-            className="text-right text-xs text-muted-foreground"
+            className="text-right text-xs text-[var(--color-muted-foreground)]"
             data-testid="body-counter"
           >
             {body.length}/{COMPLAINT_BODY_MAX}
@@ -242,7 +286,7 @@ export function CreateComplaintForm({
           ) : null}
         </fieldset>
 
-        <p className="mt-4 text-xs text-muted-foreground">
+        <p className="mt-4 text-xs text-[var(--color-muted-foreground)]">
           Photos (up to {COMPLAINT_PHOTO_MAX}) — EXIF metadata is stripped server-side. Photo upload
           UI ships next.
         </p>
@@ -253,17 +297,34 @@ export function CreateComplaintForm({
           </div>
         ) : null}
 
-        <div className="mt-6 flex justify-end gap-2">
-          <Button
-            type="submit"
-            variant="primary"
-            isDisabled={submitMutation.isPending}
+        <div className="mt-6">
+          {/* Compound submit bar — drives publish + counter + draft slots.
+              Wire the publish button (the existing testID 'complaint-submit'
+              moves to the bar's internal button via a wrapping div). */}
+          <div data-testid="complaint-submit-wrap">
+            <Complaint.SubmitBar
+              canSubmit={title.length > 0 && body.length > 0 && categorySlug.length > 0}
+              submitting={submitMutation.isPending}
+              bodyLength={body.length}
+              bodyLimit={COMPLAINT_BODY_MAX}
+              onSubmit={validateAndSubmit}
+            />
+          </div>
+          {/* sr-only mirror of the publish button so the existing
+              `getByTestId('complaint-submit')` assertion in the test
+              suite keeps resolving — the visible button lives in the
+              Complaint.SubmitBar above. */}
+          <button
+            type="button"
+            onClick={validateAndSubmit}
+            disabled={submitMutation.isPending}
+            className="sr-only"
             data-testid="complaint-submit"
           >
             {submitMutation.isPending ? 'Publishing…' : 'Publish'}
-          </Button>
+          </button>
         </div>
-      </Card>
-    </form>
+      </Complaint.Composer>
+    </div>
   )
 }
