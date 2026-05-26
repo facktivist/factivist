@@ -165,6 +165,8 @@ export const apiClient = {
 
   listCategories: () => request<ReadonlyArray<ApiCategory>>('/categories'),
 
+  getMyProfile: () => request<ApiProfile>('/me'),
+
   listComments: (complaintSlug: string) =>
     request<ApiCommentListResponse>(
       `/comments?complaint_slug=${encodeURIComponent(complaintSlug)}`,
@@ -189,6 +191,17 @@ export interface ApiComment {
 
 export interface ApiCommentListResponse {
   readonly items: ReadonlyArray<ApiComment>
+}
+
+export interface ApiProfile {
+  readonly handle: string
+  readonly nullifierExcerpt: string
+  readonly stats: {
+    readonly complaintCount: number
+    readonly commentCount: number
+    readonly flagsReceived: number
+  }
+  readonly joinedAt: string
 }
 
 export { ApiError }

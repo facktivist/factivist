@@ -176,6 +176,24 @@ describe('apps/mobile/src/lib/api/client', () => {
     })
   })
 
+  describe('getMyProfile', () => {
+    it('GETs /me and returns the profile shape', async () => {
+      fetchMock.mockResolvedValue(
+        jsonOk({
+          handle: 'anon-rabbit',
+          nullifierExcerpt: '0x123456',
+          stats: { complaintCount: 1, commentCount: 2, flagsReceived: 0 },
+          joinedAt: '2026-05-01T00:00:00.000Z',
+        }),
+      )
+      const out = await apiClient.getMyProfile()
+      expect(out.handle).toBe('anon-rabbit')
+      expect(out.stats.commentCount).toBe(2)
+      const url = fetchMock.mock.calls[0][0] as string
+      expect(url).toContain('/me')
+    })
+  })
+
   describe('listComments', () => {
     it('GETs /comments with the encoded complaint slug', async () => {
       fetchMock.mockResolvedValue(jsonOk({ items: [] }))

@@ -15,6 +15,7 @@ import { dbRoute } from './routes/db.ts'
 import { discoveryRoute } from './routes/discovery.ts'
 import { healthRoute } from './routes/health.ts'
 import { identityRoute } from './routes/identity.ts'
+import { profileRoute } from './routes/profile.ts'
 import { uploadsRoute } from './routes/uploads.ts'
 
 export interface AppEnv {
@@ -52,6 +53,7 @@ export function createApp(env?: AppEnv) {
     .route('/', discoveryRoute)
     .route('/', complaintRoute)
     .route('/', commentRoute)
+    .route('/', profileRoute)
     .route('/', uploadsRoute)
     .route('/', adminModerationRoute)
     .route('/', adminGrievanceRoute)
