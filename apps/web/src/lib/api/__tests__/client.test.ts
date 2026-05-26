@@ -218,6 +218,41 @@ describe('apps/web/src/lib/api/client', () => {
     })
   })
 
+  describe('listComments', () => {
+    it('GETs /comments with the complaint slug encoded into the query string', async () => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ items: [] }))
+      const out = await apiClient.listComments('mh-pune-1')
+      expect(out).toEqual({ items: [] })
+      const url = fetchMock.mock.calls[0][0] as string
+      expect(url).toContain('/comments?complaint_slug=mh-pune-1')
+    })
+  })
+
+  describe('createComment', () => {
+    it('POSTs the input body to /comments and returns the created row', async () => {
+      const created = {
+        id: 'cmt_1',
+        parentId: null,
+        complaintId: 'mh-pune-1',
+        authorHandle: 'anon_z',
+        body: 'reply',
+        createdAt: '2026-05-26T00:00:00.000Z',
+        flagged: false,
+      }
+      fetchMock.mockResolvedValue(mockJsonResponse(created))
+      const out = await apiClient.createComment({
+        complaintSlug: 'mh-pune-1',
+        body: 'reply',
+        parentId: undefined,
+      })
+      expect(out).toEqual(created)
+      const init = fetchMock.mock.calls[0][1] as RequestInit
+      expect(init.method).toBe('POST')
+      const parsed = JSON.parse(init.body as string)
+      expect(parsed.complaintSlug).toBe('mh-pune-1')
+    })
+  })
+
   describe('listConstituency', () => {
     it('returns nodes and omits absent parent', async () => {
       const nodes: ApiConstituencyNode[] = [

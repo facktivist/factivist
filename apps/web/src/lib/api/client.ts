@@ -89,6 +89,20 @@ export interface ApiCategory {
   readonly label: string
 }
 
+export interface ApiComment {
+  readonly id: string
+  readonly parentId: string | null
+  readonly complaintId: string
+  readonly authorHandle: string
+  readonly body: string
+  readonly createdAt: string
+  readonly flagged: boolean
+}
+
+export interface ApiCommentListResponse {
+  readonly items: ReadonlyArray<ApiComment>
+}
+
 export interface CreateComplaintResponse {
   readonly id: string
   readonly createdAt: string
@@ -254,6 +268,29 @@ export const apiClient = {
 
   flagComplaint: (id: string, input: FlagComplaintInput) =>
     request<void>(`/complaints/${encodeURIComponent(id)}/flag`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+
+  // ─── Comments ──────────────────────────────────────────────────────
+  /**
+   * Fetch the comment thread for a complaint. The API filters out any
+   * row with `flagged_state != 'ok'` at the boundary so the UI never
+   * sees moderator-hidden comments.
+   */
+  listComments: (complaintSlug: string, init?: RequestInit) =>
+    request<ApiCommentListResponse>(
+      `/comments?complaint_slug=${encodeURIComponent(complaintSlug)}`,
+      init,
+    ),
+
+  /**
+   * Post a comment (or a reply when `parentId` is supplied). Requires
+   * the citizen `factivist-session` cookie — the API rejects unsigned
+   * requests with `401 NO_SESSION`.
+   */
+  createComment: (input: { complaintSlug: string; body: string; parentId?: string }) =>
+    request<ApiComment>('/comments', {
       method: 'POST',
       body: JSON.stringify(input),
     }),
