@@ -19,6 +19,13 @@ vi.mock('../../../lib/auth/server.ts', () => ({
   getServerSession: vi.fn(async () => sessionRef.current),
 }))
 
+// Citizen-path client island has its own focused tests. Stub it here
+// so the route test only validates the server-side operator vs citizen
+// branch and stays free of TanStack Query setup.
+vi.mock('../MyProfileView.tsx', () => ({
+  MyProfileView: () => <div data-testid="my-profile-view" />,
+}))
+
 beforeEach(() => {
   sessionRef.current = null
 })
@@ -28,13 +35,15 @@ afterEach(() => {
 })
 
 describe('ProfilePage', () => {
-  it('renders the anonymous notice when no session', async () => {
+  it('renders the citizen-path island when no operator session', async () => {
     sessionRef.current = null
     const { default: ProfilePage } = await import('../page.tsx')
     const tree = await ProfilePage()
     const { getByTestId, queryByTestId } = render(tree)
     expect(getByTestId('profile-shell')).toBeInTheDocument()
-    expect(getByTestId('profile-anonymous')).toBeInTheDocument()
+    // The island handles 401-fallback to the anonymous CTA. The route
+    // test only checks the island mounted in place of the operator card.
+    expect(getByTestId('my-profile-view')).toBeInTheDocument()
     expect(queryByTestId('profile-operator')).toBeNull()
   })
 

@@ -3,6 +3,8 @@ import Link from 'next/link'
 
 import { getServerSession } from '../../lib/auth/server.ts'
 
+import { MyProfileView } from './MyProfileView.tsx'
+
 /**
  * `/profile` — Profile tab target.
  *
@@ -48,17 +50,10 @@ export default async function ProfilePage() {
             </p>
           </div>
         ) : (
-          <div className="mt-4 space-y-3" data-testid="profile-anonymous">
-            <p className="text-base text-muted-foreground">
-              You are browsing anonymously. Factivist does not store your name, email, or any other
-              identifier unless you choose to verify.
-            </p>
-            <p className="text-sm">
-              <Link href="/" className="text-primary underline">
-                Learn about the on-device verification flow →
-              </Link>
-            </p>
-          </div>
+          // Citizen path — defers to the client island so we can read the
+          // `factivist-session` cookie + the /me API without forwarding it
+          // through the server-component layer.
+          <MyProfileView />
         )}
       </Card>
     </main>

@@ -44,11 +44,6 @@ export async function DiscoveryPage({ searchParams }: DiscoveryPageProps) {
       </header>
 
       <DiscoveryFiltersClient filters={searchParams} />
-      <noscript>
-        {/* Server-rendered fallback for users with JS disabled.
-            Same submit semantics as the client island. */}
-        <DiscoveryFiltersBar filters={searchParams} />
-      </noscript>
 
       <section className="mt-6 flex flex-col gap-3" aria-label="Complaint list">
         {page.items.length === 0 ? (
@@ -70,59 +65,5 @@ export async function DiscoveryPage({ searchParams }: DiscoveryPageProps) {
         <span>{page.totalCount} total</span>
       </nav>
     </main>
-  )
-}
-
-/**
- * Server-rendered filters strip. Re-uses `<form method="get">` so the
- * server-component browse list stays cacheable and the interaction
- * model degrades gracefully without JS.
- */
-function DiscoveryFiltersBar({ filters }: { readonly filters: DiscoveryFiltersInput }) {
-  return (
-    <form
-      method="get"
-      action=""
-      className="flex flex-wrap items-end gap-2"
-      data-testid="discovery-filters"
-    >
-      <label className="flex flex-col gap-1 text-xs">
-        <span>Search</span>
-        <input
-          name="q"
-          type="search"
-          defaultValue={filters.q ?? ''}
-          placeholder="Keyword"
-          className="rounded-md border bg-background px-2 py-1 text-sm"
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-xs">
-        <span>State code</span>
-        <input
-          name="stateCode"
-          type="text"
-          defaultValue={filters.stateCode ?? ''}
-          className="rounded-md border bg-background px-2 py-1 text-sm"
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-xs">
-        <span>Sort</span>
-        <select
-          name="sort"
-          defaultValue={filters.sort ?? 'newest'}
-          className="rounded-md border bg-background px-2 py-1 text-sm"
-        >
-          <option value="newest">Newest</option>
-          <option value="most-commented">Most commented</option>
-          <option value="most-flagged">Most flagged</option>
-        </select>
-      </label>
-      <button
-        type="submit"
-        className="rounded-md border bg-background px-3 py-1 text-sm hover:bg-muted"
-      >
-        Apply
-      </button>
-    </form>
   )
 }

@@ -103,6 +103,17 @@ export interface ApiCommentListResponse {
   readonly items: ReadonlyArray<ApiComment>
 }
 
+export interface ApiProfile {
+  readonly handle: string
+  readonly nullifierExcerpt: string
+  readonly stats: {
+    readonly complaintCount: number
+    readonly commentCount: number
+    readonly flagsReceived: number
+  }
+  readonly joinedAt: string
+}
+
 export interface CreateComplaintResponse {
   readonly id: string
   readonly createdAt: string
@@ -294,6 +305,16 @@ export const apiClient = {
       method: 'POST',
       body: JSON.stringify(input),
     }),
+
+  // ─── Citizen profile ───────────────────────────────────────────────
+  /**
+   * Returns the signed-in citizen's anonymous profile (handle + 8-char
+   * nullifier excerpt + aggregate counts + joined-at date). The API
+   * rejects unauthenticated requests with `401 NO_SESSION` and the
+   * profile page surfaces that as a "verify yourself" CTA.
+   */
+  getMyProfile: (init?: RequestInit) =>
+    request<ApiProfile>('/me', { ...init, credentials: 'include' }),
 
   // ─── Constituency (combobox + breadcrumb dataset, ADR-017) ─────────
   /**
