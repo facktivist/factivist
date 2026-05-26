@@ -80,8 +80,9 @@ describe('refreshAdminSession', () => {
   it('builds a Supabase client whose getAll mirrors the request cookies', async () => {
     const req = makeRequest({ 'sb-access-token': 'token-v1', 'sb-refresh-token': 'refresh-v1' })
     await refreshAdminSession(req)
-    expect(lastClientOptions?.cookies).toBeDefined()
-    const cookies = lastClientOptions!.cookies!.getAll()
+    const hook = lastClientOptions?.cookies
+    expect(hook).toBeDefined()
+    const cookies = hook?.getAll() ?? []
     expect(cookies).toEqual(
       expect.arrayContaining([
         { name: 'sb-access-token', value: 'token-v1' },
