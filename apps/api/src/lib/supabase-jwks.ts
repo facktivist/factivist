@@ -14,10 +14,13 @@
  *
  *   1. On first use, `jose.createRemoteJWKSet` fetches
  *      `${SUPABASE_URL}/auth/v1/keys` (RFC-7517 JWKS shape) and caches
- *      the public-key set in process memory. `jose` honours the upstream
- *      `Cache-Control` header (Supabase serves 1h TTL today) and refreshes
- *      the key set transparently on rotation — we get key-rotation
- *      handling for free.
+ *      the public-key set in process memory. The cache TTL is pinned by
+ *      this module (default 10 min, override via
+ *      `SUPABASE_JWKS_CACHE_MAX_AGE_MS`) so it cannot drift past our
+ *      operational bound even if Supabase + CDN start serving long
+ *      `Cache-Control` max-age. `jose` re-fetches transparently when a
+ *      JWT signed by an unknown `kid` arrives (rate-limited by a 30s
+ *      cooldown), so key rotation still works for free.
  *
  *   2. `verifyAccessToken` calls `jose.jwtVerify` against the cached key
  *      set with `issuer` pinned to `SUPABASE_URL` and `audience` pinned
@@ -69,6 +72,36 @@ import { createRemoteJWKSet, type JWTPayload, jwtVerify } from 'jose'
 import type { Role } from './rbac.ts'
 
 const SUPABASE_URL_ENV = 'SUPABASE_URL' as const
+
+/**
+ * JWKS cache ceiling, defensive override.
+ *
+ * Background: `jose` honours upstream `Cache-Control: max-age=…` headers on
+ * the JWKS response. Supabase serves a 1-hour TTL today, which is fine, but
+ * the cache lifetime is entirely under the upstream's control — if Supabase
+ * (or a CDN in front of it) ever serves a 24h+ max-age, our process would
+ * happily hold a stale key set across a rotation window.
+ *
+ * Capping `cacheMaxAge` here makes the cache lifetime a property of THIS
+ * code, not of Supabase's response headers. 10 minutes is the upper bound:
+ * short enough that a revoked-key rollout reaches every Fly machine within
+ * one cache cycle; long enough that the JWKS fetch isn't on every Nth
+ * request. `cooldownDuration` gates how frequently jose will *attempt* a
+ * fresh fetch after an unknown-kid miss — 30s prevents stampede on a key
+ * rotation while still completing within the next cache refresh.
+ *
+ * Overridable via `SUPABASE_JWKS_CACHE_MAX_AGE_MS` for ops emergencies.
+ */
+const DEFAULT_JWKS_CACHE_MAX_AGE_MS = 10 * 60 * 1000
+const DEFAULT_JWKS_COOLDOWN_MS = 30 * 1000
+
+const resolveCacheMaxAge = (): number => {
+  const raw = process.env.SUPABASE_JWKS_CACHE_MAX_AGE_MS
+  if (!raw) return DEFAULT_JWKS_CACHE_MAX_AGE_MS
+  const n = Number.parseInt(raw, 10)
+  if (!Number.isFinite(n) || n <= 0) return DEFAULT_JWKS_CACHE_MAX_AGE_MS
+  return n
+}
 
 /** Roles the API recognises on the admin surface. Citizens carry none. */
 const ADMIN_ROLES: readonly Role[] = ['admin', 'moderator']
@@ -133,7 +166,10 @@ export const getJWKS = (): JWKSGetKey => {
     return cachedJWKS.getKey
   }
   const jwksUrl = new URL('/auth/v1/keys', url)
-  const getKey = createRemoteJWKSet(jwksUrl)
+  const getKey = createRemoteJWKSet(jwksUrl, {
+    cacheMaxAge: resolveCacheMaxAge(),
+    cooldownDuration: DEFAULT_JWKS_COOLDOWN_MS,
+  })
   cachedJWKS = { url, getKey }
   return getKey
 }

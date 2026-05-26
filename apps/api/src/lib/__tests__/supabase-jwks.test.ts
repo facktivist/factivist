@@ -312,3 +312,66 @@ describe('getJWKS — singleton + rebuild', () => {
     expect(() => getJWKS()).toThrow(/SUPABASE_URL/)
   })
 })
+
+describe('getJWKS — cacheMaxAge override', () => {
+  /**
+   * Re-import `supabase-jwks.ts` against a freshly-mocked `jose` so the
+   * module-level `createRemoteJWKSet` binding refers to our spy. Returns
+   * the spy + the freshly-imported module so the test can drive `getJWKS`
+   * and inspect the call args.
+   */
+  const importWithJoseSpy = async (): Promise<{
+    spy: ReturnType<typeof vi.fn>
+    mod: typeof import('../supabase-jwks.ts')
+  }> => {
+    vi.resetModules()
+    const spy = vi.fn(() => (async () => null) as never)
+    vi.doMock('jose', async () => {
+      const real = await vi.importActual<typeof import('jose')>('jose')
+      return { ...real, createRemoteJWKSet: spy }
+    })
+    const mod = await import('../supabase-jwks.ts')
+    mod.__resetJWKSForTests()
+    return { spy, mod }
+  }
+
+  afterEach(() => {
+    vi.doUnmock('jose')
+    vi.resetModules()
+  })
+
+  it('forwards a default cacheMaxAge + cooldownDuration when env override is unset', async () => {
+    vi.unstubAllEnvs()
+    vi.stubEnv('SUPABASE_URL', SUPABASE_URL)
+    const { spy, mod } = await importWithJoseSpy()
+    mod.getJWKS()
+    expect(spy).toHaveBeenCalledTimes(1)
+    const [url, options] = spy.mock.calls[0] as [URL, Record<string, number>]
+    expect(url.toString()).toBe(`${SUPABASE_URL}/auth/v1/keys`)
+    expect(options.cacheMaxAge).toBe(10 * 60 * 1000)
+    expect(options.cooldownDuration).toBe(30 * 1000)
+  })
+
+  it('honours SUPABASE_JWKS_CACHE_MAX_AGE_MS when set to a positive integer', async () => {
+    vi.unstubAllEnvs()
+    vi.stubEnv('SUPABASE_URL', SUPABASE_URL)
+    vi.stubEnv('SUPABASE_JWKS_CACHE_MAX_AGE_MS', '60000')
+    const { spy, mod } = await importWithJoseSpy()
+    mod.getJWKS()
+    const [, options] = spy.mock.calls[0] as [URL, Record<string, number>]
+    expect(options.cacheMaxAge).toBe(60_000)
+  })
+
+  it('falls back to the default cacheMaxAge when the override parses as NaN, zero, or negative', async () => {
+    vi.unstubAllEnvs()
+    vi.stubEnv('SUPABASE_URL', SUPABASE_URL)
+    for (const bad of ['not-a-number', '0', '-500']) {
+      vi.stubEnv('SUPABASE_JWKS_CACHE_MAX_AGE_MS', bad)
+      const { spy, mod } = await importWithJoseSpy()
+      mod.getJWKS()
+      const [, options] = spy.mock.calls[0] as [URL, Record<string, number>]
+      expect(options.cacheMaxAge).toBe(10 * 60 * 1000)
+      vi.doUnmock('jose')
+    }
+  })
+})
