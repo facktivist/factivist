@@ -133,11 +133,15 @@ while :; do
     fi
 
     if [[ -n "$TARGET_OPTION_ID" ]]; then
+      # `optionId` is a numeric-looking ID (e.g. "98236657") but GraphQL
+      # requires it as String!. Use `-f` (raw-field) so gh CLI does NOT
+      # auto-coerce it to Int. The other ID fields contain non-numeric
+      # prefixes (PVT_…, PVTSSF_…) so `-F` keeps them as strings.
       gh api graphql \
         -F projectId="$PROJECT_ID" \
         -F itemId="$ITEM_ID" \
         -F fieldId="$STATUS_FIELD_ID" \
-        -F optionId="$TARGET_OPTION_ID" \
+        -f optionId="$TARGET_OPTION_ID" \
         -f query='
         mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
           updateProjectV2ItemFieldValue(input: {
