@@ -41,6 +41,22 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
+/**
+ * VerifyForm renders the onboarding step machine:
+ *   intro → aadhaar-capture → proof-generating → proof-verifying → success | error
+ *
+ * The intro CTA (`verify-submit`) advances to the AadhaarCapture compound
+ * when a `preGeneratedProof` is provided, and the user must then click
+ * "Capture" inside that compound to proceed. Without `preGeneratedProof`
+ * the form short-circuits to a NO_PROOF error.
+ */
+const advanceThroughCapture = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
+  await user.click(screen.getByTestId('verify-submit'))
+  // AadhaarCapture renders a primary button labelled "Capture".
+  const captureBtn = await screen.findByRole('button', { name: /^capture$/i })
+  await user.click(captureBtn)
+}
+
 describe('VerifyForm', () => {
   it('renders an idle CTA on mount', () => {
     render(<VerifyForm />)
@@ -75,7 +91,7 @@ describe('VerifyForm', () => {
 
     const user = userEvent.setup()
     render(<VerifyForm preGeneratedProof={sampleRequest} apiBaseUrl="https://api.test" />)
-    await user.click(screen.getByTestId('verify-submit'))
+    await advanceThroughCapture(user)
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce())
     const [url, init] = fetchMock.mock.calls[0]
@@ -102,7 +118,7 @@ describe('VerifyForm', () => {
 
     const user = userEvent.setup()
     render(<VerifyForm preGeneratedProof={sampleRequest} />)
-    await user.click(screen.getByTestId('verify-submit'))
+    await advanceThroughCapture(user)
     const err = await screen.findByTestId('verify-error')
     expect(err.textContent).toContain('S1_COMPLAINT_SUBMIT_OFF')
     expect(err.textContent).toContain('feature_disabled')
@@ -113,7 +129,7 @@ describe('VerifyForm', () => {
 
     const user = userEvent.setup()
     render(<VerifyForm preGeneratedProof={sampleRequest} />)
-    await user.click(screen.getByTestId('verify-submit'))
+    await advanceThroughCapture(user)
     const err = await screen.findByTestId('verify-error')
     expect(err.textContent).toContain('NETWORK')
     expect(err.textContent).toContain('socket closed')
@@ -129,7 +145,7 @@ describe('VerifyForm', () => {
     )
     const user = userEvent.setup()
     render(<VerifyForm preGeneratedProof={sampleRequest} />)
-    await user.click(screen.getByTestId('verify-submit'))
+    await advanceThroughCapture(user)
     const err = await screen.findByTestId('verify-error')
     expect(err.textContent).toContain('NETWORK')
     expect(err.textContent).toContain('Network error')
@@ -152,8 +168,64 @@ describe('VerifyForm', () => {
 
     const user = userEvent.setup()
     render(<VerifyForm preGeneratedProof={sampleRequest} />)
-    await user.click(screen.getByTestId('verify-submit'))
+    await advanceThroughCapture(user)
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce())
     expect(fetchMock.mock.calls[0][0]).toBe('/identity/verify')
+  })
+
+  it('returns to intro when the user cancels the AadhaarCapture step', async () => {
+    const user = userEvent.setup()
+    render(<VerifyForm preGeneratedProof={sampleRequest} />)
+    await user.click(screen.getByTestId('verify-submit'))
+    // AadhaarCapture is visible; click Cancel.
+    const cancelBtn = await screen.findByRole('button', { name: /cancel/i })
+    await user.click(cancelBtn)
+    // Back to the intro CTA.
+    expect(screen.getByTestId('verify-submit')).toBeInTheDocument()
+  })
+
+  it('exposes a retry button on retryable errors', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('socket closed')))
+    const user = userEvent.setup()
+    render(<VerifyForm preGeneratedProof={sampleRequest} />)
+    await advanceThroughCapture(user)
+    const retry = await screen.findByTestId('verify-retry')
+    expect(retry).not.toBeDisabled()
+    await user.click(retry)
+    // Retry returns the form to intro.
+    expect(screen.getByTestId('verify-submit')).toBeInTheDocument()
+  })
+
+  it('disables the retry button on NO_PROOF (non-retryable)', async () => {
+    const user = userEvent.setup()
+    render(<VerifyForm />)
+    await user.click(screen.getByTestId('verify-submit'))
+    const retry = await screen.findByTestId('verify-retry')
+    expect(retry).toBeDisabled()
+  })
+
+  it('fires onComplete with the handle when the user clicks Continue', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        json: async () => ({
+          verified: true,
+          handle: 'c_continue_me',
+          citizen: {
+            handle: 'c_continue_me',
+            stateCode: 'KA',
+            districtCode: 'KA-09',
+            joinedAt: '2026-05-23T00:00:00.000Z',
+          },
+        }),
+      }),
+    )
+    const onComplete = vi.fn()
+    const user = userEvent.setup()
+    render(<VerifyForm preGeneratedProof={sampleRequest} onComplete={onComplete} />)
+    await advanceThroughCapture(user)
+    await screen.findByTestId('verify-success')
+    await user.click(screen.getByRole('button', { name: /continue to feed/i }))
+    expect(onComplete).toHaveBeenCalledWith('c_continue_me')
   })
 })

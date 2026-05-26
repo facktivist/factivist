@@ -14,7 +14,7 @@ beforeEach(() => {
   createdUrls.length = 0
   revokedUrls.length = 0
   // biome-ignore lint/suspicious/noExplicitAny: jsdom shim
-  ;(globalThis.URL as any).createObjectURL = (file: Blob): string => {
+  ;(globalThis.URL as any).createObjectURL = (_file: Blob): string => {
     const url = `blob:local-${createdUrls.length}`
     createdUrls.push(url)
     return url
