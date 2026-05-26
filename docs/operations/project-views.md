@@ -21,7 +21,7 @@ date types are plain.
 |---|---|---|---|
 | `Status` (default) | Single-select | Todo, In Progress, **Phase 9 (blocked / ops)**, Done | Drives the kanban columns. The "Phase 9 (blocked / ops)" option is created by `scripts/project/ensure-phase9-option.sh`. |
 | `Priority` | Single-select | P0, P1, P2, P3 | Orders the Phase-9 view by urgency. Most items are P2 by default; bump items to P0 only when the Polygon-gas tolerance band crosses Red or a takedown order arrives. |
-| `Workstream` | Single-select | Activation, Provisioning, Long-lead, Post-launch ops, Test infra, Recurring ops | Mirrors the Group A/B/C/D/E breakdown in `phase-9-checklist.md` so the Phase-9 view can collapse work clusters. |
+| `Workstream` | Single-select | Activation, Provisioning, Long-lead, Post-launch ops, Test infra, Recurring ops, **S1 — closed** | Mirrors the Group A/B/C/D/E breakdown in `phase-9-checklist.md` so the Phase-9 view can collapse work clusters. The "S1 — closed" bucket holds the 107 already-shipped pre-Phase-9 issues so the field is never empty. |
 | `Target` | Date | n/a | Powers the optional Roadmap view. Only fill in for Phase-9 items with an actual deadline. |
 
 `scripts/project/setup-views.sh` creates the **fields + their options**
@@ -157,10 +157,17 @@ PROJECT_NUMBER=4 bash scripts/project/bootstrap.sh
 # 2. Add the custom fields + the Phase 9 Status option (idempotent)
 PROJECT_NUMBER=4 bash scripts/project/setup-views.sh
 
-# 3. Park each issue in the right Status column (idempotent)
+# 3. Assign the default owner (facktivist) to every issue lacking one
+#    (idempotent — issues with existing assignees are skipped)
+bash scripts/project/assign-issues.sh
+
+# 4. Populate the Workstream field on every project item (idempotent)
+PROJECT_NUMBER=4 bash scripts/project/assign-workstream.sh
+
+# 5. Park each issue in the right Status column (idempotent)
 PROJECT_NUMBER=4 bash scripts/project/sync-status.sh
 
-# 4. Create the views in the UI per the §"The five views" specs
+# 6. Create the views in the UI per the §"The five views" specs
 #    above. (View creation is NOT in the public GraphQL API.)
 #    setup-views.sh prints the click-through guide.
 ```
@@ -187,6 +194,10 @@ idempotent.
   (blocked / ops)" option to the Status field
 - `scripts/project/setup-views.sh` — create the three custom fields +
   the Phase 9 Status option, print the UI guide for views
+- `scripts/project/assign-issues.sh` — assign the repo default owner
+  (`facktivist`) to every issue lacking an assignee
+- `scripts/project/assign-workstream.sh` — populate the Workstream
+  field per the Phase-9 mapping + "S1 — closed" historical bucket
 - `scripts/project/sync-status.sh` — park each item in the right
   Status column
 - `docs/operations/gh-token-direnv-runbook.md` — fix scope issues

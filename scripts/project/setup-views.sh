@@ -16,7 +16,9 @@
 # Run order:
 #   bash scripts/project/bootstrap.sh           # 1. attach issues
 #   bash scripts/project/setup-views.sh         # 2. (this) — fields
-#   bash scripts/project/sync-status.sh         # 3. park items
+#   bash scripts/project/assign-issues.sh       # 3. default assignee
+#   bash scripts/project/assign-workstream.sh   # 4. Workstream values
+#   bash scripts/project/sync-status.sh         # 5. park items
 #
 # Idempotent — re-running on a board that already has the fields is a
 # no-op (each field's existence is checked before the create call).
@@ -177,13 +179,16 @@ PRIORITY_OPTS="$(jq -nc '[
 ensure_single_select "Priority" "$PRIORITY_OPTS"
 
 # Workstream — single-select mirroring phase-9-checklist Groups A/B/C/D/E
+# plus a "S1 — closed" bucket for the 107 already-shipped historical issues
+# and a "Recurring ops" bucket for the weekly scorecard et al.
 WORKSTREAM_OPTS="$(jq -nc '[
   {name: "Activation",       color: "BLUE",   description: "Phase 9 Group A — activate already-shipped code"},
   {name: "Provisioning",     color: "PURPLE", description: "Phase 9 Group B — user-side provisioning"},
   {name: "Long-lead",        color: "ORANGE", description: "Phase 9 Group C — audit + legal + AnonCitizen watch"},
   {name: "Post-launch ops",  color: "PINK",   description: "Phase 9 Group D — DR drill + cost reconciliation"},
   {name: "Test infra",       color: "GRAY",   description: "Phase 9 Group E — RLS coverage + threat-model link sweep"},
-  {name: "Recurring ops",    color: "GREEN",  description: "Weekly / monthly recurring tasks (e.g. scorecard)"}
+  {name: "Recurring ops",    color: "GREEN",  description: "Weekly / monthly recurring tasks (e.g. scorecard)"},
+  {name: "S1 — closed",      color: "GRAY",   description: "Pre-Phase-9 shipped work (Phases 1-8 historical)"}
 ]')"
 ensure_single_select "Workstream" "$WORKSTREAM_OPTS"
 
