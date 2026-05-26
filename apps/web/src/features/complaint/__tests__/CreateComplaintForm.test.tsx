@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -11,7 +11,10 @@ vi.mock('next/navigation', () => ({
 }))
 
 // Mock the api client so we can pre-load categories without HTTP.
+// Re-export API_BASE_URL because useWebPhotoUpload pulls it from this
+// module — without it the hook hits `undefined/uploads/photo/sign`.
 vi.mock('../../../lib/api/client.ts', () => ({
+  API_BASE_URL: 'http://test-api',
   apiClient: {
     listCategories: vi.fn(async () => [
       { slug: 'roads', label: 'Roads' },
@@ -202,5 +205,44 @@ describe('CreateComplaintForm', () => {
     await user.click(screen.getByTestId('complaint-submit'))
     expect(await screen.findByText(/add a one-line title/i)).toBeInTheDocument()
     expect(action).not.toHaveBeenCalled()
+  })
+
+  it('queues a chosen photo through the hidden file input + the PhotoTray', async () => {
+    // Stub URL.createObjectURL / revokeObjectURL (jsdom omits them).
+    // biome-ignore lint/suspicious/noExplicitAny: jsdom shim
+    ;(globalThis.URL as any).createObjectURL = () => 'blob:local'
+    // biome-ignore lint/suspicious/noExplicitAny: jsdom shim
+    ;(globalThis.URL as any).revokeObjectURL = () => undefined
+    // Stub fetch — first call signs, second call PUTs.
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          uploadUrl: 'http://test-api/sign',
+          token: 'tok',
+          path: 'p',
+          publicUrl: 'https://storage/p.jpg',
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    )
+    // biome-ignore lint/suspicious/noExplicitAny: jsdom shim
+    ;(globalThis as any).fetch = fetchMock
+
+    const user = userEvent.setup()
+    const action = vi.fn(async () => ({ id: 'x' }))
+    renderWithClient(<CreateComplaintForm action={action} />)
+    // Title fuels tempSlugFromTitle (covers lines 81-91).
+    await user.type(screen.getByTestId('complaint-title'), 'Pothole on MG Road!')
+    const input = screen.getByTestId('complaint-photo-input') as HTMLInputElement
+    const file = new File([new Uint8Array([1, 2, 3])], 'p.jpg', { type: 'image/jpeg' })
+    await user.upload(input, file)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled(), { timeout: 3000 })
+    const signCall = fetchMock.mock.calls.find(
+      (c) => typeof c[0] === 'string' && (c[0] as string).includes('/uploads/photo/sign'),
+    )
+    expect(signCall).toBeDefined()
+    const init = signCall?.[1] as RequestInit
+    const body = JSON.parse(init.body as string) as { slug: string }
+    expect(body.slug.startsWith('pothole-on-mg-road')).toBe(true)
   })
 })

@@ -39,9 +39,9 @@ import { Input } from '@factivist/ui-web/components'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-
 import { type ApiCategory, apiClient } from '../../lib/api/client.ts'
 import { ConstituencyPicker, type ConstituencySelection } from '../discovery/ConstituencyPicker.tsx'
+import { MAX_WEB_PHOTOS, useWebPhotoUpload } from './useWebPhotoUpload.ts'
 
 /**
  * Server-action-style submit handler. Server actions cannot be passed
@@ -70,6 +70,27 @@ interface FormErrors {
 
 const initialConstituency: ConstituencySelection = {}
 
+/**
+ * Synthesise a draft slug from the current title so the storage path
+ * matches the server-side prefix convention. Mobile uses the same shape
+ * (apps/mobile/src/features/complaint/ComplaintComposer.tsx:tempSlugFromTitle).
+ * The server is canonical — the real slug is issued on POST /complaints
+ * and the storage pipeline tolerates the draft prefix.
+ */
+const tempSlugFromTitle = (title: string): string => {
+  const base = title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/gu, '-')
+    .replace(/-+/gu, '-')
+    .replace(/^-|-$/gu, '')
+    .slice(0, 40)
+  const suffix = Math.floor(Math.random() * 36 ** 6)
+    .toString(36)
+    .padStart(6, '0')
+  return `${base || 'draft'}-${suffix}`
+}
+
 type CompleteConstituency = ConstituencySelection &
   Required<Pick<ConstituencySelection, 'stateCode' | 'districtCode' | 'pcCode' | 'acCode'>>
 
@@ -86,8 +107,13 @@ export function CreateComplaintForm({
   const [body, setBody] = useState('')
   const [categorySlug, setCategorySlug] = useState<string>('')
   const [constituency, setConstituency] = useState<ConstituencySelection>(initialConstituency)
-  const [photoUrls, _setPhotoUrls] = useState<string[]>([])
   const [errors, setErrors] = useState<FormErrors>({})
+
+  // Web photo capture — picks from disk via a hidden <input>, signs
+  // the upload via POST /uploads/photo/sign, PUTs to Supabase Storage.
+  // The public URLs are folded into the candidate payload at submit time.
+  const photoUpload = useWebPhotoUpload()
+  const photoUrls = photoUpload.publicUrls
 
   const categoriesQuery = useQuery({
     queryKey: ['categories'],
@@ -286,10 +312,62 @@ export function CreateComplaintForm({
           ) : null}
         </fieldset>
 
-        <p className="mt-4 text-xs text-[var(--color-muted-foreground)]">
-          Photos (up to {COMPLAINT_PHOTO_MAX}) — EXIF metadata is stripped server-side. Photo upload
-          UI ships next.
-        </p>
+        <fieldset className="mt-6 flex flex-col gap-2">
+          <legend className="text-xs font-mono uppercase tracking-wider text-[var(--color-muted-foreground)]">
+            Photos (up to {Math.min(COMPLAINT_PHOTO_MAX, MAX_WEB_PHOTOS)}) — EXIF metadata is
+            stripped server-side
+          </legend>
+          <Complaint.PhotoTray
+            photos={photoUpload.photos.map((p) => ({
+              id: p.id,
+              url: p.url,
+              uploadState: p.uploadState,
+              progress: p.progress,
+            }))}
+            maxPhotos={MAX_WEB_PHOTOS}
+            onAdd={() => {
+              // Trigger the hidden file input via the label below.
+              const el = document.getElementById('complaint-photo-input') as HTMLInputElement | null
+              el?.click()
+            }}
+            onRemove={(id) => photoUpload.remove(id)}
+            status={photoUpload.isUploading ? 'loading' : 'idle'}
+          />
+          {/* Hidden file input — paired with Complaint.PhotoTray's Add tile.
+              `multiple` lets the user queue up the remaining slots in one
+              pick; the hook caps at MAX_WEB_PHOTOS itself. */}
+          <input
+            id="complaint-photo-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            className="sr-only"
+            data-testid="complaint-photo-input"
+            onChange={(e) => {
+              const files = e.target.files
+              if (!files) return
+              const slug = tempSlugFromTitle(title)
+              for (const f of Array.from(files).slice(
+                0,
+                MAX_WEB_PHOTOS - photoUpload.photos.length,
+              )) {
+                void photoUpload.add(f, slug)
+              }
+              // Reset so re-selecting the same file fires onChange.
+              e.target.value = ''
+            }}
+          />
+          {photoUpload.error ? (
+            <p role="alert" className="text-sm text-danger">
+              {photoUpload.error}
+            </p>
+          ) : null}
+          {errors.photoUrls ? (
+            <p id="err-photos" role="alert" className="text-sm text-danger">
+              {errors.photoUrls}
+            </p>
+          ) : null}
+        </fieldset>
 
         {errors.submit ? (
           <div role="alert" className="mt-4 rounded-md bg-danger/10 p-3 text-sm text-danger">
@@ -303,8 +381,13 @@ export function CreateComplaintForm({
               moves to the bar's internal button via a wrapping div). */}
           <div data-testid="complaint-submit-wrap">
             <Complaint.SubmitBar
-              canSubmit={title.length > 0 && body.length > 0 && categorySlug.length > 0}
-              submitting={submitMutation.isPending}
+              canSubmit={
+                title.length > 0 &&
+                body.length > 0 &&
+                categorySlug.length > 0 &&
+                !photoUpload.isUploading
+              }
+              submitting={submitMutation.isPending || photoUpload.isUploading}
               bodyLength={body.length}
               bodyLimit={COMPLAINT_BODY_MAX}
               onSubmit={validateAndSubmit}
