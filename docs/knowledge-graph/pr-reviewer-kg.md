@@ -15,7 +15,7 @@
 > - `docs/architecture/threat-model.md` — STRIDE + anonymity vectors
 > - `docs/architecture/zkp-key-custody.md` — ZKP trust boundary
 > - `docs/adr/0001..0021.md` — accepted architecture decisions
-> - `packages/shared/__tests__/atid-registry.ts` — 36 testable assertions
+> - `packages/shared/src/data/atid-registry.ts` — 36 testable assertions
 >
 > Regenerate when: an ADR is accepted, a bounded context is added/renamed, a
 > package moves, a coverage threshold changes, or a new top-level skill enters
@@ -130,7 +130,7 @@ These are change-magnets — flag any diff that touches them for extra scrutiny
 - `scripts/anonymity-grep-guard.sh` — anonymity floor static rule
 - `scripts/ci/aidefence-scan-diff.ts` — PII regex fallback
 - `packages/db/src/schema/**` — schema changes need migration + seed update
-- `packages/shared/__tests__/atid-registry.ts` — testable assertions registry
+- `packages/shared/src/data/atid-registry.ts` — testable assertions registry
 - `apps/web/src/app/admin/**` — operator surfaces (ADR-0010 critical)
 - `apps/mobile/src/features/identity/**` — hybrid ZKP proving path
 

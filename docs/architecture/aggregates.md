@@ -11,9 +11,8 @@
 > Companion files:
 >
 > - [`s1-c4.md`](./s1-c4.md) — C4 Context → Container → Component diagrams.
-> - `bounded-contexts.md` — per-context purpose + public interface (forthcoming).
-> - `package-map.md` — bounded context ↔ `apps/*` ↔ `packages/*` mapping
->   (forthcoming).
+> - [`bounded-contexts.md`](./bounded-contexts.md) — per-context purpose + public interface.
+> - [`package-map.md`](./package-map.md) — bounded context ↔ `apps/*` ↔ `packages/*` mapping.
 > - [`../adr/`](../adr/) — `[[ADR-001]]`..`[[ADR-013]]` source decisions.
 > - [`packages/shared/src/data/atid-registry.ts`](../../packages/shared/src/data/atid-registry.ts)
 >   — ATID-anchored Given/When/Then assertions cited as `ATID-…` below.
