@@ -266,7 +266,58 @@ flow Reg → Anchoring → Governance, and Discovery → Search → Analytics.
 - Election-season + watchdog (F11).
 - Help/press + universal error states + maintenance UI (F12).
 
-### 5.6 Hard rules during S2 development
+### 5.6 Workstream F — Admin / Moderation compound alignment (carry-over from S1 W7)
+
+Origin: S1 app-screen-migration W7 could not land cleanly — the
+shipped admin surface and the `@factivist/ui-web/moderation` compound
+diverged in three places that all need a coordinated fix. The
+`Mod.QueueList` / `Mod.DecisionBar` / `Mod.AuditTrail` slots are
+currently authored but not consumed by any route.
+
+The three concrete mismatches:
+
+| Surface | Shipped (S1) | Compound (S1) |
+|---|---|---|
+| Decision vocabulary (`apps/web/src/features/admin/ModerationDecisionForm.tsx` + `packages/shared/src/validators/moderation.ts`) | `'approve' \| 'remove' \| 'escalate'` | `'keep' \| 'hide' \| 'delete' \| 'escalate'` |
+| Queue row (`apiClient.listModerationQueue` → `queueItemSchema`) | `id`, `complaintSlug`, `reason`, `targetKind`, `slaDueAt` | `id`, `target.kind` + `target.id`, `reason`, `reportedAt`, `reporterCount`, `excerpt` |
+| Audit trail (`apiClient.listAuditLog`) | System-wide `AuditLogEntry` (`ts`, `actor`, `action`, `targetKind`, `targetId`, `payloadHash`) | Per-case `ModAuditEntry` (`itemId`, `decision`, `moderatorHandle`, `note?`, `at`) |
+
+The S1 admin app is fully functional with the custom UI under
+`apps/web/src/features/admin/*` — no operator regression. The
+alignment work is a design-system hygiene item, not a feature gap.
+
+#### Resolution path (recommended)
+
+**Option 1 — Realign the compound to what shipped.** Lowest friction;
+preserves all current UX.
+
+- Expand `ModDecision` to include `'approve' | 'remove'` (or rename
+  existing values), expand `ModQueueItem` with `complaintSlug` +
+  `slaDueAt`, and replace `Mod.AuditTrail`'s per-case shape with the
+  system-wide `AuditLogEntry`.
+- Migrate `apps/web/src/features/admin/*` to consume the realigned
+  compound in a single follow-up commit.
+
+#### Resolution path (alternatives — not recommended)
+
+- **Option 2 — Realign the admin surface to the compound.** Add the
+  per-case audit endpoint + DB query, rewrite the decision-form
+  validator to the four-value vocabulary, accept the loss of the SLA
+  badge. Higher cost; visible UX regression for operators.
+- **Option 3 — Add a second surface.** Keep the existing admin pages
+  for operators; build a thinner "review queue" view that consumes
+  `Mod.*` for community moderators or external review partners.
+  Bigger surface area; only justified once a community-moderator pool
+  exists.
+
+#### Acceptance criteria
+
+- Every admin route under `apps/web/src/app/admin/` imports from
+  `@factivist/ui-web/moderation` for at least one rendered slot.
+- No operator regression — SLA badges, complaint slug deep-links,
+  three-option decision form stay shipped.
+
+### 5.7 Hard rules during S2 development
 
 - No ADR-010 anonymity violations — every new surface re-audited by
   `aidefence-guardian` + the existing CI anonymity-grep guard.

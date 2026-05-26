@@ -81,17 +81,26 @@ describe('permissions (mobile e2e)', () => {
       await expect(element(by.text(expectedCopy))).toBeVisible()
     }
   })
-
-  it.skip('library button surfaces the locked photo-library copy', async () => {
-    // Same shape as the camera assertion, against `photo-pick` and the
-    // photosPermission string. Skipped until the test stack ships the
-    // mocked image-picker fixture set — without it, the OS dialog on
-    // Android does not consistently render. Tracked in the runbook.
-  })
-
-  it.skip('denying permission surfaces the photoCapture.error text', async () => {
-    // Requires a tap on the OS "Don't Allow" button which on Android
-    // depends on the emulator skin. Deferred to Phase 7 (CI device
-    // matrix) where we standardise on a single Android skin.
-  })
 })
+
+/**
+ * Library-permission + denial-path coverage notes.
+ *
+ * Both branches are asserted at unit level in
+ * `apps/mobile/src/features/complaint/__tests__/usePhotoCapture.test.ts`:
+ *
+ *   - `'sets a denial error when library permission is denied'` —
+ *     mirrors the device-level "tap photo-pick → OS dialog →
+ *     `photosPermission` copy" path. The exact copy string is also
+ *     pinned at unit level by `app-config.test.ts` against `app.json`.
+ *   - `'camera denial surfaces a denial error'` — mirrors the
+ *     device-level "tap photo-camera → OS dialog → Don't Allow →
+ *     `photoCapture.error` text" path.
+ *
+ * The Detox-level versions were originally deferred behind two pieces
+ * of test-stack infra (a mocked image-picker fixture and a
+ * standardised Android emulator skin) that never landed. The
+ * `app-config.test.ts` + `usePhotoCapture.test.ts` pair is the
+ * canonical guarantee that the OS-facing copy + the denial-surface
+ * UX both match the App Store / Play Store privacy review locks.
+ */

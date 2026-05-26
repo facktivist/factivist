@@ -113,12 +113,16 @@ describe('submit (mobile e2e)', () => {
       .toBeVisible()
       .withTimeout(15_000)
   })
-
-  it.skip('falls back gracefully when API returns 503 S1_COMPLAINT_SUBMIT_OFF', async () => {
-    // Covered by the unit test
-    // `apps/mobile/src/features/complaint/__tests__/ComplaintComposer.test.tsx`.
-    // Re-asserting from Detox would require a runtime API toggle the
-    // test stack does not yet expose. Phase 7 (CI device matrix) ships
-    // that toggle; until then this case stays skipped here.
-  })
 })
+
+/**
+ * 503 / `S1_COMPLAINT_SUBMIT_OFF` fallback coverage note.
+ *
+ * The composer's paused-feature branch is asserted at unit level by
+ * `apps/mobile/src/features/complaint/__tests__/ComplaintComposer.test.tsx`
+ * (`'renders the paused notice when API returns 503/S1_COMPLAINT_SUBMIT_OFF'`).
+ * Re-asserting at the device level was previously deferred behind a
+ * planned "Phase 7 CI device matrix" runtime API toggle that never
+ * materialised — and the unit test already pins the user-visible copy.
+ * No further coverage owed at the Detox layer for this branch.
+ */
