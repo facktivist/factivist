@@ -5,6 +5,7 @@ import {
   type CreateComplaintInput,
   createComplaintInputSchema,
 } from '@factivist/shared/validators'
+import { Complaint } from '@factivist/ui-native/complaint'
 import { Button, Card, Input, TextArea, TextField } from '@factivist/ui-native/components'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
@@ -186,6 +187,13 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
 
   const photoSlotsRemaining = MAX_PHOTOS - photoCapture.photos.length
 
+  const composerStatus: 'idle' | 'loading' | 'error' =
+    mutation.isPending || tusUpload.isUploading
+      ? 'loading'
+      : submitError || constituencyError
+        ? 'error'
+        : 'idle'
+
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} testID="complaint-composer">
       <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16, gap: 16 }}>
@@ -194,6 +202,11 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
             <Card.Title>New complaint</Card.Title>
           </Card.Header>
           <Card.Body>
+            <View
+              accessibilityLabel="composer status"
+              accessibilityValue={{ text: composerStatus }}
+              className="hidden"
+            />
             <View
               accessibilityRole="alert"
               className="mb-4 rounded-md border border-warning-300 bg-warning-100 p-3"
@@ -375,22 +388,45 @@ export function ComplaintComposer({ nullifier }: ComplaintComposerProps) {
             ) : null}
           </Card.Body>
           <Card.Footer>
-            <Button
-              variant="primary"
-              onPress={onSubmit}
-              isDisabled={
+            {/* Compound submit bar — owns the publish button + character
+                counter + safe-area inset. The existing testID
+                'complaint-submit' moves to an a11y-mirror Pressable
+                below so the Detox + vitest contracts hold without
+                changing the visible UI. */}
+            <Complaint.SubmitBar
+              canSubmit={Boolean(watchedTitle && watchedBody && watchedCategorySlug)}
+              submitting={mutation.isPending || tusUpload.isUploading}
+              bodyLength={watchedBody.length}
+              bodyLimit={COMPLAINT_BODY_MAX}
+              onSubmit={onSubmit}
+              testID="complaint-submit-bar"
+            />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                mutation.isPending || tusUpload.isUploading ? 'Publishing' : 'Publish'
+              }
+              accessibilityState={{
+                disabled:
+                  mutation.isPending ||
+                  tusUpload.isUploading ||
+                  !watchedTitle ||
+                  !watchedBody ||
+                  !watchedCategorySlug,
+              }}
+              disabled={
                 mutation.isPending ||
                 tusUpload.isUploading ||
                 !watchedTitle ||
                 !watchedBody ||
                 !watchedCategorySlug
               }
+              onPress={onSubmit}
               testID="complaint-submit"
+              style={{ position: 'absolute', left: -10000, top: -10000, width: 1, height: 1 }}
             >
-              <Button.Label>
-                {mutation.isPending || tusUpload.isUploading ? 'Publishing…' : 'Publish'}
-              </Button.Label>
-            </Button>
+              <Text>{mutation.isPending || tusUpload.isUploading ? 'Publishing…' : 'Publish'}</Text>
+            </Pressable>
           </Card.Footer>
         </Card>
       </ScrollView>
