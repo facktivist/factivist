@@ -20,8 +20,15 @@
  */
 
 export interface AtidEntry {
-  /** Feature the ATID belongs to: 'identity' | 'complaint' | 'discovery' | 'moderation' | 'comment' | 'legal' */
-  readonly feature: 'identity' | 'complaint' | 'discovery' | 'moderation' | 'comment' | 'legal'
+  /** Feature the ATID belongs to: 'identity' | 'complaint' | 'discovery' | 'moderation' | 'comment' | 'legal' | 'admin' */
+  readonly feature:
+    | 'identity'
+    | 'complaint'
+    | 'discovery'
+    | 'moderation'
+    | 'comment'
+    | 'legal'
+    | 'admin'
   /** Given clause — system state before the action. */
   readonly given: string
   /** When clause — the action under test. */
@@ -469,6 +476,24 @@ export const ATID_REGISTRY: Record<string, AtidEntry> = {
     then: "it lists exactly one Grievance Officer with name, postal address in India, telephone, and @factivist.in email (or equivalent India-routable email); the GAC portal link (https://gac.gov.in/) is visible on the same page; and no SSMI 'Three Officer' content is shown",
     issueUrls: ['https://github.com/raveracker/factivist/issues/71'],
   },
+
+  // ─────────────────────────────────────────────────────────────────────
+  // FEATURE 7 — Admin guard (role-based access control)
+  // ─────────────────────────────────────────────────────────────────────
+
+  'ATID-ADMIN-001': {
+    feature: 'admin',
+    given:
+      'an admin-only API route guarded by `requireAdmin` (apps/api/src/lib/rbac.ts) and an HTTP request carrying a Supabase JWT in the Authorization header',
+    when: 'the JWT either (a) has no `role` claim, (b) carries `role` ≠ "admin", or (c) is a citizen nullifier-bound token with no `role` claim at all',
+    then: 'requireAdmin throws / responds 403 Forbidden without enumerating which role would have satisfied the guard (no role-enumeration oracle); the contract is asserted by `apps/api/src/lib/__tests__/rbac.test.ts` which is the authoritative gate even though this ATID is not currently exercised by a per-route Playwright spec',
+    issueUrls: ['https://github.com/raveracker/factivist/issues/30'],
+    crossRefs: [
+      'ADR-010 #45',
+      'apps/api/src/lib/rbac.ts',
+      'apps/api/src/lib/__tests__/rbac.test.ts',
+    ],
+  },
 } as const
 
 export type AtidKey = keyof typeof ATID_REGISTRY
@@ -495,5 +520,8 @@ export const ATID_BY_FEATURE: Record<AtidEntry['feature'], readonly string[]> = 
     .map(([k]) => k),
   legal: Object.entries(ATID_REGISTRY)
     .filter(([, e]) => e.feature === 'legal')
+    .map(([k]) => k),
+  admin: Object.entries(ATID_REGISTRY)
+    .filter(([, e]) => e.feature === 'admin')
     .map(([k]) => k),
 }
