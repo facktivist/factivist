@@ -41,8 +41,10 @@ export function ComposerShell({ action }: ComposerShellProps) {
         data-testid="composer-paused"
       >
         <Card className="w-full p-6">
-          <h1 className="text-2xl font-semibold tracking-tight">Submissions are paused</h1>
-          <p className="mt-3 text-base text-muted-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
+            Submissions are paused
+          </h1>
+          <p className="mt-3 text-base text-[var(--color-muted-foreground)]">
             Factivist has temporarily paused new complaint submissions while we sort out a
             moderation backlog. Please try again later.
           </p>

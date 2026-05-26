@@ -1,5 +1,22 @@
 'use client'
 
+/**
+ * Web complaint composer (Phase 5 wave 1).
+ *
+ * Composes with React Hook Form + Zod against `createComplaintInputSchema`
+ * from `@factivist/shared/validators`. Renders inside a HeroUI v3 `<Card>`
+ * with the HeroUI theme tokens (the `text-danger`, `bg-warning/10`,
+ * `text-muted-foreground` classes here are HeroUI semantic tokens that
+ * resolve to the same oklch CSS custom properties as `var(--color-*)` —
+ * tokens are aligned with `@factivist/ui-theme` / `Complaint.*` compound).
+ *
+ * Compound migration deferred: a full rewrite to use
+ * `Complaint.Composer + Complaint.PhotoTray + Complaint.CategoryPicker +
+ * Complaint.ConstituencyPicker + Complaint.SubmitBar` would re-flow the
+ * RHF + server-action contracts. Tracked as a follow-up wave; this
+ * commit keeps the form structure stable so the existing Playwright
+ * + vitest contracts hold.
+ */
 import {
   COMPLAINT_BODY_MAX,
   COMPLAINT_DISCLAIMER,
