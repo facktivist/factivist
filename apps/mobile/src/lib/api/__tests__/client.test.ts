@@ -176,6 +176,86 @@ describe('apps/mobile/src/lib/api/client', () => {
     })
   })
 
+  describe('listComments', () => {
+    it('GETs /comments with the encoded complaint slug', async () => {
+      fetchMock.mockResolvedValue(jsonOk({ items: [] }))
+      await apiClient.listComments('pothole MG/road')
+      const url = fetchMock.mock.calls[0][0] as string
+      expect(url).toContain('/comments?complaint_slug=pothole%20MG%2Froad')
+    })
+
+    it('returns the wire shape verbatim', async () => {
+      fetchMock.mockResolvedValue(
+        jsonOk({
+          items: [
+            {
+              id: 'cmt_1',
+              parentId: null,
+              complaintId: 'pothole',
+              authorHandle: 'anon',
+              body: 'hi',
+              createdAt: '2026-05-22T08:00:00.000Z',
+              flagged: false,
+            },
+          ],
+        }),
+      )
+      const out = await apiClient.listComments('pothole')
+      expect(out.items).toHaveLength(1)
+      expect(out.items[0]?.id).toBe('cmt_1')
+    })
+  })
+
+  describe('createComment', () => {
+    it('POSTs the input as JSON to /comments', async () => {
+      fetchMock.mockResolvedValue(
+        jsonOk(
+          {
+            id: 'cmt_new',
+            parentId: null,
+            complaintId: 'pothole',
+            authorHandle: 'anon',
+            body: 'hi',
+            createdAt: '2026-05-22T08:00:00.000Z',
+            flagged: false,
+          },
+          201,
+        ),
+      )
+      const out = await apiClient.createComment({ complaintSlug: 'pothole', body: 'hi' })
+      expect(out.id).toBe('cmt_new')
+      const url = fetchMock.mock.calls[0][0] as string
+      const init = fetchMock.mock.calls[0][1] as RequestInit
+      expect(url).toContain('/comments')
+      expect(init.method).toBe('POST')
+      expect(JSON.parse(String(init.body))).toEqual({ complaintSlug: 'pothole', body: 'hi' })
+    })
+
+    it('forwards parentId when supplied', async () => {
+      fetchMock.mockResolvedValue(
+        jsonOk(
+          {
+            id: 'cmt_child',
+            parentId: 'cmt_parent',
+            complaintId: 'pothole',
+            authorHandle: 'anon',
+            body: 'reply',
+            createdAt: '2026-05-22T08:00:00.000Z',
+            flagged: false,
+          },
+          201,
+        ),
+      )
+      await apiClient.createComment({
+        complaintSlug: 'pothole',
+        body: 'reply',
+        parentId: 'cmt_parent',
+      })
+      const init = fetchMock.mock.calls[0][1] as RequestInit
+      expect(JSON.parse(String(init.body))).toMatchObject({ parentId: 'cmt_parent' })
+    })
+  })
+
   describe('request error handling', () => {
     it('throws ApiError with JSON body on !ok', async () => {
       fetchMock.mockResolvedValue(errJson(503, { code: 'down' }))

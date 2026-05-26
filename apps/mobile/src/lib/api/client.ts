@@ -164,6 +164,31 @@ export const apiClient = {
     ),
 
   listCategories: () => request<ReadonlyArray<ApiCategory>>('/categories'),
+
+  listComments: (complaintSlug: string) =>
+    request<ApiCommentListResponse>(
+      `/comments?complaint_slug=${encodeURIComponent(complaintSlug)}`,
+    ),
+
+  createComment: (input: { complaintSlug: string; body: string; parentId?: string }) =>
+    request<ApiComment>('/comments', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
 } as const
+
+export interface ApiComment {
+  readonly id: string
+  readonly parentId: string | null
+  readonly complaintId: string
+  readonly authorHandle: string
+  readonly body: string
+  readonly createdAt: string
+  readonly flagged: boolean
+}
+
+export interface ApiCommentListResponse {
+  readonly items: ReadonlyArray<ApiComment>
+}
 
 export { ApiError }
