@@ -1,7 +1,7 @@
 # Surface 02 — Complaint composer
 
-> Tracking issue: [#25](https://github.com/raveracker/factivist/issues/25)
-> Implementation issues: [#60 web](https://github.com/raveracker/factivist/issues/60), [#61 mobile](https://github.com/raveracker/factivist/issues/61), [#62 EXIF strip](https://github.com/raveracker/factivist/issues/62)
+> Tracking issue: [#25](https://github.com/facktivist/factivist/issues/25)
+> Implementation issues: [#60 web](https://github.com/facktivist/factivist/issues/60), [#61 mobile](https://github.com/facktivist/factivist/issues/61), [#62 EXIF strip](https://github.com/facktivist/factivist/issues/62)
 > Phase: 3 · Owner agent: `ux-lead`
 > Last edited: 2026-05-23
 

@@ -17,7 +17,7 @@ team.
 
 | Source | Notes |
 |---|---|
-| **GitHub** [`raveracker/factivist`](https://github.com/raveracker/factivist) | The monorepo. Bun + Turbo. Next.js 16 web, Hono-on-Bun API, Expo mobile, `packages/ui` design tokens. Token values copied from `packages/ui/theme/src/tokens` and `tooling/tailwind-config/index.css` (commit on `main`). |
+| **GitHub** [`facktivist/factivist`](https://github.com/facktivist/factivist) | The monorepo. Bun + Turbo. Next.js 16 web, Hono-on-Bun API, Expo mobile, `packages/ui` design tokens. Token values copied from `packages/ui/theme/src/tokens` and `tooling/tailwind-config/index.css` (commit on `main`). |
 | Figma — **HeroUI Figma Kit (Community)** | Mounted virtually during build. Source for component patterns (Button, Card, Input, Alert, etc.). Factivist's `packages/ui/web` re-exports HeroUI v3 verbatim, so the kit's visuals ARE the implementation. |
 | `docs/product/product-vison.md` | Strategic blueprint — 36 complaint categories, ZKP-via-Aadhaar identity, blockchain anchoring, leader report cards, AI moderation. Drives copy and feature framing. |
 | `docs/product/ai-systems.md` | Catalog of moderation, NER, RAG-chat, promise-tracking models. Drives the AI Chat surfaces and timeline copy. |

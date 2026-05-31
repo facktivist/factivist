@@ -1,7 +1,7 @@
 # Surface 07 — Moderation queue (admin-only)
 
-> Tracking issue: [#30](https://github.com/raveracker/factivist/issues/30)
-> Implementation issues: [#65 table+API](https://github.com/raveracker/factivist/issues/65), [#66 admin UI](https://github.com/raveracker/factivist/issues/66), [#77 adversarial tests](https://github.com/raveracker/factivist/issues/77), [#96 RLS](https://github.com/raveracker/factivist/issues/96)
+> Tracking issue: [#30](https://github.com/facktivist/factivist/issues/30)
+> Implementation issues: [#65 table+API](https://github.com/facktivist/factivist/issues/65), [#66 admin UI](https://github.com/facktivist/factivist/issues/66), [#77 adversarial tests](https://github.com/facktivist/factivist/issues/77), [#96 RLS](https://github.com/facktivist/factivist/issues/96)
 > Phase: 3 · Owner agent: `ux-lead`
 > Last edited: 2026-05-23
 

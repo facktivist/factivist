@@ -15,7 +15,7 @@ Drizzle migration (planned in Phase 5).
 
 See `Research-Constituency-Dataset` on the wiki for the canonical source
 list, license terms, and refresh strategy:
-<https://github.com/raveracker/factivist/wiki/Research-Constituency-Dataset>
+<https://github.com/facktivist/factivist/wiki/Research-Constituency-Dataset>
 
 ## Local development
 

@@ -15,7 +15,7 @@
  * transactions and records empirical gas distribution.
  *
  * Owner Agent: chain-cost-researcher (Phase 2)
- * Issue:       https://github.com/raveracker/factivist/issues/17
+ * Issue:       https://github.com/facktivist/factivist/issues/17
  *
  * Usage:
  *   bun run scripts/polygon-gas/measure-verify.ts \

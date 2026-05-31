@@ -43,7 +43,7 @@ commit-msg:
 pre-push:
   parallel: false
   commands:
-    # Repo must push as the `facktivist` gh account, not `raveracker`.
+    # Repo must push as the `facktivist` gh account, not the global default.
     # gh's active account is global state; this guards against a silent
     # cross-identity push. Bypass with BYPASS_GH_ACCOUNT_CHECK=1.
     gh-account:

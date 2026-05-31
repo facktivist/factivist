@@ -1,7 +1,7 @@
 # Surface 04 — Browse / filter by state → district → constituency
 
-> Tracking issue: [#27](https://github.com/raveracker/factivist/issues/27)
-> Implementation issue: [#63](https://github.com/raveracker/factivist/issues/63)
+> Tracking issue: [#27](https://github.com/facktivist/factivist/issues/27)
+> Implementation issue: [#63](https://github.com/facktivist/factivist/issues/63)
 > Phase: 3 · Owner agent: `ux-lead`
 > Last edited: 2026-05-23
 

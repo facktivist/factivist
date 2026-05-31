@@ -8,7 +8,7 @@
 > leaks.
 >
 > Source-of-truth for the ZKP layer is the upstream research wiki:
-> [Research — Anoncitizen ZKP](https://github.com/raveracker/factivist/wiki/Research-Anoncitizen-ZKP).
+> [Research — Anoncitizen ZKP](https://github.com/facktivist/factivist/wiki/Research-Anoncitizen-ZKP).
 > Do not re-derive the circuit math here; reference the wiki.
 
 ---
@@ -65,7 +65,7 @@ What we commit to:
 
 ## Nullifier formula
 
-From the [ZKP research wiki](https://github.com/raveracker/factivist/wiki/Research-Anoncitizen-ZKP):
+From the [ZKP research wiki](https://github.com/facktivist/factivist/wiki/Research-Anoncitizen-ZKP):
 
 ```
 nullifier = Poseidon(
@@ -201,7 +201,7 @@ exist before launch (Phase 5 deliverable).
 
 | # | Question | Why parked | Owner |
 |---|----------|-----------|-------|
-| Q-1 | **No upstream anoncitizen mainnet / Amoy deployment exists today.** We are the first integrator. | We will be operating production with a circuit that has no prior production exposure. Risk band: medium. (See [S1 ZKP findings memory](https://github.com/raveracker/factivist/wiki/Research-Anoncitizen-ZKP).) | sec-architect — Phase 5 deploy-eve review. |
+| Q-1 | **No upstream anoncitizen mainnet / Amoy deployment exists today.** We are the first integrator. | We will be operating production with a circuit that has no prior production exposure. Risk band: medium. (See [S1 ZKP findings memory](https://github.com/facktivist/factivist/wiki/Research-Anoncitizen-ZKP).) | sec-architect — Phase 5 deploy-eve review. |
 | Q-2 | Multisig signer selection (5 candidates, pick 3) | Requires founder + ops + sec-architect alignment; minor delay vs launch is acceptable. | Phase 5 issue `security:multisig-signers`. |
 | Q-3 | Verifier upgrade path post-mainnet — UUPS proxy vs new-contract-with-nullifier-migration | UUPS is faster but adds upgrade surface; nullifier migration is cleaner but breaks continuity. | S2 ADR. |
 | Q-4 | Vision doc §3.3 incorrectly lists Aadhaar number as a nullifier input | Documentation drift; fix in next vision-doc revision. | sec-architect (docs PR). |
@@ -215,7 +215,7 @@ exist before launch (Phase 5 deliverable).
 
 - [`s1-c4.md`](./s1-c4.md) — C4 diagrams (containers & components)
 - [`threat-model.md`](./threat-model.md) — STRIDE pass + cross-cutting threats
-- [Research — Anoncitizen ZKP wiki](https://github.com/raveracker/factivist/wiki/Research-Anoncitizen-ZKP)
+- [Research — Anoncitizen ZKP wiki](https://github.com/facktivist/factivist/wiki/Research-Anoncitizen-ZKP)
 - [[ADR-003]] CitizenVerifier-only contract
 - [[ADR-004]] Supabase Storage + EXIF strip
 - [[ADR-009]] Supabase custom domain

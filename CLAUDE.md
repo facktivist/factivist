@@ -235,7 +235,7 @@ Exception: `npx` is acceptable for one-off CLI tools (e.g., `npx ruflo@latest`).
 
 ## GitHub Identity
 
-This repo MUST push and call the GitHub API as the **`facktivist`** gh account. The user's global default is `raveracker`, so a per-repo override is required.
+This repo MUST push and call the GitHub API as the **`facktivist`** gh account. The user's global default is a different gh account, so a per-repo override is required.
 
 **Mechanism: direnv + `GH_TOKEN`.** A gitignored `.envrc` at repo root exports `GH_TOKEN=$(gh auth token -u facktivist)` on `cd` into the repo. `GH_TOKEN` takes precedence over gh's global active account, so `gh` and `git push` both speak as `facktivist` inside this directory and revert to the global default outside it.
 

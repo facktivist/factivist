@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-The anoncitizen circuit requires a Groth16 proof generated on the citizen's device so that no PII ever crosses the network (see [[ADR-010]]). Proving cost is the dominant UX friction: **rapidsnark** (C++/WASM hybrid) is 5–10× faster than pure JS but is realistically deployable only on iOS today, while **snarkjs** is universally available but slow. A non-trivial slice of low-RAM Android devices in our target geography cannot finish proving at all without OOM. ZKP research wiki: https://github.com/raveracker/factivist/wiki/Research-Anoncitizen-ZKP.
+The anoncitizen circuit requires a Groth16 proof generated on the citizen's device so that no PII ever crosses the network (see [[ADR-010]]). Proving cost is the dominant UX friction: **rapidsnark** (C++/WASM hybrid) is 5–10× faster than pure JS but is realistically deployable only on iOS today, while **snarkjs** is universally available but slow. A non-trivial slice of low-RAM Android devices in our target geography cannot finish proving at all without OOM. ZKP research wiki: https://github.com/facktivist/factivist/wiki/Research-Anoncitizen-ZKP.
 
 ## Decision
 Adopt a **tiered prover strategy**:

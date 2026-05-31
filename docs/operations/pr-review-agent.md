@@ -159,7 +159,7 @@ export PR_NUMBER=123
 export PR_HEAD_SHA=$(gh pr view 123 --json headRefOid -q .headRefOid)
 export PR_BASE_REF=$(gh pr view 123 --json baseRefName -q .baseRefName)
 export PR_AUTHOR=$(gh pr view 123 --json author -q .author.login)
-export GH_REPO=raveracker/factivist
+export GH_REPO=facktivist/factivist
 
 # 2. Run the agent locally (won't post — passes --dry-run via the body file)
 claude --model claude-opus-4-7 \

@@ -5,7 +5,7 @@ Accepted
 
 ## Context
 A complaint's constituency tag determines which MLA/MP it routes to — getting it wrong defeats the product. Two "automatic" paths exist:
-1. **PIN → constituency lookup** — but PIN→PC is **not 1:1** (single PIN can span multiple ACs; single AC spans many PINs). Constituency research wiki documents this explicitly: https://github.com/raveracker/factivist/wiki/Research-Constituency-Dataset.
+1. **PIN → constituency lookup** — but PIN→PC is **not 1:1** (single PIN can span multiple ACs; single AC spans many PINs). Constituency research wiki documents this explicitly: https://github.com/facktivist/factivist/wiki/Research-Constituency-Dataset.
 2. **GPS reverse-geocode** — reliable when allowed, but costs battery, requires runtime permission, and silently surveils the citizen — directly hostile to [[ADR-010]].
 
 Forcing either as the default is a correctness *and* privacy regression.

@@ -1,7 +1,7 @@
 # S1 — Accessibility Baseline (WCAG 2.2 Level AA)
 
 > Phase: 3 · Owner agent: `a11y-auditor` · Last edited: 2026-05-23
-> Tracking issue: [#34](https://github.com/raveracker/factivist/issues/34)
+> Tracking issue: [#34](https://github.com/facktivist/factivist/issues/34)
 > Action plan: [`docs/action-plans/season-1/s1-action-plan.md`](../../action-plans/season-1/s1-action-plan.md) §3.4 / §3.5
 > Mobile deltas: [`./a11y-mobile-deltas.md`](./a11y-mobile-deltas.md)
 

@@ -1,7 +1,7 @@
 # Surface 08 — Static legal pages (ToS, privacy, ZKP explainer, grievance)
 
-> Tracking issue: [#31](https://github.com/raveracker/factivist/issues/31)
-> Related: [#71 grievance flow](https://github.com/raveracker/factivist/issues/71), [#72 ToS prohibited content](https://github.com/raveracker/factivist/issues/72), [#107 CERT-In runbook](https://github.com/raveracker/factivist/issues/107)
+> Tracking issue: [#31](https://github.com/facktivist/factivist/issues/31)
+> Related: [#71 grievance flow](https://github.com/facktivist/factivist/issues/71), [#72 ToS prohibited content](https://github.com/facktivist/factivist/issues/72), [#107 CERT-In runbook](https://github.com/facktivist/factivist/issues/107)
 > Phase: 3 · Owner agent: `ux-lead`
 > Last edited: 2026-05-23
 

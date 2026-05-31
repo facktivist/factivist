@@ -1,6 +1,6 @@
 # Surface 03 — Complaint detail (read, comment, flag)
 
-> Tracking issue: [#26](https://github.com/raveracker/factivist/issues/26)
+> Tracking issue: [#26](https://github.com/facktivist/factivist/issues/26)
 > Phase: 3 · Owner agent: `ux-lead`
 > Last edited: 2026-05-23
 

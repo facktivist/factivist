@@ -1,7 +1,7 @@
 # Surface 09 — App-shell mobile screens with offline-friendly skeletons
 
-> Tracking issue: [#32](https://github.com/raveracker/factivist/issues/32)
-> Related: [#83 mobile baseline](https://github.com/raveracker/factivist/issues/83)
+> Tracking issue: [#32](https://github.com/facktivist/factivist/issues/32)
+> Related: [#83 mobile baseline](https://github.com/facktivist/factivist/issues/83)
 > Phase: 3 · Owner agent: `ux-lead` (HIG/Material parity reviewed by `mobile-designer`)
 > Last edited: 2026-05-23
 

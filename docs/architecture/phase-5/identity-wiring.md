@@ -346,5 +346,5 @@ The tester then writes one executable assertion per ATID in §7.
 - [`aggregates.md`](../aggregates.md) §1
 - [`threat-model.md`](../threat-model.md) §TB-4, §TB-5, container §6, CC-1
 - [[ADR-0003]] [[ADR-0010]] [[ADR-0011]] [[ADR-0018]]
-- Wiki — [Research-Anoncitizen-ZKP](https://github.com/raveracker/factivist/wiki/Research-Anoncitizen-ZKP)
+- Wiki — [Research-Anoncitizen-ZKP](https://github.com/facktivist/factivist/wiki/Research-Anoncitizen-ZKP)
 - Memory: `reference_s1_zkp_findings.md`, `reference_s2_polygon_gas.md`

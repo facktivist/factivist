@@ -1,7 +1,7 @@
 # Surface 05 — Postgres full-text search results
 
-> Tracking issue: [#28](https://github.com/raveracker/factivist/issues/28)
-> Implementation issue: [#64](https://github.com/raveracker/factivist/issues/64)
+> Tracking issue: [#28](https://github.com/facktivist/factivist/issues/28)
+> Implementation issue: [#64](https://github.com/facktivist/factivist/issues/64)
 > Phase: 3 · Owner agent: `ux-lead`
 > Last edited: 2026-05-23
 

@@ -58,7 +58,7 @@ scopes: ['read:project'], but your token has only been granted the:
 $ gh auth status
   ✓ Logged in to github.com account facktivist (GH_TOKEN)
   - Token scopes: 'admin:public_key', 'gist', 'read:org', 'repo'
-  ✓ Logged in to github.com account raveracker (keyring)
+  ✓ Logged in to github.com account your-global-account (keyring)
   - Active account: true
   - Token scopes: 'admin:public_key', 'gist', 'project', 'read:org', 'repo'
   ✓ Logged in to github.com account facktivist (keyring)
@@ -66,7 +66,7 @@ $ gh auth status
   - Token scopes: 'admin:public_key', 'gist', 'read:org', 'repo'
 ```
 
-The `project` scope landed on `raveracker`, not `facktivist`. Any
+The `project` scope landed on `your-global-account`, not `facktivist`. Any
 write against a `facktivist`-owned resource (issues, projects, wiki)
 fails with a permissions error.
 
@@ -145,8 +145,8 @@ gh auth status | sed -n '/facktivist (GH_TOKEN)/,/^$/p'
 
 The OAuth flow opened by `gh auth refresh` authorises **whoever is
 currently signed in to github.com in the browser**, NOT the account
-named in `-u`. If your browser is already signed in as `raveracker`,
-the refresh will silently land on `raveracker` even when you ran
+named in `-u`. If your browser is already signed in as `your-global-account`,
+the refresh will silently land on `your-global-account` even when you ran
 `gh auth refresh -u facktivist`.
 
 Reliable fix: sign out of github.com first (in the actual browser),
@@ -206,7 +206,7 @@ Is `facktivist (GH_TOKEN)` listed?
 └── Yes → check its scopes line.
     ├── Has the scope you need → you're done.
     └── Missing scope → does another account have it?
-        ├── raveracker has it → browser sign-in landed on the wrong
+        ├── your-global-account has it → browser sign-in landed on the wrong
         │   account. Sign out of github.com, redo the canonical
         │   four-step sequence.
         └── No account has it → refresh hasn't run yet. Do the
@@ -220,7 +220,7 @@ Is `facktivist (GH_TOKEN)` listed?
 The `.envrc` `GH_TOKEN` export is **load-bearing** for the
 gh-account guard in `lefthook.yml` + `scripts/check-gh-account.sh` —
 it pins this repo's `gh` calls to the `facktivist` identity even when
-the global `raveracker` account is otherwise active. Removing the
+the global default account is otherwise active. Removing the
 export to "fix" the refresh interaction would re-introduce the
 identity-leak risk the guard exists to prevent. The right model is
 to keep the export and route around it for refresh operations only,

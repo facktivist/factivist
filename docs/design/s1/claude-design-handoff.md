@@ -36,15 +36,15 @@ For each of the 9 surfaces:
 
 | Surface | GH Issue |
 |---------|----------|
-| S01 Onboarding | https://github.com/raveracker/factivist/issues/24 |
-| S02 Composer | https://github.com/raveracker/factivist/issues/25 |
-| S03 Detail | https://github.com/raveracker/factivist/issues/26 |
-| S04 Browse | https://github.com/raveracker/factivist/issues/27 |
-| S05 Search | https://github.com/raveracker/factivist/issues/28 |
-| S06 Profile | https://github.com/raveracker/factivist/issues/29 |
-| S07 Moderation | https://github.com/raveracker/factivist/issues/30 |
-| S08 Legal | https://github.com/raveracker/factivist/issues/31 |
-| S09 App-shell | https://github.com/raveracker/factivist/issues/32 |
+| S01 Onboarding | https://github.com/facktivist/factivist/issues/24 |
+| S02 Composer | https://github.com/facktivist/factivist/issues/25 |
+| S03 Detail | https://github.com/facktivist/factivist/issues/26 |
+| S04 Browse | https://github.com/facktivist/factivist/issues/27 |
+| S05 Search | https://github.com/facktivist/factivist/issues/28 |
+| S06 Profile | https://github.com/facktivist/factivist/issues/29 |
+| S07 Moderation | https://github.com/facktivist/factivist/issues/30 |
+| S08 Legal | https://github.com/facktivist/factivist/issues/31 |
+| S09 App-shell | https://github.com/facktivist/factivist/issues/32 |
 
 7. **Export** PNG/SVG of each final composition to `design/s1/<NN>-<slug>.png` (one image per state if the surface has substantial state variants). These are checked in for PR previews.
 

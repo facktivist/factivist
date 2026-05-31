@@ -1,6 +1,6 @@
 # Surface 01 — Onboarding + anoncitizen ZKP verification
 
-> Tracking issue: [#24](https://github.com/raveracker/factivist/issues/24)
+> Tracking issue: [#24](https://github.com/facktivist/factivist/issues/24)
 > Phase: 3 · Owner agent: `ux-lead`
 > Last edited: 2026-05-23
 

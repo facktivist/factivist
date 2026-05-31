@@ -24,7 +24,7 @@ icon paths from `ui_kits/web/components.jsx` rather than importing a new
 icon library.
 
 If you're working on **production code** in
-[`raveracker/factivist`](https://github.com/raveracker/factivist): read
+[`facktivist/factivist`](https://github.com/facktivist/factivist): read
 the rules here and apply them to the real components in
 `packages/ui/web` and `packages/ui/native`. The tokens in
 `colors_and_type.css` are a mirror of `tooling/tailwind-config/index.css`

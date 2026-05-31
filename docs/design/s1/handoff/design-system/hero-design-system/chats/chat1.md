@@ -27,7 +27,7 @@ Caveats: per-character text styles, list markers, deep nested instance swaps and
 
 **Design system repos:** The user attached the following. Browse on demand with `github_get_tree` (returns the importable files — text, images, and fonts) and pull in the ones you actually need with `github_import_files` (narrow `path_prefix` — don't import the whole tree). If GitHub isn't connected yet, call `connect_github` and stop; once they connect, these tools become available on the next turn. Nothing from these repos is pre-loaded — read only what you need.
 When creating your README.md, you should reference the URLs of the GitHub projects you used as input, and suggest to the reader that they can explore these repositories further to do a better job of building designs based on this product.
-- raveracker/factivist
+- facktivist/factivist
 
 ---
 

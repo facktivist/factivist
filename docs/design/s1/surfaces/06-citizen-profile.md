@@ -1,6 +1,6 @@
 # Surface 06 — Citizen profile
 
-> Tracking issue: [#29](https://github.com/raveracker/factivist/issues/29)
+> Tracking issue: [#29](https://github.com/facktivist/factivist/issues/29)
 > Phase: 3 · Owner agent: `ux-lead`
 > Last edited: 2026-05-23
 

@@ -77,7 +77,7 @@ verifiable on the blockchain. Everything else is deferred.
 | Supabase Pro | $25 | |
 | Compute (web + api) | $30 | |
 | Expo EAS Starter (Android + iOS, $45 build credit / 3k MAU updates) | $19 | |
-| Polygon gas (ZKP verify, per-call) | **$18.76** | Re-baselined 2026-05-23 post-Chicago hardfork (PIP-88, 2026-05-21). Standard pricing 337.8 gwei × ~487k gas × POL $0.091. See wiki [Research-Polygon-Gas](https://github.com/raveracker/factivist/wiki/Research-Polygon-Gas) §4. **Volatility note:** off-peak (~56.7 gwei) collapses this line to **~$3/mo**; spike worst-case (~1000 gwei) pushes it to **~$56/mo**. |
+| Polygon gas (ZKP verify, per-call) | **$18.76** | Re-baselined 2026-05-23 post-Chicago hardfork (PIP-88, 2026-05-21). Standard pricing 337.8 gwei × ~487k gas × POL $0.091. See wiki [Research-Polygon-Gas](https://github.com/facktivist/factivist/wiki/Research-Polygon-Gas) §4. **Volatility note:** off-peak (~56.7 gwei) collapses this line to **~$3/mo**; spike worst-case (~1000 gwei) pushes it to **~$56/mo**. |
 | The Graph hosted (free up to 100k queries/mo) | $0 | |
 | Cloudflare free | $0 | |
 | Backups (Supabase included) | $0 | |
@@ -85,7 +85,7 @@ verifiable on the blockchain. Everything else is deferred.
 | **Total (standard)** | **$112.76** | within 15% of original $100 target |
 | **Total (off-peak)** | **~$95** | if launch coincides with low-traffic window |
 
-[^s1-rebase]: **2026-05-23 re-baseline:** Polygon line moved from **$5/mo** (Phase 1 estimate at $0.005–$0.02/call × batched assumption) → **$18.76/mo** (Phase 2 measurement, per-call, post-Chicago hardfork). This is a **+275% line-item drift** but only a **+13% total drift** ($99 → $113), well within the 15% budget tolerance. Drivers: (a) Chicago hardfork (PIP-88) repriced BN254 precompiles 1.5×–3.6× and cold SLOAD 2.6× on 2026-05-21, raising per-verify gas from 265–285k → 472k–502k; (b) decision to model **per-call** rather than batched (batching deferred to S2 `ComplaintRegistry` Merkle worker). See wiki [Research-Polygon-Gas](https://github.com/raveracker/factivist/wiki/Research-Polygon-Gas) and `reference_s1_cost_drift.md` memory.
+[^s1-rebase]: **2026-05-23 re-baseline:** Polygon line moved from **$5/mo** (Phase 1 estimate at $0.005–$0.02/call × batched assumption) → **$18.76/mo** (Phase 2 measurement, per-call, post-Chicago hardfork). This is a **+275% line-item drift** but only a **+13% total drift** ($99 → $113), well within the 15% budget tolerance. Drivers: (a) Chicago hardfork (PIP-88) repriced BN254 precompiles 1.5×–3.6× and cold SLOAD 2.6× on 2026-05-21, raising per-verify gas from 265–285k → 472k–502k; (b) decision to model **per-call** rather than batched (batching deferred to S2 `ComplaintRegistry` Merkle worker). See wiki [Research-Polygon-Gas](https://github.com/facktivist/factivist/wiki/Research-Polygon-Gas) and `reference_s1_cost_drift.md` memory.
 
 **One-time** **$3,000–10,000**
 - `CitizenVerifier.sol` audit by a boutique ZKP-focused security reviewer (single-contract review on a chain like Spearbit / Cantina solo or an indie researcher referred via Code4rena's marketplace): **$3k–10k**. Cheaper than a top-tier firm because anon-aadhaar's underlying circuits and `Verifier.sol` were already audited by PSE/Ethereum Foundation — we only need a review of our integration glue (nullifier set, citizen-credential issuance).
@@ -103,7 +103,7 @@ verifiable on the blockchain. Everything else is deferred.
 
 | Date | Change | Magnitude | Decision |
 |------|--------|-----------|----------|
-| 2026-05-23 | Polygon line re-baselined +275% post-PIP-88 (Chicago hardfork); $5 → $18.76/mo. Total moved $99 → $113. | +13% total | **Accept drift** — within 15% budget tolerance. See `reference_s1_cost_drift.md` memory and wiki [Research-Polygon-Gas](https://github.com/raveracker/factivist/wiki/Research-Polygon-Gas). Escalation if Total exceeds $115/mo at standard gas OR if standard gas line itself exceeds $25/mo (a further +33%). |
+| 2026-05-23 | Polygon line re-baselined +275% post-PIP-88 (Chicago hardfork); $5 → $18.76/mo. Total moved $99 → $113. | +13% total | **Accept drift** — within 15% budget tolerance. See `reference_s1_cost_drift.md` memory and wiki [Research-Polygon-Gas](https://github.com/facktivist/factivist/wiki/Research-Polygon-Gas). Escalation if Total exceeds $115/mo at standard gas OR if standard gas line itself exceeds $25/mo (a further +33%). |
 
 ---
 
