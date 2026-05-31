@@ -16,7 +16,7 @@ module.exports = {
   testRunner: {
     args: {
       $0: 'jest',
-      config: 'e2e/jest.config.ts',
+      config: 'e2e/jest.config.js',
     },
     jest: {
       setupTimeout: 120000,
@@ -40,7 +40,7 @@ module.exports = {
   devices: {
     simulator: {
       type: 'ios.simulator',
-      device: { type: 'iPhone 15' },
+      device: { type: 'iPhone 17' },
     },
     emulator: {
       type: 'android.emulator',

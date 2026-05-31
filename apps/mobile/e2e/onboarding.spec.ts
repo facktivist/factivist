@@ -46,7 +46,7 @@ describe('onboarding (mobile e2e)', () => {
   })
 
   it('unverified visitor: Profile tab falls back to the verify CTA', async () => {
-    const profileTab = await discover('profile')
+    const profileTab = await discover('mobile-tabbar-profile')
     await tapDiscovered(profileTab)
 
     // No factivist-session cookie yet → apiClient.getMyProfile()

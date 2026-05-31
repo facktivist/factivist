@@ -100,27 +100,47 @@ const buildSearchParams = (input: Record<string, unknown>): URLSearchParams => {
   return params
 }
 
+/**
+ * Default per-request timeout. Without this the iOS `NSURLSession`
+ * default (60 s) leaves screens like ProfileTab pinned on a loading
+ * spinner when the API is unreachable — Detox specs that wait on the
+ * downstream "no session → IdentityScreen" fallback time out before
+ * the fetch ever settles. 8 s is comfortably above a healthy round
+ * trip and below every spec's discover budget.
+ */
+const DEFAULT_REQUEST_TIMEOUT_MS = 8_000
+
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      'content-type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
-  })
+  const controller = init?.signal === undefined ? new AbortController() : undefined
+  const timeoutId =
+    controller !== undefined
+      ? setTimeout(() => controller.abort(), DEFAULT_REQUEST_TIMEOUT_MS)
+      : undefined
+  try {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+      ...init,
+      signal: init?.signal ?? controller?.signal,
+      headers: {
+        'content-type': 'application/json',
+        ...(init?.headers ?? {}),
+      },
+    })
 
-  if (!res.ok) {
-    let body: unknown
-    try {
-      body = await res.json()
-    } catch {
-      body = await res.text().catch(() => undefined)
+    if (!res.ok) {
+      let body: unknown
+      try {
+        body = await res.json()
+      } catch {
+        body = await res.text().catch(() => undefined)
+      }
+      throw new ApiError(`API ${res.status} on ${path}`, res.status, body)
     }
-    throw new ApiError(`API ${res.status} on ${path}`, res.status, body)
-  }
 
-  if (res.status === 204) return undefined as T
-  return (await res.json()) as T
+    if (res.status === 204) return undefined as T
+    return (await res.json()) as T
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId)
+  }
 }
 
 export const apiClient = {

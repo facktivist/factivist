@@ -43,7 +43,15 @@
           "photosPermission": "Factivist needs photo library access so you can attach evidence photos from your gallery."
         }
       ],
-      "@sentry/react-native/expo"
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "note": "Use SENTRY_AUTH_TOKEN env to authenticate with Sentry.",
+          "project": "factivist-react-native",
+          "organization": "factivist"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

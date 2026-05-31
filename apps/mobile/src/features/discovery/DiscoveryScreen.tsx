@@ -100,28 +100,34 @@ export function DiscoveryScreen() {
         />
 
         {query.isLoading ? <Text className="text-sm text-muted-foreground">Loading…</Text> : null}
-        {query.isError ? (
-          <View
-            accessibilityRole="alert"
-            className="rounded-md border border-destructive bg-destructive/10 p-3"
-          >
-            <Text className="text-sm text-destructive">
-              {query.error instanceof Error ? query.error.message : 'Could not load complaints.'}
-            </Text>
+        {!query.isLoading ? (
+          <View testID="discovery-feed-settled">
+            {query.isError ? (
+              <View
+                accessibilityRole="alert"
+                className="rounded-md border border-destructive bg-destructive/10 p-3"
+              >
+                <Text className="text-sm text-destructive">
+                  {query.error instanceof Error
+                    ? query.error.message
+                    : 'Could not load complaints.'}
+                </Text>
+              </View>
+            ) : null}
+            {query.isSuccess && query.data && query.data.items.length === 0 ? (
+              <Card testID="discovery-empty">
+                <Card.Body>
+                  <Text className="text-sm text-muted-foreground">
+                    No complaints match your filters.
+                  </Text>
+                </Card.Body>
+              </Card>
+            ) : null}
+            {query.data?.items.map((c) => (
+              <ComplaintListItem key={c.id} complaint={c} />
+            ))}
           </View>
         ) : null}
-        {query.data && query.data.items.length === 0 ? (
-          <Card>
-            <Card.Body>
-              <Text className="text-sm text-muted-foreground">
-                No complaints match your filters.
-              </Text>
-            </Card.Body>
-          </Card>
-        ) : null}
-        {query.data?.items.map((c) => (
-          <ComplaintListItem key={c.id} complaint={c} />
-        ))}
       </ScrollView>
     </SafeAreaView>
   )

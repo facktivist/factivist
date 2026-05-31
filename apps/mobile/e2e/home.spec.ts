@@ -1,13 +1,18 @@
 /// <reference types="detox" />
 
 /**
- * End-to-end smoke test for the Home screen.
+ * End-to-end smoke test for the legacy Phase 5 `HomeScreen` placeholder.
  *
- * Validates the same surface the Vitest unit tests cover, but on a real
- * simulator/emulator so we exercise HeroUI Native, Reanimated worklets,
- * and Uniwind's Metro pipeline end-to-end.
+ * `src/features/home/HomeScreen.tsx` is no longer routed — `(tabs)/index.tsx`
+ * renders `DiscoveryScreen` instead (the spec for that lives in
+ * `browse.spec.ts`). This file is preserved as the documented reference
+ * for the original `by.id(...).tap()` Detox matcher pattern that the
+ * Argent-style discover helper supersedes; see `jest.config.js` header.
+ *
+ * Skipped at the suite level so CI stays green. Re-enable only if/when
+ * HomeScreen gets routed again.
  */
-describe('Home screen', () => {
+describe.skip('Home screen (legacy, HomeScreen no longer routed)', () => {
   beforeAll(async () => {
     await device.launchApp({ newInstance: true })
   })

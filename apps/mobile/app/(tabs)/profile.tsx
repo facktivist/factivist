@@ -22,7 +22,15 @@ export default function ProfileTab() {
   const profileQuery = useQuery({
     queryKey: ['me'],
     queryFn: () => apiClient.getMyProfile(),
-    retry: (_, err) => !(err instanceof ApiError && err.status === 401),
+    // Never retry on 401 — that's the legitimate "no session yet" signal
+    // that drives the IdentityScreen fallback. For other transport
+    // errors (offline, DNS, port closed in e2e) cap at one retry so the
+    // query settles into the `!profile` branch quickly instead of
+    // pinning the screen on a loading spinner indefinitely.
+    retry: (failureCount, err) => {
+      if (err instanceof ApiError && err.status === 401) return false
+      return failureCount < 1
+    },
   })
 
   // Unauthenticated → show the onboarding flow inline.

@@ -36,13 +36,20 @@ export interface DiscoveredElement {
 
 /**
  * Discover an element by testID. Fails the spec if the element is not
- * present — mirrors `argent describe` returning a structured tree (no
- * tree, no tap).
+ * present within `timeoutMs` — mirrors `argent describe` returning a
+ * structured tree (no tree, no tap).
+ *
+ * Uses `waitFor(...).toBeVisible().withTimeout(...)` rather than the
+ * immediate `expect(...).toBeVisible()`. Screens often need a moment
+ * to mount: Profile tab waits on a `useQuery('/me')` round-trip;
+ * DiscoveryScreen waits on `useQuery('/complaints')`. An immediate
+ * assertion races those promises and flakes the suite. The default
+ * 10 s window matches the React Query retry budget plus simulator
+ * jitter, and can be tightened per call site when needed.
  */
-export const discover = async (testID: string): Promise<DiscoveredElement> => {
+export const discover = async (testID: string, timeoutMs = 10_000): Promise<DiscoveredElement> => {
   const handle = element(by.id(testID))
-  // Detox `toBeVisible` throws if the element is not in the hierarchy.
-  await expect(handle).toBeVisible()
+  await waitFor(handle).toBeVisible().withTimeout(timeoutMs)
   return { testID, handle }
 }
 
@@ -79,10 +86,38 @@ export const scrollToDiscovered = async (
  * Launch the app fresh. Centralised so each spec uses the same launch
  * config — and so we can attach permissions overrides in one place when
  * `permissions.spec.ts` needs them.
+ *
+ * Network sync blacklist: Detox treats any in-flight HTTP request as a
+ * "busy" sync resource and waits for it before returning from
+ * `launchApp` / progressing through actions. The S1 e2e build talks to
+ * a local API on `localhost:<port>` that often is not running — without
+ * a blacklist the React Query retries on `/categories`, `/complaints`,
+ * `/me` etc. pin Detox in the busy state long enough to blow past the
+ * test timeout. Blacklisting all localhost traffic (Metro + API) lets
+ * Detox idle while those requests fail in the background; the specs
+ * use explicit `waitFor(...).withTimeout(...)` to gate on UI state, so
+ * losing the network sync resource is safe here.
  */
 export const launchFresh = async (permissions?: Detox.DevicePermissions): Promise<void> => {
   await device.launchApp({
     newInstance: true,
     permissions,
   })
+  await device.setURLBlacklist(['.*localhost.*', '.*127\\.0\\.0\\.1.*', '.*10\\.0\\.2\\.2.*'])
+
+  // Defensive: a flaked permission spec can leave a SpringBoard alert
+  // dangling. `newInstance: true` kills the app process but does NOT
+  // dismiss system-owned alerts, so they overlay the next spec's UI
+  // and every `discover()` times out. Probe for the most common
+  // dialog button labels and tap whichever exists; the iOS-only path
+  // is gated on platform so Android emulator runs are unaffected.
+  if (device.getPlatform() === 'ios') {
+    for (const label of ["Don't Allow", 'OK', 'Allow', 'Dismiss'] as const) {
+      try {
+        await system.element(by.system.label(label)).tap()
+      } catch {
+        // No such system element — expected on the clean-launch path.
+      }
+    }
+  }
 }

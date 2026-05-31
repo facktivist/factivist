@@ -31,19 +31,19 @@ export function ShellTabBarHost({ state, descriptors, navigation, insets }: Bott
           ? options.title
           : route.name
     return {
-      id: route.key,
+      // Use route.name (semantic, stable across reloads) — drives both
+      // the activeId comparison and the per-item testID emitted as
+      // `mobile-tabbar-{name}` by Shell.TabBar.
+      id: route.name,
       label,
-      // The compound treats `icon` as a glyph identifier. We don't
-      // ship a glyph registry yet — pass the lowercased label as a
-      // stable placeholder. Future wave can swap in lucide-react-native.
       icon: label.toLowerCase(),
     }
   })
 
-  const activeId = state.routes[state.index]?.key ?? items[0]?.id ?? ''
+  const activeId = state.routes[state.index]?.name ?? items[0]?.id ?? ''
 
   const handleSelect = (id: string): void => {
-    const target = state.routes.find((r) => r.key === id)
+    const target = state.routes.find((r) => r.name === id)
     if (!target) return
     const event = navigation.emit({
       type: 'tabPress',

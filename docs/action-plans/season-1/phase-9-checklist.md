@@ -26,8 +26,8 @@ These don't need any new account or commercial spend; just configuration of code
 
 ### A1. Push the Phase 8 / Phase 9 branch
 
-- [ ] `git push origin feat/season-1-orchestration`
-- [ ] Open a PR against `main` titled `feat(s1): phase 8 + phase 9 code-complete`.
+- [x] `git push origin feat/season-1-orchestration`
+- [x] Open a PR against `main` titled `feat(s1): phase 8 + phase 9 code-complete`.
 - [ ] CI must come back green (38/38). If not, fix before continuing.
 - [ ] Merge to `main` after self-review (Phase 9 §5.1 raises the reviewer count to 2 once a second collaborator joins; S1 baseline = 1).
 
@@ -35,10 +35,10 @@ These don't need any new account or commercial spend; just configuration of code
 
 `@sentry/react-native` is a native module; CI does not run `expo prebuild`.
 
-- [ ] `cd apps/mobile && bun run native:prebuild` (one-time local regeneration of `ios/` + `android/`).
-- [ ] Re-run the Detox debug builds: `bun run e2e:build:ios && bun run e2e:build:android`.
+- [x] `cd apps/mobile && bun run native:prebuild` (one-time local regeneration of `ios/` + `android/`).
+- [x] Re-run the Detox debug builds: `bun run e2e:build:ios && bun run e2e:build:android`.
 - [ ] Confirm Detox suites still pass: `bun run test:e2e:ios` and `bun run test:e2e:android`.
-- [ ] Set `EXPO_PUBLIC_SENTRY_DSN` in EAS secrets (see B7 below). Without the DSN, `initSentry()` no-ops.
+- [x] Set `EXPO_PUBLIC_SENTRY_DSN` in EAS secrets (see B7 below). Without the DSN, `initSentry()` no-ops.
 
 ### A3. Apply migration `0004_enable_rls.sql` to production
 
