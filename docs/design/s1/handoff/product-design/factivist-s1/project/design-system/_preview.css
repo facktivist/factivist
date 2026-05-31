@@ -1,0 +1,28 @@
+/* Shared base for design-system preview cards. */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  background: transparent;
+  color: var(--color-foreground);
+  overflow: hidden;
+}
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+}
+.fv-card {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--color-background);
+}
+.fv-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.fv-col { display: flex; flex-direction: column; gap: 8px; }
+.fv-mono { font-family: var(--font-mono); font-size: 11px; color: var(--color-muted-foreground); }
+.fv-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted-foreground); }

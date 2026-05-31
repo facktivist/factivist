@@ -1,0 +1,85 @@
+# Consolidated PR gate (Phase 7 §7.3 row 1).
+#
+# ## Relationship to `check.yml`
+#
+# `check.yml` runs on every feature-branch push (and excludes mobile paths) for
+# local-dev observability — fast feedback even when no PR is open. This file
+# (`ci.yml`) is the **branch-protection gate**: it runs on every `pull_request`
+# (all branches, all paths) and on every `push` to `main`. The two intentionally
+# overlap on PR runs — `check.yml` for the per-commit signal, `ci.yml` as the
+# named status check that branch-protection rules can require.
+#
+# Steps mirror `bun run check` end-to-end:
+#   1. anonymity-grep-guard (ADR-0010, cheapest-fail-first)
+#   2. lint (biome)
+#   3. test:coverage (95/95/95/90 enforced by tooling/vitest-config/base.ts)
+#   4. build (turbo)
+#
+# Mobile E2E lives in `mobile-e2e.yml`; web E2E in `web-e2e.yml`; aidefence diff
+# scan in `aidefence.yml`; explicit coverage hard-gate in `coverage-gate.yml`.
+#
+# ATIDs satisfied: covered transitively by the gate.
+
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: anonymity + lint + test:coverage + build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # `bun run check` is `check:anonymity && turbo run lint test:coverage build`.
+      # See root package.json — same script developers run locally, so a green
+      # PR gate equals a green dev workstation.
+      - name: Run full check (anonymity → lint → test:coverage → build)
+        run: bun run check
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            apps/*/coverage
+            packages/**/coverage
+            scripts/coverage
+          if-no-files-found: ignore
+          retention-days: 7

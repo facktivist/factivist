@@ -1,0 +1,257 @@
+# Staging deploy — Phase 7 §7.3.
+#
+# Triggers on push to main. Deploys the three S1 surfaces in parallel:
+#   - apps/web    -> Vercel (preview/staging alias)
+#   - apps/api    -> Fly.io (shared-cpu-1x, region bom)
+#   - apps/mobile -> EAS internal track (preview profile)
+#
+# Each job has a pre-check that exits 0 with a log message when its deploy
+# secrets are absent. This is intentional: until Phase 8 provisions the
+# Vercel project, Fly.io app, and EAS project (see s1-action-plan.md §8.6),
+# the workflow MUST stay green so the rest of CI is not blocked.
+#
+# Owner ADR: docs/adr/0009-supabase-custom-domain.md (API origin)
+# Runbook:   docs/operations/deploy-runbook.md
+#
+# Required GitHub repository secrets (staging environment):
+#   Web (Vercel):
+#     VERCEL_TOKEN       — personal token with deploy scope
+#     VERCEL_ORG_ID      — vercel org/team id
+#     VERCEL_PROJECT_ID  — vercel project id (apps/web)
+#   API (Fly.io):
+#     FLY_API_TOKEN      — org-scoped fly token
+#     FLY_APP_NAME       — fly app slug, e.g. factivist-api-staging
+#   Mobile (EAS):
+#     EXPO_TOKEN         — expo access token
+#     EAS_PROJECT_ID     — eas project id (apps/mobile)
+#
+# All three groups are independent; missing secrets only skip that surface.
+
+name: deploy-staging
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  # Never cancel an in-flight deploy. A push that lands while one is running
+  # queues behind it. Phase 9 may revisit if queue depth becomes a problem.
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy-web:
+    name: Vercel — apps/web
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    outputs:
+      deploy_url: ${{ steps.deploy.outputs.deploy_url }}
+    steps:
+      - name: Pre-check Vercel secrets
+        id: precheck
+        run: |
+          if [ -z "${VERCEL_TOKEN}" ] || [ -z "${VERCEL_ORG_ID}" ] || [ -z "${VERCEL_PROJECT_ID}" ]; then
+            echo "::notice::Vercel secrets absent — skipping apps/web deploy. Add VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID to repository secrets to enable. (Phase 8 ops setup.)"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.precheck.outputs.skip == 'false'
+        uses: actions/checkout@v5
+
+      - name: Set up Bun
+        if: steps.precheck.outputs.skip == 'false'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        if: steps.precheck.outputs.skip == 'false'
+        run: bun install --frozen-lockfile
+
+      - name: Install Vercel CLI
+        if: steps.precheck.outputs.skip == 'false'
+        run: bun add -g vercel@latest
+
+      - name: Pull Vercel project config
+        if: steps.precheck.outputs.skip == 'false'
+        working-directory: apps/web
+        run: vercel pull --yes --environment=preview --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID
+
+      - name: Build with Vercel
+        if: steps.precheck.outputs.skip == 'false'
+        working-directory: apps/web
+        run: vercel build --token=$VERCEL_TOKEN
+
+      - name: Deploy prebuilt to Vercel
+        id: deploy
+        if: steps.precheck.outputs.skip == 'false'
+        working-directory: apps/web
+        run: |
+          URL=$(vercel deploy --prebuilt --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID)
+          echo "deploy_url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Vercel staging deploy -> ${URL}"
+
+  deploy-api:
+    name: Fly.io — apps/api
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      FLY_APP_NAME: ${{ secrets.FLY_APP_NAME }}
+    outputs:
+      deploy_url: ${{ steps.deploy.outputs.deploy_url }}
+    steps:
+      - name: Pre-check Fly secrets
+        id: precheck
+        run: |
+          if [ -z "${FLY_API_TOKEN}" ] || [ -z "${FLY_APP_NAME}" ]; then
+            echo "::notice::Fly.io secrets absent — skipping apps/api deploy. Add FLY_API_TOKEN, FLY_APP_NAME to repository secrets to enable. (Phase 8 ops setup.)"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.precheck.outputs.skip == 'false'
+        uses: actions/checkout@v5
+
+      - name: Set up Fly CLI
+        if: steps.precheck.outputs.skip == 'false'
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io
+        id: deploy
+        if: steps.precheck.outputs.skip == 'false'
+        working-directory: apps/api
+        run: |
+          flyctl deploy --remote-only --app "$FLY_APP_NAME"
+          URL="https://${FLY_APP_NAME}.fly.dev"
+          echo "deploy_url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Fly.io staging deploy -> ${URL}"
+
+  deploy-mobile:
+    name: EAS — apps/mobile (internal)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
+    outputs:
+      build_id: ${{ steps.deploy.outputs.build_id }}
+    steps:
+      - name: Pre-check EAS secrets
+        id: precheck
+        run: |
+          if [ -z "${EXPO_TOKEN}" ] || [ -z "${EAS_PROJECT_ID}" ]; then
+            echo "::notice::EAS secrets absent — skipping apps/mobile deploy. Add EXPO_TOKEN, EAS_PROJECT_ID to repository secrets to enable. (Phase 8 ops setup.)"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.precheck.outputs.skip == 'false'
+        uses: actions/checkout@v5
+
+      - name: Set up Bun
+        if: steps.precheck.outputs.skip == 'false'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Set up EAS CLI
+        if: steps.precheck.outputs.skip == 'false'
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        if: steps.precheck.outputs.skip == 'false'
+        run: bun install --frozen-lockfile
+
+      - name: EAS build (preview profile, all platforms)
+        id: deploy
+        if: steps.precheck.outputs.skip == 'false'
+        working-directory: apps/mobile
+        run: |
+          BUILD_OUT=$(eas build --platform all --profile preview --non-interactive --json)
+          echo "$BUILD_OUT"
+          BUILD_ID=$(echo "$BUILD_OUT" | jq -r '.[0].id // "unknown"')
+          echo "build_id=${BUILD_ID}" >> "$GITHUB_OUTPUT"
+          echo "::notice::EAS staging build id -> ${BUILD_ID}"
+
+      - name: EAS submit iOS (TestFlight internal)
+        if: steps.precheck.outputs.skip == 'false'
+        working-directory: apps/mobile
+        # Submission is best-effort on staging — failure here should not
+        # block the workflow because the build artifact already exists.
+        continue-on-error: true
+        run: eas submit --platform ios --latest --non-interactive
+
+      - name: EAS submit Android (internal track)
+        if: steps.precheck.outputs.skip == 'false'
+        working-directory: apps/mobile
+        continue-on-error: true
+        run: eas submit --platform android --latest --non-interactive
+
+  # Phase 8 carry-over from Phase 7: surface staging preview URLs as a
+  # comment on the merge-commit's originating PR (best-effort, never
+  # fails the workflow). Looks up the PR by SHA via the GH API.
+  post-preview-urls:
+    name: Post preview URLs to PR
+    needs: [deploy-web, deploy-api, deploy-mobile]
+    if: always() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Comment on originating PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const web = `${{ needs.deploy-web.outputs.deploy_url }}` || '(skipped)';
+            const api = `${{ needs.deploy-api.outputs.deploy_url }}` || '(skipped)';
+            const mobileBuild = `${{ needs.deploy-mobile.outputs.build_id }}` || '(skipped)';
+            const sha = context.sha;
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: sha,
+            });
+            if (prs.length === 0) {
+              core.notice('No PR associated with this commit — skipping preview comment.');
+              return;
+            }
+            const body = [
+              '### Staging preview',
+              '',
+              `- **web** (Vercel): ${web}`,
+              `- **api** (Fly.io): ${api}`,
+              `- **mobile** (EAS build id): \`${mobileBuild}\``,
+              '',
+              `Commit: \`${sha.slice(0, 7)}\``,
+            ].join('\n');
+            for (const pr of prs) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body,
+              });
+              core.notice(`Posted preview URLs to #${pr.number}`);
+            }

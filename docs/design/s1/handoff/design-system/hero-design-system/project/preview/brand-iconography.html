@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<title>brand-iconography.html</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="_preview.css">
+<script src="../ui_kits/web/icons.js"></script>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 10px 6px; }
+  .cell {
+    aspect-ratio: 1 / 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px;
+    border: 1px solid var(--color-border); border-radius: 10px;
+    background: var(--color-card); padding: 8px 4px;
+    color: var(--color-foreground);
+  }
+  .ic {
+    width: 22px; height: 22px;
+    background-color: currentColor; display: inline-block;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+    -webkit-mask-size: contain; mask-size: contain;
+  }
+  .cell .l { font-family: var(--font-mono); font-size: 8px;
+    color: var(--color-muted-foreground); text-align: center; line-height: 1.2; }
+</style>
+</head>
+<body>
+<div class="fv-card">
+  <div class="fv-eyebrow">Iconography · Solar Bold (Vuesax-style)</div>
+  <div class="grid" id="grid"></div>
+  <div style="font-size:12px; color:var(--color-muted-foreground); line-height:1.55;">
+    <strong>Solar Bold</strong> — from <a href="https://solar-icons.vercel.app/icons" style="color:var(--color-brand-600);">Solar Icons</a>, the 1,246-icon set by 480 Design (six matched styles; we use <code style="font-family:var(--font-mono); background:var(--color-muted); padding:1px 5px; border-radius:4px;">Bold</code>). Same filled-geometric energy as Vuesax/Iconsax, addressable from the Iconify CDN (Iconsax isn't), so the brand register stays intact across web + native. Rendered as a CSS <code style="font-family:var(--font-mono); background:var(--color-muted); padding:1px 5px; border-radius:4px;">mask</code> so <code style="font-family:var(--font-mono);">color: currentColor</code> flows through. 27 offline SVGs in <code style="font-family:var(--font-mono);">assets/icons/solar/</code>; six raw Vuesax bold SVGs from the source Figma kit in <code style="font-family:var(--font-mono);">assets/icons/vuesax/</code> for reference.
+  </div>
+</div>
+<script>
+  const slugs = ["shield","shield-check","judge","ranking","megaphone","flag","flash","sparkles","search","add","bell","arrow-up","message","paperclip","map-pin","link","check","close","document","mic","image","lock","filter","trending"];
+  const grid = document.getElementById('grid');
+  for (const s of slugs) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const ic = document.createElement('span');
+    ic.className = 'ic';
+    const url = window.FV_ICONS[s];
+    ic.style.setProperty('-webkit-mask-image', 'url("' + url + '")');
+    ic.style.setProperty('mask-image', 'url("' + url + '")');
+    const l = document.createElement('span');
+    l.className = 'l'; l.textContent = s;
+    cell.append(ic, l);
+    grid.append(cell);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+# AI defence diff scan (Phase 7 §7.3 row 4).
+#
+# Runs the aidefence_scan MCP tool on every file changed in the PR diff vs
+# `origin/main`. Fails on any **medium-or-higher** finding (severity ≥ 3).
+#
+# ## ADR alignment
+#
+#   * ADR-0010 (citizen anonymity floor) — moderator-facing surface MUST NOT
+#     leak citizen identifiers; aidefence catches PII patterns the
+#     `anonymity-grep-guard.sh` static rule cannot (e.g. context-sensitive
+#     phone numbers in test fixtures).
+#   * ADR-0016 (DPDP minimisation) — diffs that introduce new personal-data
+#     fields without explicit handling get caught here as well.
+#
+# ## MCP availability
+#
+# The aidefence MCP is hosted by `ruflo`. CI runners do not have the MCP
+# bridge by default, so the diff scanner script falls back to a deterministic
+# in-process AIMDS regex pass. The fallback is conservative — better to
+# false-positive on a fixture than miss a leak. See
+# `scripts/ci/aidefence-scan-diff.ts` header for the full fallback contract.
+
+name: aidefence
+
+on:
+  pull_request:
+
+concurrency:
+  group: aidefence-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: aidefence_scan (diff, medium+)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # need full history for `git diff origin/main...HEAD`
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Ensure base ref is available
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: |
+          git fetch --no-tags --depth=200 origin "${BASE_REF}":"refs/remotes/origin/${BASE_REF}" || true
+
+      - name: aidefence scan on diff
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: bun run scripts/ci/aidefence-scan-diff.ts

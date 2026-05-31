@@ -11,13 +11,18 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@factivist/shared": "workspace:*",
     "@factivist/ui-theme": "workspace:*",
     "@factivist/ui-web": "workspace:*",
+    "@factivist/zkp-client": "workspace:*",
     "@heroui/react": "~3.0.0",
+    "@sentry/nextjs": "^10",
+    "@supabase/ssr": "^0.10",
+    "@supabase/supabase-js": "^2.106",
     "@tanstack/react-query": "latest",
     "@tanstack/react-query-devtools": "latest",
     "next": "16.2.6",

@@ -67,6 +67,12 @@
       "skillPath": "engineering/agenthub/skills/agenthub/SKILL.md",
       "computedHash": "0dde527d96ec6dc94aae527f9f7963b187fe402af2144ecc5b1a7e1316ca54fc"
     },
+    "agents-md": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/agents-md/SKILL.md",
+      "computedHash": "7ff79d6771cdf3db33606251eb15bbc5203b68a94b036ee471869842118ea02a"
+    },
     "agile-product-owner": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
@@ -227,6 +233,12 @@
       "skillPath": ".claude/skills/biome-developer/SKILL.md",
       "computedHash": "395e868b6dee6e283f7e16e761e3ff72227a3f9aa6451aeee78daf6f2cb4b857"
     },
+    "blog-writing-guide": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/blog-writing-guide/SKILL.md",
+      "computedHash": "f885b9890d8a1c43e8ed0386e2ef2c17e941a403aa354513d6b844e99229ffb7"
+    },
     "board": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
@@ -258,10 +270,10 @@
       "computedHash": "fc47a21a81015d7ba7d6fc0c13cb59493d1aa50d1765d3d9f9963c0327b34bc2"
     },
     "brand-guidelines": {
-      "source": "alirezarezvani/claude-skills",
+      "source": "getsentry/skills",
       "sourceType": "github",
-      "skillPath": "marketing-skill/skills/brand-guidelines/SKILL.md",
-      "computedHash": "01478bada459b8f2787c23a01d6cd8139449af17b48f7b9f994236cd9820abd6"
+      "skillPath": "skills/brand-guidelines/SKILL.md",
+      "computedHash": "592a5ebea7cd94f9ca3347b3c3f00e2ed54333be5cd5a9278ff098767ebb08d0"
     },
     "brief": {
       "source": "alirezarezvani/claude-skills",
@@ -466,6 +478,12 @@
       "skillPath": "c-level-advisor/c-level-agents/skills/ciso-review/SKILL.md",
       "computedHash": "da98d56a4845d10a44a44606d24e596780d1c50211d468360140332fd009b4cd"
     },
+    "claude-settings-audit": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/claude-settings-audit/SKILL.md",
+      "computedHash": "89eb59fa3e198d8ce533ece2650e8c7fe9a5b162876d8f9896f7724879cd4978"
+    },
     "cloud-security": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
@@ -484,11 +502,23 @@
       "skillPath": "c-level-advisor/c-level-agents/skills/cmo-review/SKILL.md",
       "computedHash": "84a187b8b39abc44846cd4bc439e52e872b5f3f31a57f1d2c5ffa48f16254254"
     },
+    "code-review": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/code-review/SKILL.md",
+      "computedHash": "f0604d278cfd4eac4dac29eb297a5c6b6ebfb9f020235e8aafbe2eff0e42a147"
+    },
     "code-reviewer": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
       "skillPath": "engineering-team/skills/code-reviewer/SKILL.md",
       "computedHash": "2ee52c898102171c99aa6d821dfe47f95c91bc65d72e301edb8a0aaefd07528c"
+    },
+    "code-simplifier": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/code-simplifier/SKILL.md",
+      "computedHash": "ff9cb10181e31daf1f1644754c491601a7849dff4b4536a1d0ec4f97f680348e"
     },
     "code-to-prd": {
       "source": "alirezarezvani/claude-skills",
@@ -537,6 +567,12 @@
       "sourceType": "github",
       "skillPath": "commercial/skills/commercial-skills/SKILL.md",
       "computedHash": "b8c9f7e174ca3dbd2ae7f714d759cfd2c0baf8b1cb37fc6e653bddd6fc05a167"
+    },
+    "commit": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/commit/SKILL.md",
+      "computedHash": "4fa90a8da375e651dc9d7514ce79ea2c3eaa069a86be366c61b0c4f9d11c97cf"
     },
     "company-os": {
       "source": "alirezarezvani/claude-skills",
@@ -640,6 +676,12 @@
       "skillPath": "c-level-advisor/c-level-agents/skills/cpo-review/SKILL.md",
       "computedHash": "efbb5575b345efb47cfb6826f513d13c75561b359ac7ee2a0de6e9dddc919b89"
     },
+    "create-branch": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/create-branch/SKILL.md",
+      "computedHash": "95d14cb86e62d5d65c45bede5dc317ecfc18ff977df73871c3165585b24753d8"
+    },
     "cro-advisor": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
@@ -741,6 +783,12 @@
       "sourceType": "github",
       "skillPath": "detox-skill/SKILL.md",
       "computedHash": "3a89bf9efe0163ba843008a085a701d3b73e56f21f8ffb8d63040b5d0cb501e5"
+    },
+    "doc-coauthoring": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/doc-coauthoring/SKILL.md",
+      "computedHash": "9a0cffa136d62fa6079314028d922782e8cad43c5335a9ee45edd611021f4e3a"
     },
     "docker-development": {
       "source": "alirezarezvani/claude-skills",
@@ -910,6 +958,12 @@
       "skillPath": "finance/skills/financial-analyst/SKILL.md",
       "computedHash": "b3cb8e8f4f75dd95ddf2dd7ac5ac8b62094f5b63c51fdcecc3356db06dce9baa"
     },
+    "find-bugs": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-bugs/SKILL.md",
+      "computedHash": "7bf00be700d1d205b747126aa96d3587bbc2855cd09897614676e179eebe35ed"
+    },
     "fix": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
@@ -987,6 +1041,18 @@
       "sourceType": "github",
       "skillPath": "engineering-team/playwright-pro/skills/generate/SKILL.md",
       "computedHash": "859457f0e45df10d24dec1b72d5e91073446aff935ca563268e97763e746aeda"
+    },
+    "gh-review-requests": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/gh-review-requests/SKILL.md",
+      "computedHash": "e76f1b68acfe88b08d169c6c8fd9135150d01e55a72fdfa3b601e4bd5932e5b6"
+    },
+    "gha-security-review": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/gha-security-review/SKILL.md",
+      "computedHash": "b506580c0c826ed2a5e3e97835eaaa0b3133ba269029ec5213257f5d7cf57f29"
     },
     "git-worktree-manager": {
       "source": "alirezarezvani/claude-skills",
@@ -1125,6 +1191,12 @@
       "sourceType": "github",
       "skillPath": "ra-qm-team/skills/iso42001-specialist/SKILL.md",
       "computedHash": "00d312b9556550d356cfa0d4b1b356189ceb624eb8084e768b61d2f3859b6e3c"
+    },
+    "iterate-pr": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/iterate-pr/SKILL.md",
+      "computedHash": "84753c046fa5983463e017c3f95c312fa44234d618d12dd574b5ea30a48173a4"
     },
     "jest-skill": {
       "source": "LambdaTest/agent-skills",
@@ -1450,6 +1522,18 @@
       "skillPath": "engineering/skills/pr-review-expert/SKILL.md",
       "computedHash": "1d6f5f481729ebf2492e2a22700da369a4872d2798cfc6ac0b156ac6a4c8b904"
     },
+    "pr-writer": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pr-writer/SKILL.md",
+      "computedHash": "7541277b40e6edb1aa6575339e2ae18087d903e97afac391d0264f97bd1b3635"
+    },
+    "presentation-creator": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/presentation-creator/SKILL.md",
+      "computedHash": "5699d98ceba1ca862be21aa6bbf51bf41331c43725047962784ced369df70ee5"
+    },
     "pricing-strategist": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
@@ -1521,6 +1605,12 @@
       "sourceType": "github",
       "skillPath": "marketing-skill/skills/prompt-engineer-toolkit/SKILL.md",
       "computedHash": "e2e1963de77c18e2c803c6c9e790537b6159c1454375c70600c8107ec10e0f16"
+    },
+    "prompt-optimizer": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/prompt-optimizer/SKILL.md",
+      "computedHash": "b5b1f57c45ce10a5deeedeb1c3f418a069689d2b6ff9555e4a6c3d31cf9ae950"
     },
     "pulse": {
       "source": "alirezarezvani/claude-skills",
@@ -1617,6 +1707,12 @@
       "sourceType": "github",
       "skillPath": "skills/remotion/SKILL.md",
       "computedHash": "006f8413941b59eff54a7ce64851b8a2fb79e7a3a5f1a895e97a48f01482553d"
+    },
+    "replay-ux-research": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/replay-ux-research/SKILL.md",
+      "computedHash": "2a4f59eb117314418dbe952d37fb01de871de442388337ccce928e1e75d2b6fa"
     },
     "report": {
       "source": "alirezarezvani/claude-skills",
@@ -1744,6 +1840,12 @@
       "skillPath": "engineering-team/skills/security-pen-testing/SKILL.md",
       "computedHash": "ea8508fb9d4a66f34577603bd8143776c36b6b1a88bdf06873958d8242b9b197"
     },
+    "security-review": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/security-review/SKILL.md",
+      "computedHash": "ec9792f5fd065e020c48ab5a57707c83435c286c449ba98dfa726d7b1842c868"
+    },
     "self-eval": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
@@ -1840,6 +1942,120 @@
       "skillPath": "engineering-team/skills/senior-security/SKILL.md",
       "computedHash": "815e7e7540d386358d51515e111a9897fc00bd2d5c907a6e91d1dad482010291"
     },
+    "sentry-android-sdk": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-android-sdk/SKILL.md",
+      "computedHash": "ea55fe4506f115a0fdf3825ab232e2fe9d0a9df948dd195c89850ef344ecf686"
+    },
+    "sentry-browser-sdk": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-browser-sdk/SKILL.md",
+      "computedHash": "0ca21f883fefc9fc71dea0b8dc1e38fb9e03203923d49a93ec652addf297f2eb"
+    },
+    "sentry-cloudflare-sdk": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-cloudflare-sdk/SKILL.md",
+      "computedHash": "43f7e56e20405aff1349d9f1a55164bcd4e1c9fbf0005c08d7aa4f09dccd4616"
+    },
+    "sentry-cocoa-sdk": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-cocoa-sdk/SKILL.md",
+      "computedHash": "99404bceb54ee3b2045ab8528aa6e06a566649da1e907d4c0bf2eb62f1aabf5c"
+    },
+    "sentry-code-review": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-code-review/SKILL.md",
+      "computedHash": "3f2134bdeffc92ac7cd1d8561f056006cd1908ea87590182cefefdab441ed472"
+    },
+    "sentry-create-alert": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-create-alert/SKILL.md",
+      "computedHash": "05f78a17a70f3e38d283fef4f97b013024a01093ef436b96df12d51e2f1a7b00"
+    },
+    "sentry-feature-setup": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-feature-setup/SKILL.md",
+      "computedHash": "ae104e1c1f9df97f765f2ec87f7efbc3767d9675e185dea637494e7d891aefd9"
+    },
+    "sentry-fix-issues": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-fix-issues/SKILL.md",
+      "computedHash": "0ef2103f20d698acc56d856a07a372a0a68cb02bad654d0dacb4e2ffe87e98b5"
+    },
+    "sentry-nextjs-sdk": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-nextjs-sdk/SKILL.md",
+      "computedHash": "7a144b78fa9d3df2b7fa1d4376d800297bbcbc981c4e7ea6e0409c13fb07050e"
+    },
+    "sentry-node-sdk": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-node-sdk/SKILL.md",
+      "computedHash": "8a1381ed04503d0aa71e7a3138cc1e68762c780fefb84e6cf9793140289090ed"
+    },
+    "sentry-pr-code-review": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-pr-code-review/SKILL.md",
+      "computedHash": "50d60bad66edd86ebda5302b67fb2980396b942fb125f70858f103c5a7692eb7"
+    },
+    "sentry-react-native-sdk": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-react-native-sdk/SKILL.md",
+      "computedHash": "e16229b483c0054bed4398c4da73be094459a173cdfeacae23527ee9a3b9f493"
+    },
+    "sentry-react-router-framework-sdk": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-react-router-framework-sdk/SKILL.md",
+      "computedHash": "e116c9b07c2c669a3399ef2a7bfa34db93bab6b5d99d2f5fabf91b47a1617418"
+    },
+    "sentry-react-sdk": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-react-sdk/SKILL.md",
+      "computedHash": "f97fb5d2ce1543f1c7c31a04023175ecf1bd950a193792c3b999428af9ce7ca0"
+    },
+    "sentry-sdk-setup": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-sdk-setup/SKILL.md",
+      "computedHash": "a471d03591daf5371c3dacc00532d957c14f7ae7f4120b7305ad3b148ccefbb2"
+    },
+    "sentry-sdk-skill-creator": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-sdk-skill-creator/SKILL.md",
+      "computedHash": "d67401477ab99da29eccf7309b41b1948879b7ccdabacf6e6ae7a87732756f3f"
+    },
+    "sentry-sdk-upgrade": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-sdk-upgrade/SKILL.md",
+      "computedHash": "ef1881ddfe80380e6814cc2dcd072c6c238783ebc3985acc46d3141b2c3fdf6b"
+    },
+    "sentry-setup-ai-monitoring": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-setup-ai-monitoring/SKILL.md",
+      "computedHash": "12995e57245f0f98bdad2a279ed8483ccbfa283eeb3195598b861a587514c6e6"
+    },
+    "sentry-workflow": {
+      "source": "getsentry/sentry-for-ai",
+      "sourceType": "github",
+      "skillPath": "skills/sentry-workflow/SKILL.md",
+      "computedHash": "00a62d74aa26a9007d74532ab405b16684386e59c4121a5496f0059206683c6e"
+    },
     "seo-audit": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
@@ -1870,6 +2086,12 @@
       "skillPath": "marketing-skill/skills/site-architecture/SKILL.md",
       "computedHash": "025ee87502067fd8390400bfbc2ed3663ed1ad494eef61cd5657845c6b1057b1"
     },
+    "skill-scanner": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/skill-scanner/SKILL.md",
+      "computedHash": "df6885edbf5ac5469bda13ba66d5598d94c248f24b526239b4861287df9e3ec6"
+    },
     "skill-security-auditor": {
       "source": "alirezarezvani/claude-skills",
       "sourceType": "github",
@@ -1881,6 +2103,12 @@
       "sourceType": "github",
       "skillPath": "engineering/skills/skill-tester/SKILL.md",
       "computedHash": "defbb78a55c23c159c6d7a9fd72828a394c73ba603524476edc9dd585c59a5fb"
+    },
+    "skill-writer": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/skill-writer/SKILL.md",
+      "computedHash": "f4feba459dc66cc907ab3e6beb1f107db411b49c92bf9f48dbecd9d05f5698c8"
     },
     "slo-architect": {
       "source": "alirezarezvani/claude-skills",
@@ -2037,6 +2265,12 @@
       "sourceType": "github",
       "skillPath": "engineering-team/skills/threat-detection/SKILL.md",
       "computedHash": "ba3e6b6320a840eefdb8ad9ac9a205c7908b742301ec6cf398e564fad4ee29f9"
+    },
+    "triage-frontend-issues": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/triage-frontend-issues/SKILL.md",
+      "computedHash": "e5909219c41cd10b8707b502ba844663338c384430a668c18fef830bf9e63e91"
     },
     "turbopack": {
       "source": "vercel-labs/vercel-plugin",

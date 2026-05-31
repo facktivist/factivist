@@ -231,6 +231,29 @@ Exception: `npx` is acceptable for one-off CLI tools (e.g., `npx ruflo@latest`).
 | Full check | `bun run check` (lint → test:coverage → build) |
 | DB generate | `bun run db:generate` |
 | DB migrate | `bun run db:migrate` |
+| gh account check | `bun run gh:check` |
+
+## GitHub Identity
+
+This repo MUST push and call the GitHub API as the **`facktivist`** gh account. The user's global default is a different gh account, so a per-repo override is required.
+
+**Mechanism: direnv + `GH_TOKEN`.** A gitignored `.envrc` at repo root exports `GH_TOKEN=$(gh auth token -u facktivist)` on `cd` into the repo. `GH_TOKEN` takes precedence over gh's global active account, so `gh` and `git push` both speak as `facktivist` inside this directory and revert to the global default outside it.
+
+**One-time setup (per developer machine):**
+```sh
+brew install direnv
+echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc   # or bash/fish equivalent
+cd <repo>
+direnv allow                                   # approves .envrc
+bun run gh:check                               # should print exit 0
+```
+
+**Guards in place:**
+- `git push` → lefthook `pre-push.gh-account` aborts if active gh ≠ `facktivist`.
+- Manual verification → `bun run gh:check`.
+- Emergency bypass → `BYPASS_GH_ACCOUNT_CHECK=1 <command>` (audited intent only).
+
+If direnv isn't installed, fall back to running `gh auth switch -u facktivist` manually when entering the repo — the guards will still catch a forgotten switch.
 
 ## Testing — ENFORCED
 

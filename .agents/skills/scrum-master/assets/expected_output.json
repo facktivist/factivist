@@ -84,17 +84,17 @@
       "completion_rate": 0.467,
       "overdue_rate": 0.533,
       "priority_analysis": {
-        "high": {"completion_rate": 0.50},
-        "medium": {"completion_rate": 0.33},
-        "low": {"completion_rate": 0.67}
+        "high": { "completion_rate": 0.5 },
+        "medium": { "completion_rate": 0.33 },
+        "low": { "completion_rate": 0.67 }
       }
     },
     "theme_analysis": {
       "recurring_themes": {
-        "process": {"frequency": 1.0, "trend": {"direction": "decreasing"}},
-        "team_dynamics": {"frequency": 1.0, "trend": {"direction": "increasing"}},
-        "technical": {"frequency": 0.83, "trend": {"direction": "increasing"}},
-        "communication": {"frequency": 0.67, "trend": {"direction": "decreasing"}}
+        "process": { "frequency": 1.0, "trend": { "direction": "decreasing" } },
+        "team_dynamics": { "frequency": 1.0, "trend": { "direction": "increasing" } },
+        "technical": { "frequency": 0.83, "trend": { "direction": "increasing" } },
+        "communication": { "frequency": 0.67, "trend": { "direction": "decreasing" } }
       }
     },
     "improvement_trends": {

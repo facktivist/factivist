@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-screen-label="Factivist Mobile App">
+<head>
+  <meta charset="utf-8">
+  <title>Factivist · Mobile UI kit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../../colors_and_type.css">
+  <style>
+    html, body { height:100%; }
+    body { background: var(--color-gray-100); margin: 0; }
+    .stage {
+      display: flex; gap: 36px; justify-content: center;
+      padding: 36px; flex-wrap: wrap; align-items: flex-start;
+    }
+    .label {
+      text-align: center; margin-top: 10px;
+      font-size: 12px; font-weight: 600; color: var(--color-muted-foreground);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    button { font-family: inherit; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+    integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+    integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
+    integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="android-frame.jsx"></script>
+  <script src="../web/data.js"></script>
+  <script src="../web/icons.js"></script>
+  <script type="text/babel" src="../web/components.jsx"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+    const FRAME_W = 360;
+    const FRAME_H = 760;
+
+    // Reusable mark glyph — black F. in brand square
+    const MarkSq = ({ size=28 }) => (
+      <div style={{ position:'relative', width:size, height:size, borderRadius: Math.round(size*0.22), background:'var(--color-brand-500)', overflow:'hidden', flexShrink:0 }}>
+        <span style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-sans)', fontWeight:900, fontStyle:'italic', fontSize: Math.round(size*0.78), lineHeight:1, color:'#fff', letterSpacing:'-0.04em', transform:'translateY(-1px) translateX(-1px)', userSelect:'none' }}>F</span>
+        <span style={{ position:'absolute', right: Math.max(2.5, size*0.13), bottom: Math.max(2.5, size*0.13), width: Math.max(2.5, size*0.14), height: Math.max(2.5, size*0.14), borderRadius:'50%', background:'#fff' }}/>
+      </div>
+    );
+
+    // ─── Verify (ZKP onboarding) ────────────────────────────────
+    const VerifyScreen = () => (
+      <div style={{ padding:'24px 20px', display:'flex', flexDirection:'column', gap:20, minHeight:'100%', background:'var(--color-background)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:4 }}>
+          <MarkSq size={32}/>
+          <div style={{ fontFamily:'var(--font-sans)', fontWeight:700, fontSize:18, letterSpacing:'-0.025em'}}>factivist</div>
+        </div>
+        <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', gap:18 }}>
+          <div style={{
+            width:120, height:120, borderRadius:'50%', alignSelf:'center',
+            background:'linear-gradient(140deg, var(--color-brand-100) 0%, var(--color-brand-50) 100%)',
+            border:'1px solid var(--color-brand-200)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}>
+            <I.ShieldFill style={{ width:56, height:56, color:'var(--color-brand-500)' }}/>
+          </div>
+          <h1 style={{ margin:0, textAlign:'center', fontSize:26, fontWeight:800, letterSpacing:'-0.02em', textWrap:'pretty', lineHeight:1.15 }}>
+            Verify. Stay anonymous.
+          </h1>
+          <p style={{ margin:0, textAlign:'center', fontSize:14, lineHeight:1.55, color:'var(--color-muted-foreground)', textWrap:'pretty' }}>
+            Your Aadhaar never leaves this phone. We use a zero-knowledge proof to attest you're 18+ and a unique Indian citizen — nothing more.
+          </p>
+          <div style={{
+            background:'var(--color-muted)', border:'1px solid var(--color-border)',
+            borderRadius:12, padding:'12px 14px',
+            display:'flex', gap:10, alignItems:'flex-start',
+          }}>
+            <I.Lock style={{ width:16, height:16, color:'var(--color-brand-600)', flexShrink:0, marginTop:2 }}/>
+            <div style={{ fontSize:12, lineHeight:1.55, color:'var(--color-foreground)'}}>
+              No phone, no email, no name. Identity happens on your device, not on our servers.
+            </div>
+          </div>
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          <Btn variant="solid" tone="primary" size="lg" fullWidth icon={<I.ShieldFill style={{width:16,height:16}}/>}>
+            Scan Aadhaar QR
+          </Btn>
+          <Btn variant="ghost" size="md" fullWidth>Browse anonymously</Btn>
+        </div>
+      </div>
+    );
+
+    // ─── Feed (mobile) ───────────────────────────────────────────
+    const MobileFeed = () => (
+      <div style={{ background:'var(--color-background)', minHeight:'100%', display:'flex', flexDirection:'column' }}>
+        <div style={{
+          padding:'14px 16px 12px', borderBottom:'1px solid var(--color-border)',
+          background:'var(--color-card)',
+          display:'flex', alignItems:'center', justifyContent:'space-between',
+        }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <MarkSq size={28}/>
+            <div style={{ fontWeight:700, fontSize:16, letterSpacing:'-0.025em'}}>factivist</div>
+          </div>
+          <div style={{ display:'flex', gap:6 }}>
+            <button style={iconBtn()}><I.Search style={{width:16,height:16}}/></button>
+            <button style={iconBtn()}>
+              <I.Bell style={{width:16,height:16}}/>
+              <span style={{ position:'absolute', top:8, right:8, width:6, height:6, borderRadius:'50%', background:'var(--color-danger-500)'}}/>
+            </button>
+          </div>
+        </div>
+        <div style={{ padding:'12px 14px', display:'flex', gap:8, overflowX:'auto', borderBottom:'1px solid var(--color-border)'}}>
+          <Chip tone="primary" sm>All</Chip>
+          {window.fvData.categories.slice(0,5).map(c => <Chip key={c.id} tone="default" sm bordered>{c.label}</Chip>)}
+        </div>
+        <div style={{ flex:1, padding:'4px 14px 80px', display:'flex', flexDirection:'column', gap:10 }}>
+          {window.fvData.feed.slice(0,4).map(c => (
+            <article key={c.id} style={{
+              background:'var(--color-card)', border:'1px solid var(--color-border)',
+              borderRadius:14, padding:14,
+            }}>
+              <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:8, flexWrap:'wrap' }}>
+                <Chip tone="primary" bordered sm>{c.category}</Chip>
+                <SeverityPill level={c.severity}/>
+              </div>
+              <h3 style={{ margin:0, marginBottom:6, fontSize:14, fontWeight:600, lineHeight:1.4, color:'var(--color-foreground)'}}>{c.title}</h3>
+              <p style={{ margin:0, marginBottom:10, fontSize:12, lineHeight:1.55, color:'var(--color-gray-600)', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden'}}>{c.excerpt}</p>
+              <div style={{ display:'flex', alignItems:'center', gap:10, fontSize:11, color:'var(--color-muted-foreground)'}}>
+                <Avatar handle={c.submittedBy} size={18} tone="gray"/>
+                <span style={{ fontFamily:'var(--font-mono)'}}>{c.submittedBy.slice(0,14)}</span>
+                <span style={{ marginLeft:'auto', display:'inline-flex', alignItems:'center', gap:4 }}>
+                  <I.ArrowUp style={{width:11,height:11}}/>{c.endorsements}
+                </span>
+                <span style={{ display:'inline-flex', alignItems:'center', gap:4 }}>
+                  <I.MessageSq style={{width:11,height:11}}/>{c.comments}
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
+        {/* FAB */}
+        <button style={{
+          position:'absolute', right:18, bottom:72, width:56, height:56, borderRadius:18,
+          background:'var(--color-brand-500)', color:'#fff', border:0,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          boxShadow:'0 8px 20px -6px var(--color-brand-500)', cursor:'pointer',
+        }}>
+          <I.Plus style={{ width:22, height:22 }}/>
+        </button>
+        {/* Bottom nav */}
+        <BottomNav active="feed"/>
+      </div>
+    );
+
+    // ─── Detail (mobile) ─────────────────────────────────────────
+    const MobileDetail = () => {
+      const c = window.fvData.detail;
+      return (
+        <div style={{ background:'var(--color-background)', minHeight:'100%', display:'flex', flexDirection:'column' }}>
+          <div style={{
+            padding:'12px 14px', borderBottom:'1px solid var(--color-border)',
+            background:'var(--color-card)',
+            display:'flex', alignItems:'center', gap:10,
+          }}>
+            <button style={{ ...iconBtn(), border:0, background:'transparent' }}>
+              <span style={{ transform:'rotate(180deg)', display:'inline-flex'}}><I.ChevronR style={{width:16,height:16}}/></span>
+            </button>
+            <div style={{ flex:1, fontSize:13, fontWeight:600, fontFamily:'var(--font-mono)'}}>#{c.id}</div>
+            <button style={iconBtn()}><I.Link style={{width:14,height:14}}/></button>
+          </div>
+          <div style={{ flex:1, padding:'14px 16px 100px' }}>
+            <div style={{ display:'flex', gap:6, marginBottom:10, flexWrap:'wrap'}}>
+              <Chip tone="primary" bordered sm>{c.category}</Chip>
+              <SeverityPill level={c.severity}/>
+              <StatusChip status={c.status}/>
+            </div>
+            <h1 style={{ margin:0, marginBottom:10, fontSize:18, fontWeight:700, lineHeight:1.35, letterSpacing:'-0.01em', textWrap:'pretty' }}>{c.title}</h1>
+            <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, color:'var(--color-muted-foreground)', marginBottom:14 }}>
+              <Avatar handle={c.submittedBy} size={16} tone="gray"/>
+              <span style={{ fontFamily:'var(--font-mono)'}}>{c.submittedBy.slice(0,14)}</span>
+              <span>·</span>
+              <span>{c.submittedAt}</span>
+            </div>
+            <div style={{ fontSize:13, lineHeight:1.65, color:'var(--color-foreground)', whiteSpace:'pre-wrap', textWrap:'pretty', marginBottom:18 }}>
+              {c.body}
+            </div>
+            <div className="fv-overline" style={{marginBottom:8, fontSize:10}}>Evidence · EXIF stripped</div>
+            <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:18 }}>
+              {c.evidence.map((e,i)=>{
+                const Icon = e.kind==='Audio'?I.Mic : e.kind==='Image'?I.Image : I.FileText;
+                return (
+                  <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 10px', background:'var(--color-muted)', border:'1px solid var(--color-border)', borderRadius:10 }}>
+                    <Icon style={{width:14,height:14, color:'var(--color-brand-600)'}}/>
+                    <div style={{ flex:1, fontSize:12 }}>{e.label}</div>
+                    <span style={{ fontSize:10, color:'var(--color-muted-foreground)'}}>{e.size}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="fv-overline" style={{marginBottom:8, fontSize:10}}>Timeline</div>
+            <ol style={{ listStyle:'none', padding:0, margin:0, display:'flex', flexDirection:'column', gap:10, position:'relative' }}>
+              <span style={{ position:'absolute', left:9, top:6, bottom:6, width:2, background:'var(--color-border)' }}/>
+              {c.timeline.slice(0,4).map((t,i) => (
+                <li key={i} style={{ position:'relative', paddingLeft:26, fontSize:12 }}>
+                  <span style={{ position:'absolute', left:0, top:1, width:20, height:20, borderRadius:'50%',
+                    background: t.kind==='check'||t.kind==='chain'?'var(--color-success-100)':'var(--color-gray-200)',
+                    color: t.kind==='check'||t.kind==='chain'?'var(--color-success-700)':'var(--color-gray-700)',
+                    display:'inline-flex', alignItems:'center', justifyContent:'center',
+                    border:'3px solid var(--color-background)' }}>
+                    {t.kind==='check'||t.kind==='chain' ? <I.Check style={{width:10,height:10}}/> : <span style={{width:5,height:5,borderRadius:'50%',background:'currentColor'}}/>}
+                  </span>
+                  <div style={{ fontWeight:500 }}>{t.label}</div>
+                  <div style={{ fontFamily:'var(--font-mono)', fontSize:10, color:'var(--color-muted-foreground)'}}>{t.at}</div>
+                </li>
+              ))}
+            </ol>
+          </div>
+          {/* Sticky endorse */}
+          <div style={{
+            position:'absolute', left:14, right:14, bottom:72,
+            background:'var(--color-card)', border:'1px solid var(--color-border)',
+            borderRadius:9999, padding:6, display:'flex', gap:6,
+            boxShadow:'var(--shadow-lg)',
+          }}>
+            <Btn variant="solid" tone="primary" size="md" fullWidth icon={<I.ArrowUp style={{width:14,height:14}}/>}>
+              Endorse · {c.endorsements}
+            </Btn>
+            <button style={{ ...iconBtn(36), borderColor:'transparent' }}><I.MessageSq style={{width:16,height:16}}/></button>
+          </div>
+          <BottomNav active="feed"/>
+        </div>
+      );
+    };
+
+    const BottomNav = ({ active }) => (
+      <div style={{
+        position:'absolute', left:0, right:0, bottom:24,
+        height:56, background:'var(--color-card)', borderTop:'1px solid var(--color-border)',
+        display:'flex', alignItems:'stretch', justifyContent:'space-around',
+      }}>
+        {[
+          { id:'feed', Icon:I.FileText, label:'Feed' },
+          { id:'map', Icon:I.MapPin, label:'Map' },
+          { id:'chat', Icon:I.Sparkles, label:'AI' },
+          { id:'me', Icon:I.ShieldFill, label:'You' },
+        ].map(n => (
+          <button key={n.id} style={{
+            flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2,
+            background:'transparent', border:0, cursor:'pointer',
+            color: active===n.id ? 'var(--color-brand-600)' : 'var(--color-muted-foreground)',
+          }}>
+            <n.Icon style={{width:18,height:18}}/>
+            <span style={{ fontSize:10, fontWeight:600 }}>{n.label}</span>
+          </button>
+        ))}
+      </div>
+    );
+
+    function iconBtn(s=34){
+      return {
+        width:s, height:s, borderRadius:8, border:'1px solid var(--color-border)',
+        background:'var(--color-card)', cursor:'pointer', position:'relative',
+        display:'inline-flex', alignItems:'center', justifyContent:'center',
+        color:'var(--color-gray-700)',
+      };
+    }
+
+    function App() {
+      return (
+        <div className="stage">
+          <div>
+            <div style={{ position:'relative' }}>
+              <AndroidDevice width={FRAME_W} height={FRAME_H}>
+                <VerifyScreen/>
+              </AndroidDevice>
+            </div>
+            <div className="label">01 · Verify (ZKP)</div>
+          </div>
+          <div>
+            <div style={{ position:'relative' }}>
+              <AndroidDevice width={FRAME_W} height={FRAME_H}>
+                <MobileFeed/>
+              </AndroidDevice>
+            </div>
+            <div className="label">02 · Feed</div>
+          </div>
+          <div>
+            <div style={{ position:'relative' }}>
+              <AndroidDevice width={FRAME_W} height={FRAME_H}>
+                <MobileDetail/>
+              </AndroidDevice>
+            </div>
+            <div className="label">03 · Complaint detail</div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

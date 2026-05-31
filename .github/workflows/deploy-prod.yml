@@ -1,0 +1,213 @@
+# Production deploy — Phase 7 §7.3.
+#
+# Tag-driven, manual: triggered by `release: published` (a GitHub Release
+# cut from a tag). Gated by the `production` environment, which the repo
+# owner configures in Settings -> Environments -> production with at least
+# one required reviewer (S1 baseline = 1; Phase 9 raises to 2).
+#
+# Difference from deploy-staging.yml:
+#   - Pre-check FAILS (not skips) when prod secrets are missing — a missing
+#     secret in production is an outage, not a soft skip.
+#   - Requires the `prod-validator` audit artifact from the release PR's
+#     workflow run to be present; refuses to deploy without it.
+#
+# Owner ADR: docs/adr/0009-supabase-custom-domain.md (API origin)
+# Runbook:   docs/operations/deploy-runbook.md
+#
+# Required GitHub repository secrets (production environment):
+#   Web (Vercel):
+#     VERCEL_TOKEN_PROD      — production-scoped vercel token
+#     VERCEL_ORG_ID_PROD     — vercel org/team id
+#     VERCEL_PROJECT_ID_PROD — vercel project id (apps/web prod)
+#   API (Fly.io):
+#     FLY_API_TOKEN_PROD     — production-scoped fly token
+#     FLY_APP_NAME_PROD      — fly app slug, e.g. factivist-api-prod
+#   Mobile (EAS):
+#     EXPO_TOKEN_PROD        — expo access token
+#     EAS_PROJECT_ID_PROD    — eas project id (apps/mobile prod)
+#
+# Required artifact:
+#   prod-validator — uploaded by the PR workflow that produced the release.
+#                    Phase 8 wires this into release-please. Today the
+#                    download is best-effort with a clear failure message.
+
+name: deploy-prod
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  deployments: write
+  actions: read
+
+jobs:
+  audit-gate:
+    name: Audit gate (prod-validator artifact required)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Download prod-validator artifact from latest main run
+        id: download
+        uses: dawidd6/action-download-artifact@v6
+        continue-on-error: true
+        with:
+          workflow: check.yml
+          branch: main
+          name: prod-validator
+          path: ./prod-validator
+          if_no_artifact_found: warn
+
+      - name: Verify artifact present
+        run: |
+          if [ ! -d ./prod-validator ] || [ -z "$(ls -A ./prod-validator 2>/dev/null)" ]; then
+            echo "::error::prod-validator artifact missing — production deploy refuses to run without an audit pass."
+            echo "::error::Cut a fresh release after the next green main build, or re-run the failing audit workflow."
+            exit 1
+          fi
+          echo "::notice::prod-validator artifact present — gate passes."
+
+  deploy-web:
+    name: Vercel — apps/web (prod)
+    needs: audit-gate
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN_PROD }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID_PROD }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
+    outputs:
+      deploy_url: ${{ steps.deploy.outputs.deploy_url }}
+    steps:
+      - name: Pre-check Vercel prod secrets (fail if missing)
+        run: |
+          MISSING=""
+          [ -z "${VERCEL_TOKEN}" ]      && MISSING="$MISSING VERCEL_TOKEN_PROD"
+          [ -z "${VERCEL_ORG_ID}" ]     && MISSING="$MISSING VERCEL_ORG_ID_PROD"
+          [ -z "${VERCEL_PROJECT_ID}" ] && MISSING="$MISSING VERCEL_PROJECT_ID_PROD"
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing required production secrets:$MISSING"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - name: Install Vercel CLI
+        run: bun add -g vercel@latest
+
+      - name: Pull Vercel project config (production)
+        working-directory: apps/web
+        run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID
+
+      - name: Build with Vercel (production)
+        working-directory: apps/web
+        run: vercel build --prod --token=$VERCEL_TOKEN
+
+      - name: Deploy prebuilt to Vercel (production)
+        id: deploy
+        working-directory: apps/web
+        run: |
+          URL=$(vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --scope=$VERCEL_ORG_ID)
+          echo "deploy_url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Vercel production deploy -> ${URL}"
+
+  deploy-api:
+    name: Fly.io — apps/api (prod)
+    needs: audit-gate
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_PROD }}
+      FLY_APP_NAME: ${{ secrets.FLY_APP_NAME_PROD }}
+    outputs:
+      deploy_url: ${{ steps.deploy.outputs.deploy_url }}
+    steps:
+      - name: Pre-check Fly prod secrets (fail if missing)
+        run: |
+          MISSING=""
+          [ -z "${FLY_API_TOKEN}" ] && MISSING="$MISSING FLY_API_TOKEN_PROD"
+          [ -z "${FLY_APP_NAME}" ]  && MISSING="$MISSING FLY_APP_NAME_PROD"
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing required production secrets:$MISSING"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io (production)
+        id: deploy
+        working-directory: apps/api
+        run: |
+          flyctl deploy --remote-only --app "$FLY_APP_NAME"
+          URL="https://${FLY_APP_NAME}.fly.dev"
+          echo "deploy_url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Fly.io production deploy -> ${URL}"
+
+  deploy-mobile:
+    name: EAS — apps/mobile (production)
+    needs: audit-gate
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 45
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN_PROD }}
+      EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID_PROD }}
+    outputs:
+      build_id: ${{ steps.deploy.outputs.build_id }}
+    steps:
+      - name: Pre-check EAS prod secrets (fail if missing)
+        run: |
+          MISSING=""
+          [ -z "${EXPO_TOKEN}" ]     && MISSING="$MISSING EXPO_TOKEN_PROD"
+          [ -z "${EAS_PROJECT_ID}" ] && MISSING="$MISSING EAS_PROJECT_ID_PROD"
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing required production secrets:$MISSING"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN_PROD }}
+
+      - run: bun install --frozen-lockfile
+
+      - name: EAS build (production profile, all platforms)
+        id: deploy
+        working-directory: apps/mobile
+        run: |
+          BUILD_OUT=$(eas build --platform all --profile production --non-interactive --json)
+          echo "$BUILD_OUT"
+          BUILD_ID=$(echo "$BUILD_OUT" | jq -r '.[0].id // "unknown"')
+          echo "build_id=${BUILD_ID}" >> "$GITHUB_OUTPUT"
+          echo "::notice::EAS production build id -> ${BUILD_ID}"
+
+      - name: EAS submit iOS (App Store)
+        working-directory: apps/mobile
+        run: eas submit --platform ios --latest --non-interactive
+
+      - name: EAS submit Android (Play Store)
+        working-directory: apps/mobile
+        run: eas submit --platform android --latest --non-interactive

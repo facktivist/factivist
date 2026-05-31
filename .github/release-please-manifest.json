@@ -1,0 +1,17 @@
+{
+  "apps/api": "0.1.0",
+  "apps/web": "0.1.0",
+  "apps/mobile": "0.1.0",
+  "packages/db": "0.1.0",
+  "packages/shared": "0.1.0",
+  "packages/zkp-client": "0.1.0",
+  "packages/ui/web": "0.1.0",
+  "packages/ui/native": "0.1.0",
+  "packages/ui/theme": "0.1.0",
+  "packages/agent-acl": "0.1.0",
+  "packages/codegraph": "0.1.0",
+  "packages/guardrails": "0.1.0",
+  "tooling/tsconfig": "0.1.0",
+  "tooling/tailwind-config": "0.1.0",
+  "tooling/vitest-config": "0.1.0"
+}

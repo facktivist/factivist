@@ -1,0 +1,190 @@
+# Database migrations — Phase 7 §7.3.
+#
+# Manual `workflow_dispatch` only. Drizzle migrations are forward-only;
+# there is no automatic rollback step. The "two-key approval for prod"
+# specified by §7.3 is delivered by the `environment: production` block
+# on the migrate-production job (configure required reviewers in
+# Settings -> Environments -> production).
+#
+# The `confirm` input must literally equal `YES MIGRATE`. Both staging
+# and production paths share this guard so a misclick on the Actions UI
+# does not run a migration.
+#
+# Drizzle migrate script lives at packages/db/src/migrate.ts and is wired
+# as `bun run db:migrate` in packages/db/package.json. The root script
+# fan-outs via turbo; here we invoke the package script directly so the
+# log is unambiguous.
+#
+# Owner ADR: docs/adr/0001-drizzle-only-db-access.md
+# Runbook:   docs/operations/deploy-runbook.md
+#
+# Required GitHub repository secrets:
+#   DATABASE_URL_STAGING — Supabase staging connection string (writable role)
+#   DATABASE_URL_PROD    — Supabase production connection string (writable role)
+
+name: db-migrate
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Which database to migrate'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      confirm:
+        description: 'Type YES MIGRATE to confirm'
+        required: true
+        type: string
+
+concurrency:
+  # Never run two migrations against the same target at once.
+  group: db-migrate-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: Confirm input guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Verify confirm string
+        run: |
+          if [ "${{ inputs.confirm }}" != "YES MIGRATE" ]; then
+            echo "::error::confirm input must equal 'YES MIGRATE' (got: '${{ inputs.confirm }}'). Aborting."
+            exit 1
+          fi
+          echo "::notice::Confirmation accepted for environment=${{ inputs.environment }}."
+
+  migrate-staging:
+    name: Migrate staging
+    needs: guard
+    if: inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+      DATABASE_URL: ${{ secrets.DATABASE_URL_STAGING }}
+    steps:
+      - name: Pre-check DATABASE_URL_STAGING
+        run: |
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "::error::DATABASE_URL_STAGING secret is not set."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: List migration files (pre-flight)
+        run: |
+          echo "## Migrations available" >> "$GITHUB_STEP_SUMMARY"
+          ls -1 packages/db/drizzle/*.sql >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+
+      - name: Count audit_log rows BEFORE migration
+        id: before
+        continue-on-error: true
+        working-directory: packages/db
+        run: |
+          # Best-effort row count; if the table does not yet exist (fresh DB)
+          # this prints 0 rather than failing the job.
+          COUNT=$(bun run -e "import postgres from 'postgres'; const sql = postgres(process.env.DATABASE_URL); try { const r = await sql\`select count(*)::int as n from audit_log\`; console.log(r[0].n); } catch { console.log(0); } finally { await sql.end(); }" 2>/dev/null || echo "0")
+          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
+          echo "audit_log rows before: ${COUNT}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run drizzle migrations (staging)
+        working-directory: packages/db
+        run: bun run db:migrate
+
+      - name: Count audit_log rows AFTER migration
+        continue-on-error: true
+        working-directory: packages/db
+        run: |
+          COUNT=$(bun run -e "import postgres from 'postgres'; const sql = postgres(process.env.DATABASE_URL); try { const r = await sql\`select count(*)::int as n from audit_log\`; console.log(r[0].n); } catch { console.log(0); } finally { await sql.end(); }" 2>/dev/null || echo "0")
+          echo "audit_log rows after: ${COUNT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "before: ${{ steps.before.outputs.count }} -> after: ${COUNT}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Rollback guidance (on failure)
+        if: failure()
+        run: |
+          echo "::error::Staging migration FAILED. Drizzle migrations are forward-only."
+          echo "::error::Manual rollback procedure:"
+          echo "::error::  1. Inspect packages/db/drizzle/ for the last migration that ran cleanly."
+          echo "::error::  2. Restore the staging DB from the most recent Supabase point-in-time snapshot."
+          echo "::error::  3. Open an incident issue with label 'risk:db' and link this run."
+          echo "::error::Owner ADR: docs/adr/0001-drizzle-only-db-access.md"
+
+  migrate-production:
+    name: Migrate production (two-key approval)
+    needs: guard
+    if: inputs.environment == 'production'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+      DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+    steps:
+      - name: Pre-check DATABASE_URL_PROD
+        run: |
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "::error::DATABASE_URL_PROD secret is not set."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: List migration files (pre-flight)
+        run: |
+          echo "## Migrations available (production)" >> "$GITHUB_STEP_SUMMARY"
+          ls -1 packages/db/drizzle/*.sql >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+
+      - name: Count audit_log rows BEFORE migration
+        id: before
+        continue-on-error: true
+        working-directory: packages/db
+        run: |
+          COUNT=$(bun run -e "import postgres from 'postgres'; const sql = postgres(process.env.DATABASE_URL); try { const r = await sql\`select count(*)::int as n from audit_log\`; console.log(r[0].n); } catch { console.log(0); } finally { await sql.end(); }" 2>/dev/null || echo "0")
+          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
+          echo "audit_log rows before: ${COUNT}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run drizzle migrations (production)
+        working-directory: packages/db
+        run: bun run db:migrate
+
+      - name: Count audit_log rows AFTER migration
+        continue-on-error: true
+        working-directory: packages/db
+        run: |
+          COUNT=$(bun run -e "import postgres from 'postgres'; const sql = postgres(process.env.DATABASE_URL); try { const r = await sql\`select count(*)::int as n from audit_log\`; console.log(r[0].n); } catch { console.log(0); } finally { await sql.end(); }" 2>/dev/null || echo "0")
+          echo "audit_log rows after: ${COUNT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "before: ${{ steps.before.outputs.count }} -> after: ${COUNT}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Rollback guidance (on failure)
+        if: failure()
+        run: |
+          echo "::error::PRODUCTION migration FAILED. Drizzle migrations are forward-only."
+          echo "::error::Manual rollback procedure:"
+          echo "::error::  1. STOP — do not retry. Open incident immediately."
+          echo "::error::  2. Restore production DB from the most recent Supabase point-in-time snapshot."
+          echo "::error::  3. Page on-call (see docs/operations/deploy-runbook.md §On-call escalation)."
+          echo "::error::  4. File 'incident:db' issue with this run URL and the failing SQL."
+          echo "::error::Owner ADR: docs/adr/0001-drizzle-only-db-access.md"

@@ -60,15 +60,9 @@
       },
       "constraints": {
         "primary_key": ["id"],
-        "unique": [
-          "username",
-          "email"
-        ],
+        "unique": ["username", "email"],
         "foreign_key": [],
-        "check": [
-          "email LIKE '%@%'",
-          "LENGTH(password_hash) >= 60"
-        ]
+        "check": ["email LIKE '%@%'", "LENGTH(password_hash) >= 60"]
       },
       "indexes": [
         {
@@ -77,7 +71,7 @@
           "unique": true
         },
         {
-          "name": "idx_users_username", 
+          "name": "idx_users_username",
           "columns": ["username"],
           "unique": true
         },
@@ -150,9 +144,7 @@
             "on_delete": "CASCADE"
           }
         ],
-        "check": [
-          "privacy_level IN ('public', 'private', 'friends_only')"
-        ]
+        "check": ["privacy_level IN ('public', 'private', 'friends_only')"]
       },
       "indexes": [
         {

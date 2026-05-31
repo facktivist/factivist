@@ -2,13 +2,13 @@
   "name": "factivist",
   "private": true,
   "type": "module",
-  "module": "index.ts",
   "packageManager": "bun@1.3.14",
   "workspaces": [
     "apps/*",
     "packages/*",
     "packages/ui/*",
-    "tooling/*"
+    "tooling/*",
+    "scripts"
   ],
   "scripts": {
     "dev": "turbo run dev --filter=!@factivist/mobile",
@@ -18,7 +18,9 @@
     "test:coverage": "turbo run test:coverage",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "check": "turbo run lint test:coverage build",
+    "check:anonymity": "bash scripts/anonymity-grep-guard.sh",
+    "gh:check": "bash scripts/check-gh-account.sh",
+    "check": "bun run check:anonymity && turbo run lint test:coverage build",
     "db:generate": "turbo run db:generate",
     "db:migrate": "[ -f .env ] && set -a && . ./.env && set +a; turbo run db:migrate",
     "db:migrate:age": "[ -f .env ] && set -a && . ./.env && set +a; turbo run db:migrate:age",
@@ -35,6 +37,7 @@
     "lefthook": "^2.1.8",
     "turbo": "^2.9.14",
     "typescript": "^6.0.3",
+    "viem": "^2.50.4",
     "vitest": "^4.1.7"
   },
   "peerDependencies": {
@@ -51,7 +54,6 @@
     "kuzu"
   ],
   "dependencies": {
-    "@tanstack/ai": "^0.21.2",
-    "@tanstack/ai-openai": "^0.10.0"
+    "@expo/metro-runtime": "^56.0.13"
   }
 }

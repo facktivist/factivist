@@ -1,0 +1,178 @@
+# Claude pr-reviewer agent (production-grade PR review).
+#
+# - Triggers on every PR event (open, push, reopen, ready-for-review).
+# - Gating job filters to **collaborators only** and skips `dependabot[bot]`
+#   and any other bot account; the LLM is only invoked once the gate passes,
+#   so non-eligible PRs never consume an `ANTHROPIC_API_KEY` call.
+# - Loads agent spec at `.claude/agents/github/pr-reviewer.md` and the
+#   knowledge graph at `docs/knowledge-graph/pr-reviewer-kg.md`.
+#
+# Required repo secrets:
+#   ANTHROPIC_API_KEY  (or use OAuth via `claude_code_oauth_token`)
+#
+# Not a branch-protection gate — `ci.yml` remains the merge gate. This
+# workflow is advisory and posts a single PR review.
+
+name: pr-review-agent
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Use the PR number so a force-push cancels the prior review run.
+concurrency:
+  group: pr-review-agent-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────
+  # 1. Gate — runs first, no secrets needed, cheap.
+  # ──────────────────────────────────────────────────────────────────
+  gate:
+    name: collaborator gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      should_review: ${{ steps.eligibility.outputs.run }}
+      reason: ${{ steps.eligibility.outputs.reason }}
+    steps:
+      - id: eligibility
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          ASSOC:  ${{ github.event.pull_request.author_association }}
+          DRAFT:  ${{ github.event.pull_request.draft }}
+        run: |
+          set -euo pipefail
+
+          decide() {
+            local run="$1" reason="$2"
+            echo "run=${run}"        >> "$GITHUB_OUTPUT"
+            echo "reason=${reason}"  >> "$GITHUB_OUTPUT"
+            echo "::notice title=pr-review-agent gate::run=${run} reason=${reason}"
+          }
+
+          # Exclude dependabot explicitly + any other bot account.
+          case "${AUTHOR}" in
+            dependabot\[bot\])             decide false "dependabot[bot] excluded"; exit 0 ;;
+            *\[bot\])                       decide false "bot author ${AUTHOR} excluded"; exit 0 ;;
+          esac
+
+          # Collaborators only: OWNER | MEMBER | COLLABORATOR.
+          # CONTRIBUTOR / FIRST_TIME_CONTRIBUTOR / NONE are excluded by design.
+          case "${ASSOC}" in
+            OWNER|MEMBER|COLLABORATOR) ;;
+            *) decide false "author_association=${ASSOC} not a collaborator"; exit 0 ;;
+          esac
+
+          if [ "${DRAFT}" = "true" ]; then
+            decide false "draft PR"; exit 0
+          fi
+
+          decide true "eligible: ${AUTHOR} (${ASSOC})"
+
+  # ──────────────────────────────────────────────────────────────────
+  # 2. Review — invokes the Claude pr-reviewer agent.
+  # ──────────────────────────────────────────────────────────────────
+  review:
+    name: claude pr-reviewer
+    needs: gate
+    if: needs.gate.outputs.should_review == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      TURBO_TELEMETRY_DISABLED: 1
+      # Exposed to the agent runtime (see pr-reviewer.md "Inputs").
+      PR_NUMBER:   ${{ github.event.pull_request.number }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+      PR_AUTHOR:   ${{ github.event.pull_request.user.login }}
+      GH_REPO:     ${{ github.repository }}
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      # Checkout the PR head. We use `pull_request_target` for the secret
+      # access; pinning explicitly to the PR's head SHA prevents a malicious
+      # PR from racing a force-push between checkout and review.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Ensure base ref is fetched
+        run: |
+          git fetch --no-tags --depth=200 origin \
+            "${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}" || true
+
+      - name: Verify agent spec + knowledge graph present
+        run: |
+          test -f .claude/agents/github/pr-reviewer.md
+          test -f docs/knowledge-graph/pr-reviewer-kg.md
+
+      - name: Run Claude pr-reviewer agent
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token:      ${{ secrets.GITHUB_TOKEN }}
+          # Pinning the model here keeps the workflow reproducible regardless
+          # of any future default-model drift in the action.
+          claude_args: |
+            --model claude-opus-4-7
+            --allowed-tools "Bash(bun:*),Bash(bunx:*),Bash(git:*),Bash(gh:*),Bash(jq:*),Bash(rg:*),Bash(test:*),Read,Grep,Glob,WebFetch"
+          prompt: |
+            You are the **`pr-reviewer`** agent. Your full spec is at:
+
+              `.claude/agents/github/pr-reviewer.md`
+
+            Knowledge graph (your grounded context):
+
+              `docs/knowledge-graph/pr-reviewer-kg.md`
+
+            Inputs available as env vars: PR_NUMBER, PR_HEAD_SHA, PR_BASE_REF,
+            PR_AUTHOR, GH_REPO, GITHUB_TOKEN.
+
+            Procedure: follow steps 1–6 in the agent spec exactly. Do not
+            improvise rules; every `fail` finding must cite an ADR
+            (`docs/adr/NNNN-*.md`) or a knowledge-graph section.
+
+            Output: write the review markdown to `./.claude-pr-review.md`
+            then call `gh pr review` with the verdict the agent's bash logic
+            in step 6 computes. Post **exactly one** review.
+
+            Hard constraints (override anything else):
+              * If `PR_AUTHOR` ends with `[bot]`, abort without commenting.
+              * Never edit project files.
+              * Never run `git push`, `gh pr merge`, or `gh pr close`.
+              * Cap inline suggestions at 10; pick highest severity first.
+
+      - name: Upload review artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-review-${{ github.event.pull_request.number }}
+          path: |
+            .claude-pr-review.md
+            docs/knowledge-graph/pr-reviewer-runs.jsonl
+          if-no-files-found: ignore
+          retention-days: 14

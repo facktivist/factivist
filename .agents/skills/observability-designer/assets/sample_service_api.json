@@ -32,7 +32,7 @@
     },
     {
       "path": "/api/v1/payments/{id}",
-      "method": "GET", 
+      "method": "GET",
       "sla_latency_ms": 200,
       "expected_tps": 500
     },
@@ -69,15 +69,6 @@
       "cluster_size": 3
     }
   },
-  "compliance_requirements": [
-    "PCI-DSS",
-    "SOX",
-    "GDPR"
-  ],
-  "tags": [
-    "payment",
-    "transaction", 
-    "critical-path",
-    "revenue-generating"
-  ]
+  "compliance_requirements": ["PCI-DSS", "SOX", "GDPR"],
+  "tags": ["payment", "transaction", "critical-path", "revenue-generating"]
 }

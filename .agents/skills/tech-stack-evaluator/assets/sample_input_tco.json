@@ -20,7 +20,7 @@
     },
     "scaling_params": {
       "initial_users": 5000,
-      "annual_growth_rate": 0.30,
+      "annual_growth_rate": 0.3,
       "initial_servers": 10,
       "cost_per_server_monthly": 300
     },

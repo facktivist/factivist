@@ -20,15 +20,18 @@ type ButtonProps = {
   accessibilityLabel?: string
   accessibilityRole?: string
   accessibilityState?: { selected?: boolean; disabled?: boolean }
+  /** HeroUI Native uses `isDisabled`; we map it to `aria-disabled`. */
+  isDisabled?: boolean
 }
 
-export const Button = ({
+const ButtonRoot = ({
   children,
   variant = 'primary',
   onPress,
   testID,
   accessibilityLabel,
   accessibilityState,
+  isDisabled,
 }: ButtonProps) => (
   <button
     type="button"
@@ -38,12 +41,18 @@ export const Button = ({
     aria-pressed={
       accessibilityState?.selected !== undefined ? String(accessibilityState.selected) : undefined
     }
-    aria-disabled={accessibilityState?.disabled ? 'true' : undefined}
-    onClick={onPress}
+    aria-disabled={isDisabled || accessibilityState?.disabled ? 'true' : undefined}
+    disabled={isDisabled || undefined}
+    onClick={isDisabled ? undefined : onPress}
   >
     {children}
   </button>
 )
+
+// Mobile composers call <Button.Label>label</Button.Label>; declaration-merge
+// so RTL can see the rendered text and tests can press the root by testID.
+const ButtonLabel = ({ children }: { children?: ReactNode }) => <>{children}</>
+export const Button = Object.assign(ButtonRoot, { Label: ButtonLabel })
 
 type WrapperProps = { children?: ReactNode; testID?: string }
 
@@ -66,6 +75,65 @@ export const Card = Object.assign(CardRoot, {
 
 export const TextField = ({ children, testID }: WrapperProps) => (
   <div data-testid={testID}>{children}</div>
+)
+
+// Minimal Input / TextArea shims so feature tests can mount the mobile
+// composer without pulling Reanimated worklets through Vitest. The RN
+// `onChangeText` prop is mapped to the DOM `onChange` event so RTL's
+// `userEvent.type` works on jsdom inputs/textareas.
+type InputLikeProps = {
+  value?: string
+  onChangeText?: (next: string) => void
+  onBlur?: () => void
+  placeholder?: string
+  testID?: string
+  accessibilityLabel?: string
+  accessibilityRole?: string
+  maxLength?: number
+  numberOfLines?: number
+}
+
+export const Input = ({
+  value,
+  onChangeText,
+  onBlur,
+  placeholder,
+  testID,
+  accessibilityLabel,
+  maxLength,
+}: InputLikeProps) => (
+  <input
+    type="text"
+    value={value ?? ''}
+    onChange={(e) => onChangeText?.(e.target.value)}
+    onBlur={onBlur}
+    placeholder={placeholder}
+    data-testid={testID}
+    aria-label={accessibilityLabel}
+    maxLength={maxLength}
+  />
+)
+
+export const TextArea = ({
+  value,
+  onChangeText,
+  onBlur,
+  placeholder,
+  testID,
+  accessibilityLabel,
+  maxLength,
+  numberOfLines,
+}: InputLikeProps) => (
+  <textarea
+    value={value ?? ''}
+    onChange={(e) => onChangeText?.(e.target.value)}
+    onBlur={onBlur}
+    placeholder={placeholder}
+    data-testid={testID}
+    aria-label={accessibilityLabel}
+    maxLength={maxLength}
+    rows={numberOfLines}
+  />
 )
 
 export const HeroUINativeProvider = ({ children }: WrapperProps) => <>{children}</>

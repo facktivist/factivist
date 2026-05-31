@@ -1,3 +1,18 @@
+# Web E2E gate (Phase 6 wave A; Phase 7 carry-over #5 = browser fan-out).
+#
+# Matrix runs Playwright against chromium, firefox, webkit, plus mobile
+# emulation for Mobile Chrome (Pixel 5) and Mobile Safari (iPhone 13). The
+# `project` flag is forwarded to the test runner via the PROJECT env var,
+# which `apps/web/playwright.config.ts` reads to filter (chromium-only is the
+# S1 default; the matrix overrides it).
+#
+# ## Cache strategy
+#
+# Playwright browsers cached on `~/.cache/ms-playwright`, key pinned to the
+# Playwright version (read from `apps/web/package.json`). This is the
+# Phase 6 prod-validator carry-over #1: pin on the version, not the lockfile,
+# so a Bun lockfile churn doesn't invalidate the (large) browser bundle.
+
 name: web-e2e
 
 on:
@@ -21,12 +36,22 @@ concurrency:
 
 jobs:
   playwright:
-    name: Playwright (Chromium + WebKit + Mobile)
+    name: Playwright (${{ matrix.project }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit]
+        include:
+          - project: 'Mobile Chrome'
+            device: 'Pixel 5'
+          - project: 'Mobile Safari'
+            device: 'iPhone 13'
     env:
       CI: 'true'
       NODE_ENV: test
+      PROJECT: ${{ matrix.project }}
     steps:
       - uses: actions/checkout@v5
 
@@ -34,15 +59,33 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Resolve Playwright version
+        id: pw-version
+        working-directory: apps/web
+        run: |
+          version=$(bun pm ls --all 2>/dev/null | awk -F@ '/playwright@/ {print $NF; exit}')
+          if [ -z "$version" ]; then
+            version=$(node -p "require('./package.json').devDependencies?.['@playwright/test'] || require('./package.json').dependencies?.['@playwright/test'] || 'unknown'" | tr -d '^~')
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Playwright version: ${version}"
 
       - name: Cache Playwright browsers
         id: pw-cache
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
           restore-keys: playwright-${{ runner.os }}-
 
       - name: Install Playwright browsers
@@ -50,23 +93,23 @@ jobs:
         working-directory: apps/web
         run: bunx playwright install --with-deps chromium firefox webkit
 
-      - name: Install Playwright system deps (cache hit path)
+      - name: Install Playwright system deps (cache-hit path)
         if: steps.pw-cache.outputs.cache-hit == 'true'
         working-directory: apps/web
         run: bunx playwright install-deps
 
-      - name: Build web (so dev server is fast on cold start)
+      - name: Build web (cold-start optimisation)
         run: bun run build --filter=@factivist/web
 
-      - name: Run Playwright tests
+      - name: Run Playwright tests (${{ matrix.project }})
         working-directory: apps/web
-        run: bun run test:e2e
+        run: bun run test:e2e -- --project="${PROJECT}"
 
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}
           path: apps/web/playwright-report
           if-no-files-found: ignore
           retention-days: 7

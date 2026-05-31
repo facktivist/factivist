@@ -1,93 +1,168 @@
 ---
-name: "brand-guidelines"
-description: "When the user wants to apply, document, or enforce brand guidelines for any product or company. Also use when the user mentions 'brand guidelines,' 'brand colors,' 'typography,' 'logo usage,' 'brand voice,' 'visual identity,' 'tone of voice,' 'brand standards,' 'style guide,' 'brand consistency,' or 'company design standards.' Covers color systems, typography, logo rules, imagery guidelines, and tone matrix for any brand — including Anthropic's official identity."
-license: MIT
-metadata:
-  version: 1.0.0
-  author: Alireza Rezvani
-  category: marketing
-  updated: 2026-03-06
+name: brand-guidelines
+description: Write copy following Sentry brand guidelines. Use when writing UI text, error messages, empty states, onboarding flows, 404 pages, documentation, marketing copy, or any user-facing content. Covers both Plain Speech (default) and Sentry Voice tones.
 ---
 
 # Brand Guidelines
 
-You are an expert in brand identity and visual design standards. Your goal is to help teams apply brand guidelines consistently across all marketing materials, products, and communications — whether working with an established brand system or building one from scratch.
+Write user-facing copy following Sentry's brand guidelines.
 
-## How to Use This Skill
+## Tone Selection
 
-**Check for product marketing context first:**
-If `.claude/product-marketing-context.md` exists, read it before applying brand standards. Use that context to tailor recommendations to the specific brand.
+Choose the appropriate tone based on context:
 
-When helping users:
-1. Identify whether they need to *apply* existing guidelines or *create* new ones
-2. For Anthropic artifacts, use the Anthropic identity system below
-3. For other brands, use the framework sections to assess and document their system
-4. Always check for consistency before creativity
+| Use Plain Speech | Use Sentry Voice |
+|------------------|------------------|
+| Product UI (buttons, labels, forms) | 404 pages |
+| Documentation | Empty states |
+| Error messages | Onboarding flows |
+| Settings pages | Loading states |
+| Transactional emails | "What's New" announcements |
+| Help text | Marketing copy |
 
----
+**Default to Plain Speech** unless the context specifically calls for personality.
 
-## Anthropic Brand Identity
-→ See references/brand-identity-and-framework.md for details
+## Plain Speech (Default)
 
-## Quick Audit Checklist
+Plain Speech is clear, direct, and functional. Use it for most UI elements.
 
-Use this to rapidly assess brand consistency across any asset:
+### Rules
 
-- [ ] Colors match approved palette (no off-brand variations)
-- [ ] Fonts are correct typeface and weight
-- [ ] Logo has proper clear space and is an approved variation
-- [ ] Body text meets minimum size and contrast requirements
-- [ ] Imagery style matches brand guidelines
-- [ ] Tone matches brand voice attributes
-- [ ] No prohibited uses present (gradients on logo, wrong accent color, etc.)
-- [ ] Co-branding (if any) follows partner logo rules
+1. **Be concise** - Use the fewest words needed
+2. **Be direct** - Tell users what to do, not what they can do
+3. **Use active voice** - "Save your changes" not "Your changes will be saved"
+4. **Avoid jargon** - Use simple words users understand
+5. **Be specific** - "3 errors found" not "Some errors found"
 
----
+### Examples
 
-## Task-Specific Questions
+| Instead of | Write |
+|------------|-------|
+| "Click here to save your changes" | "Save" |
+| "You can filter results by date" | "Filter by date" |
+| "An error has occurred" | "Something went wrong" |
+| "Please enter a valid email address" | "Enter a valid email" |
+| "Are you sure you want to delete?" | "Delete this item?" |
 
-1. Are you applying existing guidelines or creating new ones?
-2. What's the output format? (Digital, print, presentation, social)
-3. Do you have existing brand assets? (Logo files, color codes, fonts)
-4. Is there a brand foundation document? (Mission, values, positioning)
-5. What's the specific inconsistency or gap you're trying to fix?
+## Sentry Voice
 
----
+Sentry Voice adds personality in appropriate moments. It's empathetic, self-aware, and occasionally snarky.
 
-## Proactive Triggers
+### Principles
 
-Proactively apply brand guidelines when:
+1. **Empathetic snark** - Direct frustration at the situation, never the user
+2. **Self-aware** - Acknowledge the absurdity of software
+3. **Fun but functional** - Personality should enhance, not obscure meaning
+4. **Earned moments** - Only use when users have time to appreciate it
 
-1. **Any visual asset requested** — Before creating any poster, slide, email, or social graphic, check if brand guidelines exist; if not, offer to establish a minimal system first.
-2. **Copy review touches tone** — When reviewing copy, cross-check against voice attributes and tone matrix, not just grammar.
-3. **New channel launch** — When a new marketing channel (TikTok, newsletter, podcast) is being set up, offer to apply the brand guidelines to that channel's specific format requirements.
-4. **Design feedback session** — When a user shares a design for feedback, run through the quick audit checklist before giving subjective opinions.
-5. **Partner or co-branded material** — Any co-branding situation should immediately trigger a review of logo clear space, sizing ratios, and color dominance rules.
+### Examples
 
----
+**404 Pages:**
+> "This page doesn't exist. Maybe it never did. Maybe it was a dream. Either way, let's get you back on track."
 
-## Output Artifacts
+**Empty States:**
+> "No errors yet. Enjoy this moment of peace while it lasts."
 
-| Artifact | Format | Description |
-|----------|--------|-------------|
-| Brand Audit Report | Markdown doc | Asset-by-asset compliance check against all brand dimensions |
-| Color System Reference | Table | Full palette with hex, RGB, CMYK, Pantone, and usage rules |
-| Tone Matrix | Table | Voice attributes × context combinations with example phrases |
-| Typography Scale | Table | All type roles with font, size, weight, and line-height specifications |
-| Brand Guidelines Mini-Doc | Markdown doc | Condensed brand guide covering all 7 dimensions, ready to share with contractors |
+**Onboarding:**
+> "Let's get your first error. Don't worry, it's not as scary as it sounds."
 
----
+**Loading States:**
+> "Crunching the numbers..."
+> "Fetching your data..."
 
-## Communication
+### When NOT to Use Sentry Voice
 
-Brand consistency is not a design preference — it's a trust signal. Every deviation from guidelines erodes recognition. When auditing or creating brand materials, be specific: name the exact color code, font weight, and pixel measurement rather than giving subjective feedback. Reference `marketing-context` to ensure brand voice recommendations align with the ICP and product positioning. Quality bar: brand outputs should be specific enough that a contractor who has never worked with the brand could produce on-brand work from the artifact alone.
+- Error messages (users are frustrated)
+- Settings pages (users are focused)
+- Documentation (users need information)
+- Billing/payment flows (users need trust)
 
----
+## General Rules
 
-## Related Skills
+### Spelling and Grammar
 
-- **marketing-context** — USE as the brand foundation layer; brand voice and visual decisions must align with ICP, positioning, and messaging; always load first.
-- **copywriting** — USE when brand voice guidelines need to be applied to specific page or campaign copy; NOT as a substitute for defining voice attributes.
-- **content-humanizer** — USE when existing content needs to be rewritten to match brand tone without losing information; NOT for structural content work.
-- **social-content** — USE when applying brand guidelines to social-specific formats and platform constraints; NOT for cross-channel brand system design.
-- **canvas-design** — USE when brand guidelines need to be applied to visual design artifacts (posters, PDFs, graphics); NOT for copy-only brand work.
+- Use **American English** spelling (color, not colour)
+- Use **Title Case** for headings and page titles
+- Use **Sentence case** for body text, buttons, and labels
+
+### Punctuation
+
+- **No exclamation marks** in UI text (exception: celebratory moments)
+- **No periods** in short UI labels or button text
+- **Use periods** in complete sentences and help text
+- **No ALL CAPS** except for acronyms (API, SDK, URL)
+
+### Word Choices
+
+| Avoid | Prefer |
+|-------|--------|
+| Please | (omit) |
+| Sorry | (be specific about the problem) |
+| Error occurred | Something went wrong |
+| Invalid | (explain what's wrong) |
+| Success! | (describe what happened) |
+| Oops | (be specific) |
+
+## Dash Usage
+
+| Type | Use | Example |
+|------|-----|---------|
+| Hyphen (-) | Compound words, ranges | "real-time", "1-10" |
+| En-dash (--) | Ranges, relationships | "2023--2024", "parent--child" |
+| Em-dash (---) | Interruption, emphasis | "Errors---even small ones---matter" |
+
+In most UI contexts, use hyphens. Reserve en-dashes for date ranges and em-dashes for longer prose.
+
+## UI Element Guidelines
+
+### Buttons
+
+- Use action verbs: "Save", "Delete", "Create"
+- Be specific: "Create Project" not just "Create"
+- Max 2-3 words when possible
+- No periods or exclamation marks
+
+### Error Messages
+
+1. Say what happened
+2. Say why (if helpful)
+3. Say what to do next
+
+**Good:** "Could not save changes. Check your connection and try again."
+**Bad:** "Error: Save failed."
+
+### Empty States
+
+1. Explain what would normally be here
+2. Provide a clear action to populate the state
+3. Sentry Voice is appropriate here
+
+**Good:** "No projects yet. Create your first project to start tracking errors."
+
+### Confirmation Dialogs
+
+- Make the action clear in the title
+- Explain consequences if destructive
+- Use specific button labels ("Delete Project", not "OK")
+
+### Tooltips and Help Text
+
+- Keep under 2 sentences
+- Explain the "why", not just the "what"
+- Link to docs for complex topics
+
+## Anti-Patterns
+
+Avoid these common mistakes:
+
+- **Robot speak:** "Item has been successfully deleted" -> "Deleted"
+- **Passive voice:** "Changes were saved" -> "Changes saved"
+- **Unnecessary words:** "In order to" -> "To"
+- **Hedging:** "This might cause..." -> "This will cause..."
+- **Double negatives:** "Not unlike..." -> "Similar to..."
+- **Marketing speak in UI:** "Supercharge your workflow" -> "Speed up your workflow"
+
+## References
+
+- [Sentry Voice Guidelines](https://develop.sentry.dev/frontend/sentry-voice/)
+- [Sentry Frontend Handbook](https://develop.sentry.dev/frontend/)

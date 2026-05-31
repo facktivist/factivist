@@ -1,0 +1,209 @@
+# Phase 9 — User Testing & Production-Side Validation
+
+**Status:** PLANNED. Triggers after Phase 8 (Infrastructure Cost & Deployment) lands and the user has had a chance to exercise the full S1 surface end-to-end.
+
+**Why this phase exists:** Phase 5 (Development) deliberately deferred four items that depend on **external upstream** (Polygon mainnet), **ops infrastructure** (Cloudflare KV / Upstash), or **legal counsel** (DPDP §8(7) review). They are tracked here so Phase 6 (Testing) and Phase 7 (CI/CD) can ship without waiting on them.
+
+---
+
+## 1. On-chain `verifyAndRecord` via CitizenVerifier contract
+
+**Origin:** Phase 5 wave-1 reviewer Open Item; tracked in [[s1-phase-5-done]] and [[s1-zkp-findings]] OQ-1.
+
+**What ships in S1 today:** Postgres unique nullifier index in `packages/db/src/schema/citizens.ts` is the authoritative replay check. `POST /identity/verify` runs `verifyProofOnDevice` server-side (re-verification) and writes the nullifier to Postgres. Replay → `409 NULLIFIER_REPLAY`.
+
+**What Phase 9 does:**
+- Watch `https://github.com/anoncitizen/contracts` for the canonical `CitizenVerifier.sol` deployment on Polygon Amoy (testnet) and then mainnet.
+- Once deployed, wire `apps/api/src/lib/citizen-verifier.ts` (new) to call `verifyAndRecord(proof, publicSignals)` via `viem`. The contract's on-chain `nullifierUsed[]` becomes the source of truth for replay; Postgres becomes a cache.
+- Gas budget per [[s2-polygon-gas]] post-Chicago: ~487k gas / $0.0144 per verify.
+- Hardhat contract glue per `s1-action-plan.md` Phase 6 §6.4 (`packages/contracts/test/CitizenVerifier.t.ts`) is also part of this phase.
+
+**Blocked on:** AnonCitizen project shipping `CitizenVerifier.sol` to Amoy at minimum. As of 2026-05-24 no upstream deployment exists.
+
+**Owner:** **maintainer (user)** executes the Amoy + Polygon PoS mainnet deployment from the 3/5 Safe set up in §6 once the AnonCitizen upstream lands. Code wiring (`apps/api/src/lib/citizen-verifier.ts` + viem calls) is shippable by Claude in a follow-up commit triggered by the user posting the deployed contract address. The maintainer is also responsible for paying the deploy gas (~$60 one-shot at standard congestion) and seeding the multisig with `verifyAndRecord`-callable signers.
+
+---
+
+## 2. Upstash Redis rate limiter for `/identity/prove`
+
+**Origin:** Phase 5 wave-2C handoff; the in-memory token bucket on the prove route is single-instance only.
+
+**Status:** CODE COMPLETE 2026-05-26. Activation gated on user-side Upstash provisioning.
+
+**Decision (2026-05-26):** Upstash Redis chosen over Cloudflare KV. The API targets Fly.io (Bun-on-VPS) per [[s1-phase-8-done]] §5.3, not Cloudflare Workers, so Upstash's **strict-consistency** Redis (atomic `INCR` + `EXPIRE` via Lua, ~5–15 ms from Mumbai region) is a cleaner fit than KV's eventual consistency. Free tier (10k commands / day) covers the S1 1k-MAU pilot with substantial headroom.
+
+**What ships today (in code):**
+
+| File | Role |
+|------|------|
+| `apps/api/src/lib/rate-limiter.ts` | `RateLimiter` interface + `createInMemoryRateLimiter` (S1 single-instance default) |
+| `apps/api/src/lib/upstash-rate-limiter.ts` | `createUpstashRedisRateLimiter` wrapping `@upstash/ratelimit` sliding-window + `selectProveRateLimiter` factory that picks backend based on env |
+| `apps/api/src/routes/identity.ts` | Calls `selectProveRateLimiter()` at module load — no route change needed when env flips |
+
+**Selection:** at module load, the API reads `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`. Both present → Upstash backend. Either absent → in-memory fallback (dev / staging / single-instance prod).
+
+**What the user must do to activate (≤ 30 min, $0/mo):**
+
+1. Sign up at https://upstash.com → create a Redis database in **Mumbai (ap-south-1)** region. Free tier is sufficient.
+2. Copy the database's `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` from the Upstash dashboard.
+3. Set both as Fly.io secrets:
+   ```bash
+   flyctl secrets set \
+     UPSTASH_REDIS_REST_URL=https://...upstash.io \
+     UPSTASH_REDIS_REST_TOKEN=AY...== \
+     -a factivist-api-prod
+   ```
+4. Re-deploy the API (or wait for next deploy). On boot, the API auto-switches to the Upstash backend; no code change required.
+
+**Verifying the switch worked:** hit `/identity/prove` 11 times within 60 s from the same IP — the 11th must return `429 RATE_LIMITED`. Across two Fly instances, the limit should still cap at 10 (not 20 = 10 × pods), confirming the cross-pod Redis backing is live.
+
+**Cost line impact:** $0/mo at S1 scale (free tier covers 10k commands / day vs. expected ~144 commands / day at 1k MAU / 10 req cap). If MAU grows past ~50k, Upstash's "Pay-as-you-go" tier kicks in at ~$0.20 per 100k commands — still under $5/mo at 500k MAU. Recurring monthly stays inside the §8.8 ≤ $115 Amber ceiling.
+
+**Rollback:** unset both env vars + redeploy → in-memory limiter resumes (single-instance correctness only; multi-instance gets the limiter race back). The code path is identical.
+
+**Owner:** maintainer for Upstash account + Fly secrets.
+
+---
+
+## 3. Legal DPDP §8(7) review on `audit_log.rationale` retention
+
+**Origin:** Phase 5 wave-1 mod-auditor; the `audit_log` table currently retains all rows (including grievance complainant contact details in `rationale`) for 180 days under ADR-0015 (CERT-In intermediary log retention). The question is whether 180 days is compliant with India's Digital Personal Data Protection Act 2023 + DPDP Rules 2025 for the **complainant PII** specifically.
+
+**What the law says:**
+
+| Source | Requirement |
+|---|---|
+| **DPDP Act 2023 §8(7)** | Data Fiduciary MUST erase personal data once the **purpose is no longer served** — whether by consent withdrawal, purpose fulfilment, or non-engagement past the retention period ([Cyril Amarchand Mangaldas FAQs, 2025](https://www.cyrilshroff.com/wp-content/uploads/2025/12/FAQs-DPDPA.pdf)) |
+| **DPDP Rules 2025 Rule 8(3)** | General **1-year minimum** log retention for personal data + processing logs (even post account deletion) ([Seclore DPDP Rules 2025 Guide](https://www.seclore.com/fundamentals/dpdp-rules-2025-compliance-guide/)) |
+| **DPDP Rules 2025 Third Schedule** | Sector-specific: 3 years for e-commerce/gaming/social-media platforms with 2 crore (20M) MAU — **NOT applicable to S1** (<5M MAU per [[s1-it-act-posture]]) |
+| **DPDP Rules 2025 grievance redressal** | Grievance must be addressed within **90 days** of receipt |
+| **CERT-In intermediary rule (existing)** | 180 days for India logs ([[s1-it-act-posture]]) |
+
+**The conflict for Factivist:**
+- **General audit_log** retention should be **≥1 year** per DPDP Rules 2025 Rule 8(3) — our current 180 days is **UNDER the floor**. ADR-0015 needs to be raised to 365 days (or whichever is stricter between DPDP and CERT-In).
+- **Complainant PII** (name, email) in `audit_log.rationale` is collected for the purpose of "issuing a grievance acknowledgement to the complainant" per ADR-0014. Once the grievance is resolved + the acknowledgement is sent, §8(7) triggers — erasure should happen shortly after, NOT held for 1 year alongside the general audit telemetry.
+
+**What Phase 9 does:**
+
+1. **Confirm with legal counsel** the joint reading of DPDP §8(7) + Rule 8(3) + CERT-In 180-day for a non-SSMI intermediary (Factivist S1 is "intermediary + SMI but NOT SSMI" per [[s1-it-act-posture]]).
+2. **Schema split** — pull grievance contact PII out of `audit_log.rationale` into a new `grievance_contacts` table:
+   ```sql
+   CREATE TABLE grievance_contacts (
+     grievance_id TEXT PRIMARY KEY REFERENCES moderation_queue(id),
+     complainant_name TEXT,
+     complainant_email TEXT,
+     created_at TIMESTAMPTZ DEFAULT now(),
+     resolved_at TIMESTAMPTZ,
+     erase_after TIMESTAMPTZ GENERATED ALWAYS AS (resolved_at + INTERVAL '30 days') STORED
+   );
+   ```
+3. **Replace `audit_log.rationale`** for grievance-related rows with `sha256(complainant_email)` (so the audit row remains the immutable record-of-action but carries no recoverable PII).
+4. **Add a second sweep cron** (`scripts/grievance-contacts-sweep.ts`) that deletes `grievance_contacts` rows past `erase_after`. Runs daily alongside the existing audit_log sweep.
+5. **Raise general `audit_log` retention** in `packages/db/src/schema/audit_log.ts` from 180 → 365 days (or 540 if CERT-In + DPDP combine via "stricter wins"). Document in an ADR amendment.
+6. **Update [[s1-cost-drift]]** — the additional table is sub-MB scale and doesn't move the cost line.
+
+**Blocked on:** Legal counsel confirmation of the joint reading. Counsel should also confirm:
+- Whether DPDP "personal data" includes IP addresses in audit_log (it likely does — `actor` for citizen events would need re-examination, though for S1 we don't log citizen-side actions to audit_log).
+- Whether the 1-year minimum is interpretable as a maximum-too (i.e., MUST keep 1 year, CAN keep longer up to purpose) or a floor only.
+- Whether CERT-In 180-day applies to the SAME data set as the audit_log OR is satisfied by separate request/response logs.
+
+**Owner:** general counsel / DPO retained by Factivist.
+
+**Cited sources:**
+- [DPDPA 2023 — Section 8 (Data Fiduciary Obligations)](https://www.dpdpa.com/dpdpa2023/chapter-2/section8.html)
+- [DPDP Rules 2025 — Rule 8 (Retention)](https://www.dpdpa.com/dpdparules/rule8.html)
+- [DPDP Act 2023 retention & erasure guide (Pricoris)](https://pricoris.com/blog/dpdp-retention-erasure-guide/)
+- [Cyril Amarchand Mangaldas FAQs (Dec 2025)](https://www.cyrilshroff.com/wp-content/uploads/2025/12/FAQs-DPDPA.pdf)
+- [Seclore DPDP Rules 2025 Compliance Guide](https://www.seclore.com/fundamentals/dpdp-rules-2025-compliance-guide/)
+- [EY: Transforming data privacy — DPDP Act 2023 + DPDP Rules 2025](https://www.ey.com/en_in/insights/cybersecurity/transforming-data-privacy-digital-personal-data-protection-rules-2025)
+- [DPDP Rules 2025 official notification (PIB, Nov 2025)](https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/nov/doc20251117695301.pdf)
+
+---
+
+## 4. (Not deferred — `rapidsnark binary + zkey local`)
+
+This was previously item #1 in the wave-1/2 deferred list. Per user direction 2026-05-24, the **local setup contract** ships in this same cleanup commit: `apps/api/zkp-artifacts/README.md` + `.gitignore` entry + env-var-driven backend loader (`loadRapidsnarkBackendFromEnv` in `apps/api/src/lib/zkp-prover.ts`) + `createRapidsnarkBackend` shell-out wrapper. Production binary distribution (Docker layer / S3 init container / Lambda layer) is still Phase 8 (Infrastructure & Deployment).
+
+---
+
+## 5. Production deployment provisioning (absorbed from Phase 8 user-ops)
+
+**Origin:** Phase 8 closed 2026-05-25 with 4/4 exit-gate items in PENDING-OPS state by design — every account / domain / secret / multisig / audit is an action only the user can take. Captured here so Phase 9 ownership is unambiguous.
+
+**What ships:** see [[s1-phase-8-done]] for the full code surface. SDK wiring (`@sentry/nextjs`, `@sentry/node`, `@sentry/react-native`) is done in code with `process.env.SENTRY_DSN` no-op guards — once DSNs land in the vaults the SDKs activate automatically. No further code change required for Sentry; only configuration.
+
+**User-side actions (ordered):**
+
+| # | Action | Time | $/mo or $-one-shot |
+|---|--------|------|--------------------|
+| 5.1 | GitHub repo secrets — 13 total per `docs/operations/deploy-runbook.md`; `production` env with 1 required reviewer | 30 + 2 min | $0 |
+| 5.2 | Vercel Pro project linked to `apps/web` + Preview Branch Protection ON | 20 min | $20/mo |
+| 5.3 | Fly.io account + 2 apps (`factivist-api-staging`, `factivist-api-prod`); import secrets manifest | 30 min | $10/mo |
+| 5.4 | Supabase Pro (staging + prod) + **custom domain** `api.factivist.example` per ADR-009 (India ISP mitigation — required, not optional) | 60 min | $25/mo |
+| 5.5 | Cloudflare account + DNS for 3 domains (`.org` / `.io` / `.is`) + proxy ON + API token in `~/.factivist/cf-token` (`Zone.DNS:Edit` scope only) | 45 min | $0/mo + ~$80/yr domains |
+| 5.6 | EAS account + projects; paste Apple Team ID, ASC App ID, Service Account JSON into `apps/mobile/eas.json` + EAS secrets | 30 min | $19/mo + $99/yr Apple + $25 one-shot Google |
+| 5.7 | Sentry org + 3 projects (web / api / mobile); set `SENTRY_DSN` in Vercel + Fly secrets, `EXPO_PUBLIC_SENTRY_DSN` in EAS secrets | 20 min | $0 (free tier) |
+| 5.8 | Cloudflare Workers deploy of uptime cron: `cd apps/api && bunx wrangler deploy` after `UPTIME_WEBHOOK_URL` secret set | 15 min | $0 (free tier) |
+| 5.9 | Apply migration `0004_enable_rls.sql` via `db-migrate.yml` → `production` env → type `YES MIGRATE` | 5 min | $0 |
+
+**Recurring monthly:** ~$74 fixed + $18.76 Polygon (standard) ≈ **$113/mo** (matches `cost-scenarios.md` S1 baseline + the §8.8 amended ≤$115 Amber ceiling).
+
+**New env vars** to add to the appropriate vault (never the repo):
+
+| Var | Where | Purpose |
+|-----|-------|---------|
+| `SENTRY_DSN` | Vercel + Fly secrets | server + browser error tracker (init is a no-op when unset) |
+| `EXPO_PUBLIC_SENTRY_DSN` | EAS secrets | mobile error tracker (init is a no-op when unset) |
+| `UPTIME_WEBHOOK_URL` | Cloudflare wrangler secret | downtime alert webhook |
+| `UPTIME_WEBHOOK_SECRET` | Cloudflare wrangler secret | optional shared secret |
+| `FLY_ORG`, `CF_ZONE_ID`, `CF_API_TOKEN` | Maintainer's shell + `~/.factivist/cf-token` | DR drill + DDoS runbook automation |
+| `MAINTENANCE_MODE` | Fly secret (temporary, set-only-during-incident) | DDoS mitigation kill-switch |
+
+**Owner:** maintainer (single-maintainer S1 baseline).
+
+---
+
+## 6. Polygon multisig + CitizenVerifier integration audit
+
+**Origin:** Phase 8 §8.6 deployment checklist + §8.8 exit gate.
+
+**Why deferred:** Multisig setup is wallet/key ceremony only the maintainer can do; audit engagement is a commercial action with $3,000–$10,000 in spend.
+
+**Actions:**
+
+1. Spin up a **3/5 Safe** on Polygon PoS, fund it for deployment + 6 months of gas (~$60 one-shot + recurring $113/mo budget covers gas line).
+2. Engage `CitizenVerifier.sol` integration auditor (Code4rena Solo / Cantina / boutique). 30 min outreach + 1–2 week audit window.
+3. Audit report must show **no high or critical findings open** before the first prod release tag is cut (§8.8 exit gate).
+
+**Blocked on:** Section 1 above (upstream AnonCitizen `CitizenVerifier.sol` deployment) — multisig + audit only make sense once there's a contract to govern.
+
+**Owner:** maintainer + retained Solidity reviewer.
+
+---
+
+## 7. First disaster recovery drill + two-month cost reconciliation
+
+**Origin:** Phase 8 §8.8 exit-gate items 3 & 4.
+
+**Drill:** Execute end-to-end per `docs/operations/dr-drill-s1.md`: nuke Fly app → recreate from secrets manifest → fresh tag deploy → optional Supabase PITR → verify health. Budget ≤ 30 min. Append a results row (start ts, end ts, duration, anomalies, sign-off) to the Drill log section.
+
+**Reconciliation:** After two complete billing cycles post-launch, sum invoices from Stripe (Vercel/EAS) + Fly.io + Supabase + Polygon RPC for **2026-06** and **2026-07**. Confirm monthly total ≤ **$115** Amber ceiling. Append a row to `docs/data-points/s1-cost-reconciliation-phase-8.md` §7. If breached, file a `risk:budget` issue per `reference_s1_cost_drift`.
+
+**Time:** Drill ≤30 min; reconciliation 30 min × 2.
+
+**Owner:** maintainer.
+
+---
+
+## Exit criteria for Phase 9
+
+- [ ] On-chain `verifyAndRecord` integration shipped + Hardhat contract tests passing against Polygon Amoy
+- [ ] Upstash Redis (Mumbai) provisioned + `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` set on Fly.io; cross-pod rate-limit verified live
+- [ ] Legal counsel sign-off on the new `grievance_contacts` table + revised retention (1 year general / 30 days post-resolve grievance PII)
+- [ ] Migration applied + production data verified
+- [ ] [[s1-cost-drift]] reconciled with any new SaaS spend (Upstash if chosen)
+- [ ] All 9 user-ops actions in §5 complete; production stack live behind primary + 2 backup domains
+- [ ] Polygon 3/5 Safe deployed; `CitizenVerifier.sol` integration audit returns **no high or critical findings**
+- [ ] First DR drill executed in <30 min; Drill log row signed off
+- [ ] Two consecutive months of cost reconciliation at ≤ $115 (Amber ceiling)
+- [ ] User runs full end-to-end exercise of the S1 surface (web + iOS + Android) without regressions

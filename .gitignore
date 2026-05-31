@@ -36,3 +36,35 @@ ruvector.db
 
 # TypeScript build cache
 *.tsbuildinfo
+
+# Civic reference datasets — stored in Supabase Storage, seeded via Drizzle migration.
+# Never commit (5–50 MB each). See docs/data-points/README.md.
+docs/data-points/*.topo.json
+docs/data-points/*.geojson
+docs/data-points/*.csv
+docs/data-points/*.tsv
+docs/data-points/*.parquet
+
+# Local ZKP prover artifacts — rapidsnark binary + AnonCitizen zkey live here.
+# Operators install them per apps/api/zkp-artifacts/README.md. Never commit.
+apps/api/zkp-artifacts/*
+!apps/api/zkp-artifacts/README.md
+!apps/api/zkp-artifacts/.gitkeep
+
+# direnv: per-repo GH_TOKEN export so gh CLI uses `facktivist` here without
+# changing the user's global default account. See CLAUDE.md "GitHub Identity".
+.envrc
+.direnv/
+docs/designs
+
+# Codex local configuration
+.codex/
+
+# Claude Flow runtime data
+.claude-flow/data/
+.claude-flow/logs/
+
+# Environment variables
+.env
+.env.local
+.env.*.local

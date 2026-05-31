@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<title>brand-logo.html</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="_preview.css">
+<style>
+  .fv-logo-mark {
+    position: relative; width: 44px; height: 44px; border-radius: 10px;
+    background: var(--color-brand-500); overflow: hidden;
+  }
+  .fv-logo-mark .f {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-sans);
+    font-weight: 900; font-style: italic;
+    font-size: 34px; line-height: 1;
+    color: #fff; letter-spacing: -0.04em;
+    transform: translateY(-1px) translateX(-2px);
+    user-select: none;
+  }
+  .fv-logo-mark .dot {
+    position: absolute; right: 6px; bottom: 6px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #fff;
+  }
+  .fv-logo-mark.lg { width: 64px; height: 64px; border-radius: 14px; }
+  .fv-logo-mark.lg .f  { font-size: 52px; }
+  .fv-logo-mark.lg .dot{ right: 9px; bottom: 9px; width: 9px; height: 9px; }
+  .fv-logo-mark.mono { background: var(--color-foreground); }
+  .fv-logo-mark.mono .f, .fv-logo-mark.mono .dot { color: var(--color-background); background: var(--color-background); }
+  .fv-logo-mark.mono .f { color: var(--color-background); }
+  .fv-wordmark {
+    font-family: var(--font-sans); font-weight: 700; font-size: 22px;
+    letter-spacing: -0.025em; color: var(--color-foreground);
+  }
+  .fv-lockup { display: flex; align-items: center; gap: 12px; }
+</style>
+</head>
+<body>
+<div class="fv-card">
+  <div class="fv-eyebrow">Wordmark · light + dark · mono</div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+    <div data-theme="light" style="background:var(--color-background); border:1px solid var(--color-border); border-radius:var(--radius-2xl); padding:28px;">
+      <div class="fv-lockup">
+        <div class="fv-logo-mark lg">
+          <span class="f">F</span><span class="dot"></span>
+        </div>
+        <div class="fv-wordmark" style="font-size:32px;">factivist</div>
+      </div>
+    </div>
+    <div data-theme="dark" style="background:var(--color-background); border:1px solid var(--color-border); border-radius:var(--radius-2xl); padding:28px;">
+      <div class="fv-lockup">
+        <div class="fv-logo-mark lg">
+          <span class="f">F</span><span class="dot"></span>
+        </div>
+        <div class="fv-wordmark" style="font-size:32px;">factivist</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:18px; align-items:center; margin-top:4px;">
+    <div class="fv-lockup">
+      <div class="fv-logo-mark mono"><span class="f" style="color:var(--color-background)">F</span><span class="dot" style="background:var(--color-background)"></span></div>
+      <div class="fv-wordmark">factivist</div>
+    </div>
+    <div class="fv-lockup">
+      <div class="fv-logo-mark"><span class="f">F</span><span class="dot"></span></div>
+      <div class="fv-wordmark">factivist</div>
+    </div>
+    <div class="fv-logo-mark"><span class="f">F</span><span class="dot"></span></div>
+  </div>
+
+  <div style="font-size:11px; color:var(--color-muted-foreground); line-height:1.55; margin-top:4px;">
+    Bold italic <strong>F</strong> in Inter Black 900 + a white "period stamp" baked into the mark. Reads as a zine stamp — civic, sharp, with momentum. Mark works solo (favicon, app icon); wordmark drops the dot — punctuation lives on the mark, not in the text. <strong>Placeholder</strong> — replace if the brand commissions a custom mark.
+  </div>
+</div>
+</body>
+</html>

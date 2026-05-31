@@ -9,7 +9,7 @@
     "data_volume_gb": 50,
     "dependencies": [
       "payment_service",
-      "order_service", 
+      "order_service",
       "notification_service",
       "analytics_service",
       "mobile_app_v1",
@@ -17,10 +17,7 @@
       "web_frontend",
       "admin_dashboard"
     ],
-    "compliance_requirements": [
-      "PCI_DSS",
-      "GDPR"
-    ],
+    "compliance_requirements": ["PCI_DSS", "GDPR"],
     "special_requirements": [
       "api_backward_compatibility",
       "session_continuity",
@@ -60,7 +57,7 @@
         "PUT /api/v2/users/{id}",
         "DELETE /api/v2/users/{id}",
         "GET /api/v2/users/{id}/profile",
-        "PUT /api/v2/users/{id}/profile", 
+        "PUT /api/v2/users/{id}/profile",
         "POST /api/v2/users/{id}/verify-email",
         "POST /api/v2/users/{id}/verify-phone",
         "POST /api/v2/auth/login",
@@ -118,10 +115,10 @@
       "description": "Route user service requests to new implementation",
       "initial_percentage": 5,
       "rollout_schedule": [
-        {"percentage": 5, "duration_hours": 24},
-        {"percentage": 25, "duration_hours": 24},
-        {"percentage": 50, "duration_hours": 24},
-        {"percentage": 100, "duration_hours": 0}
+        { "percentage": 5, "duration_hours": 24 },
+        { "percentage": 25, "duration_hours": 24 },
+        { "percentage": 50, "duration_hours": 24 },
+        { "percentage": 100, "duration_hours": 0 }
       ]
     },
     {
@@ -129,16 +126,16 @@
       "description": "Enable new authentication endpoints",
       "initial_percentage": 0,
       "rollout_schedule": [
-        {"percentage": 10, "duration_hours": 12},
-        {"percentage": 50, "duration_hours": 12},
-        {"percentage": 100, "duration_hours": 0}
+        { "percentage": 10, "duration_hours": 12 },
+        { "percentage": 50, "duration_hours": 12 },
+        { "percentage": 100, "duration_hours": 0 }
       ]
     }
   ],
   "monitoring": {
     "critical_metrics": [
       "request_rate",
-      "error_rate", 
+      "error_rate",
       "response_time_p95",
       "response_time_p99",
       "cpu_utilization",
@@ -148,14 +145,14 @@
     "alert_thresholds": {
       "error_rate": 0.05,
       "response_time_p95": 250,
-      "cpu_utilization": 0.80,
+      "cpu_utilization": 0.8,
       "memory_utilization": 0.85
     }
   },
   "rollback_triggers": [
     {
       "metric": "error_rate",
-      "threshold": 0.10,
+      "threshold": 0.1,
       "duration_minutes": 5,
       "action": "automatic_rollback"
     },

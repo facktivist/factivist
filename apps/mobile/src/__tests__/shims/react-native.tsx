@@ -63,6 +63,17 @@ export const Pressable = ({ children, ...props }: RNCommonProps) => (
 
 export const TouchableOpacity = Pressable
 
+export const Image = ({
+  source,
+  ...props
+}: RNCommonProps & { source?: { uri?: string } | number }) => (
+  <img
+    alt=""
+    src={typeof source === 'object' && source !== null && 'uri' in source ? source.uri : undefined}
+    {...splitRn(props)}
+  />
+)
+
 export const Appearance = {
   getColorScheme: (): 'light' | 'dark' | null => 'light',
   addChangeListener: () => ({ remove: () => {} }),
@@ -86,6 +97,7 @@ export default {
   ScrollView,
   Pressable,
   TouchableOpacity,
+  Image,
   Appearance,
   Platform,
   StyleSheet,

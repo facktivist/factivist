@@ -19,7 +19,7 @@
 | Concern | Tool | Notes |
 |---------|------|-------|
 | Planning, backlog, sprint board | **GitHub Projects** (v2) | Single source of truth for epics → stories → tasks; no Linear / Jira / Trello. Backlog from Phase 1 lives here. |
-| Research notes & briefs | **GitHub Wiki** (on this repo) | All research deliverables (anon-aadhaar, constituency dataset, IT Act posture, Polygon gas, etc.) are wiki pages, not `docs/research/*.md`. |
+| Research notes & briefs | **GitHub Wiki** (on this repo) | All research deliverables (anoncitizen, constituency dataset, IT Act posture, Polygon gas, etc.) are wiki pages, not `docs/research/*.md`. |
 | Design (flows, IA, hi-fi screens) | **Claude Design** | Replaces Figma for S1. Exports live in the repo under `design/`; Claude Design URLs linked from GitHub Projects cards. |
 | Deployment + CI/CD | **GitHub Actions** | Every workflow under `.github/workflows/`. No CircleCI, no Travis, no Buildkite. Staging + production deploys are tag- and approval-gated Actions runs. |
 
@@ -74,7 +74,7 @@ backlog the swarm can execute against.
 | Role | Agent type | Name | Responsibility |
 |------|-----------|------|----------------|
 | Lead | `planner` | `planner` | Decompose S1 into epics → stories → tasks |
-| Research — Identity | `researcher` | `zkp-researcher` | anon-aadhaar circuits, nullifier semantics, Polygon ZKP gas |
+| Research — Identity | `researcher` | `zkp-researcher` | anoncitizen circuits, nullifier semantics, Polygon ZKP gas |
 | Research — Civic data | `researcher` | `civic-researcher` | Constituency dataset (ECI delimitation), 36 category taxonomy, PIN-to-constituency mapping |
 | Research — Legal | `researcher` | `legal-researcher` | IT Act 2000 intermediary safe-harbour, IT Rules 2021 obligations for hosting outside India |
 | Specification | `specification` | `spec-writer` | Convert findings into testable acceptance criteria |
@@ -105,7 +105,7 @@ in this Project — there is **no** `s1-backlog.csv` file.
 **Research lives in the GitHub Wiki** on this repo. Required pages:
 
 1. `S1-PRD` — single-page PRD per the 8 S1 features.
-2. `Research-Aadhaar-ZKP` — anon-aadhaar integration brief (nullifier formula,
+2. `Research-Anoncitizen-ZKP` — anoncitizen integration brief (nullifier formula,
    on-chain verify gas, mobile feasibility).
 3. `Research-Constituency-Dataset` — chosen source, licence, refresh strategy,
    schema.
@@ -190,7 +190,7 @@ that S2's automated moderation has a calibrated baseline.
 
 ### 3.1 The 9 S1 surfaces
 
-1. Onboarding + Aadhaar ZKP verification (web + mobile)
+1. Onboarding + anoncitizen ZKP verification (web + mobile)
 2. Complaint composer (text + 1–3 photos + category + constituency)
 3. Complaint detail (read, comment, flag)
 4. Browse / filter by state → district → constituency
@@ -230,7 +230,7 @@ that S2's automated moderation has a calibrated baseline.
 - `packages/ui/theme` tokens locked (oklch primitives + semantic), generated
   from the Claude Design token sheet.
 - HeroUI compound-component map: `Complaint.Composer`, `Complaint.Card`,
-  `Filter.ConstituencyTree`, `Onboarding.AadhaarStep` etc.
+  `Filter.ConstituencyTree`, `Onboarding.VerifyStep` etc.
 - a11y baseline report (axe-core), zero **serious** or **critical** violations.
 
 ### 3.5 Exit gate
@@ -278,14 +278,14 @@ Development can run in parallel without integration friction.
 |-----|----------|
 | ADR-001 | Drizzle as the **only** DB access path. No raw SQL. No Prisma. |
 | ADR-002 | Zod schemas live in `packages/shared`, validate **both** client and server. |
-| ADR-003 | `CitizenVerifier.sol` is the **only** smart contract in S1. Forked from anon-aadhaar reference, audited as integration glue. |
+| ADR-003 | `CitizenVerifier.sol` is the **only** smart contract in S1. Forked from anoncitizen reference, audited as integration glue. |
 | ADR-004 | Supabase Storage for photos. No IPFS until S2. EXIF stripping is mandatory **server-side**. |
 | ADR-005 | Postgres full-text search via `tsvector` + GIN index. No Meilisearch until S3. |
 | ADR-006 | Manual moderation queue is a Postgres table, not Redis/Bull. No queue infra in S1. |
 | ADR-007 | Constituency hierarchy is a **closed reference dataset** loaded via Drizzle migration seed. |
 | ADR-008 | Mobile = single Expo + Expo Router codebase; Android + iOS share 100% of business logic. |
 | ADR-009 | All API endpoints behind Supabase custom domain (India ISP mitigation). |
-| ADR-010 | Citizen anonymity floor: never write Aadhaar, name, address, photo of citizen to **any** store. Nullifier only. |
+| ADR-010 | Citizen anonymity floor: never write national-ID, name, address, photo of citizen to **any** store. Nullifier only. |
 
 ### 4.4 Bounded contexts (S1)
 
@@ -342,7 +342,7 @@ sequential SendMessage chain.
 ```javascript
 // All in ONE message
 Agent({ name: "id-researcher", subagent_type: "researcher",
-        prompt: "anon-aadhaar wiring on Polygon PoS. SendMessage to 'id-architect'.",
+        prompt: "anoncitizen wiring on Polygon PoS. SendMessage to 'id-architect'.",
         run_in_background: true })
 Agent({ name: "id-architect", subagent_type: "system-architect",
         prompt: "Wait for 'id-researcher'. Design Citizen aggregate + verifier glue. SendMessage to 'id-coder'.",
@@ -418,10 +418,10 @@ GrowthBook / LaunchDarkly — overkill for S1.
 
 ### 5.5 Exit gate
 
-- [ ] All three pipelines green on main
-- [ ] `bun run check` passes
-- [ ] `aidefence_scan` shows no medium+ findings on the cumulative diff
-- [ ] `ruflo doctor --fix` reports clean
+- [ ] All three pipelines green on main — pending first-merge CI run (Phase 9 Group A1)
+- [x] `bun run check` passes — 38/38 every commit since wave 3 (`pattern_s1_phase_5_done`)
+- [x] `aidefence_scan` shows no medium+ findings on the cumulative diff — closed by wave-1 review (`pattern_s1_phase_5_wave_1_done`)
+- [x] `ruflo doctor --fix` reports clean — closed wave 1
 
 ---
 
@@ -471,11 +471,15 @@ Per ticket:
 | Complaint API | `apps/api/__tests__/complaint/*.test.ts` | 15 |
 | Discovery / FTS | `apps/api/__tests__/discovery/*.test.ts` | 8 |
 | Moderation queue | `apps/api/__tests__/moderation/*.test.ts` | 8 |
-| Web E2E | `apps/web/e2e/*.spec.ts` — onboarding, submit, browse, comment, flag | 5 |
-| Mobile E2E (iOS) | `apps/mobile/e2e/*.spec.ts` via Detox | 5 |
+| Web E2E | `apps/web/e2e/*.spec.ts` — onboarding, submit (complaint), browse, flag, tab-parity (ADR-0019) | 5 |
+| Mobile E2E (iOS) | `apps/mobile/e2e/*.spec.ts` via Detox + Argent MCP | 5 |
 | Mobile E2E (Android) | same files, Detox android config | 5 |
-| Contract glue | `packages/contracts/test/CitizenVerifier.t.ts` | 10 |
+| Contract glue | `packages/contracts/test/CitizenVerifier.t.ts` | **DEFERRED to Phase 9** ([[s1-zkp-findings]] OQ-1 — upstream Polygon deployment) |
 | Schema / Zod | `packages/shared/__tests__/*.test.ts` | 20 |
+
+**Phase 6 amendments** (per qa-lead gap analysis 2026-05-24):
+- Row 5 swapped `comment` → `tab-parity (ADR-0019)`. Comments table is out of S1 scope ([[s1-phase-5-done]] wave-4 nice-to-have #5).
+- Row 8 (Contract glue) moved to Phase 9 — `packages/contracts/` doesn't exist and the upstream `CitizenVerifier` deployment doesn't exist yet. See `docs/action-plans/season-1/phase-9-deferred.md` §1.
 
 ### 6.5 Verification with Argent for mobile
 
@@ -488,10 +492,10 @@ Per project rule `argent.md`:
 
 ### 6.6 Exit gate
 
-- [ ] Coverage thresholds met across all packages
-- [ ] All E2E suites pass on CI (web + iOS + Android)
-- [ ] Hardhat contract tests pass against Polygon Amoy
-- [ ] `prod-validator` posts a green production-readiness report
+- [x] Coverage thresholds met across all packages — 95L/95F/95S/90B enforced (`bun run check` 38/38)
+- [ ] All E2E suites pass on CI (web + iOS + Android) — pending first-merge run (Phase 9 Group A1)
+- [ ] Hardhat contract tests pass against Polygon Amoy — deferred to Phase 9 §1 (no upstream deployment)
+- [x] `prod-validator` posts a green production-readiness report — closed by `pattern_s1_phase_6_done` (GO verdict)
 
 ---
 
@@ -547,9 +551,16 @@ reviewers configured in repo settings → Environments → `production`.
 
 ### 7.5 Exit gate
 
-- [ ] All 9 workflows green for two consecutive PRs
-- [ ] Staging deploy round-trip < 7 minutes
-- [ ] Production deploy gated by manual approval + audit-pass artifact
+- [ ] All 8 workflows green for two consecutive PRs [^p7-contracts] — pending first-merge run (Phase 9 Group A1)
+- [ ] Staging deploy round-trip < 7 minutes — pending Vercel/Fly.io provisioning (Phase 9 Group B2-B3)
+- [ ] Production deploy gated by manual approval + audit-pass artifact — wired (`deploy-prod.yml`); activation pending audit (Phase 9 Group C2)
+- [x] `release.yml` (Wave 7B) opens a rolling release PR on every push to
+      `main`; merging it cuts tags + attaches `prod-validator-<sha>.json` — shipped wave 7B (`pattern_s1_phase_7_done`)
+
+[^p7-contracts]: Wave 7A authored 8 of the 9 workflows in §7.3 + added
+    `release.yml` in Wave 7B. `contracts.yml` is deferred to **Phase 9**
+    alongside the on-chain contract surface; see
+    `docs/action-plans/season-1/phase-9-plan.md`.
 
 ---
 
@@ -622,21 +633,23 @@ forbidden in production paths; allowed only against ephemeral preview envs.
 
 ### 8.4 Monthly cost target (pilot ≈ 1k MAU) — must match cost-scenarios.md S1
 
-| Line | Amount |
-|------|--------|
-| Supabase Pro | $25 |
-| Vercel Pro (web) | $20 |
-| Fly.io shared-cpu-1x × 1 + tiny Postgres-free | $10 |
-| EAS Starter | $19 |
-| Polygon gas (ZKP verify, batched) | $5 |
-| The Graph hosted | $0 |
-| Cloudflare free | $0 |
-| Backups (Supabase included) | $0 |
-| Misc (domains, sentry free, etc.) | $20 |
-| **Total** | **≈ $99/mo** |
+| Line | Amount | Note |
+|------|--------|------|
+| Supabase Pro | $25 | |
+| Vercel Pro (web) | $20 | |
+| Fly.io shared-cpu-1x × 1 + tiny Postgres-free | $10 | |
+| EAS Starter | $19 | |
+| Polygon gas (ZKP verify, batched) | $18.76 | Post-Chicago hardfork (PIP-88, 2026-05-21). Rebaselined from $5 in Phase 2 reconciliation per [[s2-polygon-gas]]. |
+| The Graph hosted | $0 | |
+| Cloudflare free | $0 | |
+| Backups (Supabase included) | $0 | |
+| Misc (domains, sentry free, etc.) | $20 | |
+| **Total (standard)** | **≈ $113/mo** | Volatility band: off-peak $95 / standard $113 / spike $151. |
 
-> If any line drifts > 15% from target, `cost-analyst` opens an issue and
-> stores a `[[s1-cost-drift]]` memory.
+> Drift tolerance bands (per [[s1-cost-drift]]): Green ≤ $105 / Amber
+> $105–$115 / Red > $115. If total > $115 for two consecutive weeks,
+> `cost-analyst` files a `risk:budget` issue and updates the drift memo.
+> Full reconciliation in `docs/data-points/s1-cost-reconciliation-phase-8.md`.
 
 ### 8.5 One-time spend
 
@@ -681,11 +694,35 @@ forbidden in production paths; allowed only against ephemeral preview envs.
 ### 8.8 Exit gate
 
 - [ ] Production stack live behind primary domain + 2 backup domains
-- [ ] Monthly cost reconciled to ≤ $110 actual for two consecutive months
+- [ ] Monthly cost reconciled to ≤ **$115** actual (Amber ceiling) for two
+      consecutive months. *(Amended from "≤ $110" on 2026-05-25 to align with
+      the post-Chicago Polygon-gas volatility band $95 / $113 / $151 and the
+      tolerance bands in `reference_s1_cost_drift`: Green ≤$105 / Amber
+      $105–$115 / Red >$115. See `docs/data-points/s1-cost-reconciliation-phase-8.md`.)*
 - [ ] Audit report for `CitizenVerifier.sol` integration glue: **no high or
       critical** findings open
 - [ ] Disaster drill: nuke Fly.io app, restore from main + Supabase backup, in
       < 30 minutes; documented in `docs/operations/dr-drill-s1.md`
+
+---
+
+## Phase 9 — User Testing & Production-Side Validation
+
+**Goal:** Land the four items deliberately deferred from Phase 5 (because they depend on **external upstream**, **ops infrastructure**, or **legal counsel**) and validate the full S1 surface end-to-end before launch announcement.
+
+Triggers after Phase 8 (Infrastructure Cost & Deployment) closes and the user has exercised web + iOS + Android end-to-end without regressions.
+
+Scope + per-item plan + cited legal sources live in `docs/action-plans/season-1/phase-9-deferred.md`. Summary:
+
+1. **On-chain `verifyAndRecord`** via CitizenVerifier — blocked on AnonCitizen upstream Polygon Amoy/mainnet deployment ([[s1-zkp-findings]] OQ-1)
+2. **Rate limiter** — Upstash Redis (Mumbai) chosen 2026-05-26. Code complete (`apps/api/src/lib/upstash-rate-limiter.ts` + auto-select). Activation = user creates Upstash Redis + sets two Fly secrets.
+3. **DPDP §8(7) review** + `grievance_contacts` table split + retention raise to 365d general / 30d post-resolve PII (blocks on legal counsel)
+4. **Production rapidsnark distribution** — Docker layer / S3 init container / Lambda layer (local-dev contract already in `apps/api/zkp-artifacts/README.md`)
+5. **Production deployment provisioning** — absorbed from Phase 8 user-ops: 9 ordered actions (GitHub secrets / Vercel / Fly / Supabase + custom domain / Cloudflare / EAS / Sentry DSNs / Cloudflare Workers uptime deploy / migration 0004). Recurring ≈ $113/mo within the §8.8 amended ≤ $115 Amber ceiling.
+6. **Polygon multisig + CitizenVerifier integration audit** — 3/5 Safe + boutique reviewer engagement ($3,000–$10,000 one-shot). Blocks the first prod release tag.
+7. **First DR drill + two-month cost reconciliation** — §8.8 exit-gate items 3 & 4.
+
+Exit gate per `phase-9-deferred.md`.
 
 ---
 

@@ -21,10 +21,33 @@ pre-commit:
     guardrails-age-ddl:
       glob: "*.{ts,tsx,sql}"
       run: cd packages/guardrails && bun run src/cli.ts check age-ddl-outside-migration --staged-files {staged_files}
+    # Anonymity floor (ADR-0010 + aggregates §4 I-MOD-2). Scans the
+    # moderator-facing surface for citizen-identifier leaks. The script
+    # already walks the full scope so we don't pass {staged_files} — a
+    # cross-file regression (e.g. a moved import) is still caught.
+    anonymity-grep-guard:
+      glob: "apps/{api,web}/src/**/*.{ts,tsx}"
+      run: bash scripts/anonymity-grep-guard.sh
+
+# Conventional Commits enforcement (Phase 7 Wave 7B, release-runbook.md).
+# release-please scans CC titles to build the rolling release PR; non-CC
+# commits silently miss the changelog. Local enforcement keeps the
+# release pipeline honest without requiring CI gates yet (Phase 9).
+# Bypass with `BYPASS_GUARDRAILS=local BYPASS_REASON="…"` per the
+# guardrails contract — bypasses are audited.
+commit-msg:
+  commands:
+    commitlint:
+      run: bunx --bun @commitlint/cli --extends @commitlint/config-conventional --edit {1}
 
 pre-push:
   parallel: false
   commands:
+    # Repo must push as the `facktivist` gh account, not the global default.
+    # gh's active account is global state; this guards against a silent
+    # cross-identity push. Bypass with BYPASS_GH_ACCOUNT_CHECK=1.
+    gh-account:
+      run: bash scripts/check-gh-account.sh
     typecheck:
       run: bun run lint
     test-affected:

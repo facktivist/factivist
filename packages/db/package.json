@@ -23,6 +23,10 @@
     "./age": {
       "types": "./src/age.ts",
       "default": "./src/age.ts"
+    },
+    "./seed/categories": {
+      "types": "./src/seed/categories.ts",
+      "default": "./src/seed/categories.ts"
     }
   },
   "files": [
@@ -39,7 +43,9 @@
     "db:migrate": "bun run src/migrate.ts",
     "db:migrate:age": "bun run src/migrate-age.ts",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "bun run src/seed/index.ts"
+    "db:seed": "bun run src/seed/index.ts",
+    "db:seed:categories": "bun run src/seed/categories.ts",
+    "db:seed:flags": "bun run src/seed/feature_flags.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

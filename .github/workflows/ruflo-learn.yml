@@ -1,0 +1,144 @@
+# Nightly Ruflo learning — Phase 7 §7.3.
+#
+# Pulls the past 24h of GitHub Actions workflow runs and stores aggregated
+# CI metrics into the Ruflo `ci-metrics` namespace, then fires the
+# post-task hook so any background workers (audit / optimize / etc.) can
+# pick up the latest signal.
+#
+# Schedule: 04:00 UTC daily — 1h after audit-log-sweep so the sweep run
+# itself is included in the metric window.
+#
+# This is observability-only. Failures here MUST NOT page anyone; they
+# are surfaced via the next-day run delta if the metric line goes flat.
+#
+# Requires:
+#   - GITHUB_TOKEN (auto-provided by Actions) with `actions:read` to list runs.
+#   - bun-installed `ruflo` CLI. Today this is invoked via `bunx ruflo@latest`
+#     so the workflow does not depend on a project-local pin. If S2 pins it,
+#     update the two `bunx` lines below.
+#
+# Owner: scripts/anonymity-grep-guard.sh-class observability (no ADR yet)
+# Runbook: docs/operations/deploy-runbook.md §Nightly learn
+
+name: ruflo-learn
+
+on:
+  schedule:
+    # 04:00 UTC daily. Stays after audit-log-sweep (03:00 UTC).
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why running off-schedule?'
+        required: false
+        default: 'manual verification'
+
+concurrency:
+  group: ruflo-learn
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  learn:
+    name: Aggregate CI metrics and feed Ruflo
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Failure-silent: this is observability, not a gate.
+    continue-on-error: true
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies (provides ruflo CLI if pinned)
+        run: bun install --frozen-lockfile
+
+      - name: Collect last 24h workflow runs
+        id: collect
+        run: |
+          set -euo pipefail
+          SINCE=$(date -u -d '24 hours ago' '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -v-24H '+%Y-%m-%dT%H:%M:%SZ')
+          echo "Window since: ${SINCE}"
+
+          # Fetch up to 100 most recent runs across all workflows.
+          gh api -X GET \
+            "repos/${GITHUB_REPOSITORY}/actions/runs" \
+            -f per_page=100 \
+            -q ".workflow_runs[] | select(.created_at >= \"${SINCE}\") | {id, name, conclusion, status, created_at, updated_at, run_attempt}" \
+            | jq -s '.' > runs.json
+
+          TOTAL=$(jq 'length' runs.json)
+          SUCCESS=$(jq '[.[] | select(.conclusion == "success")] | length' runs.json)
+          FAILURE=$(jq '[.[] | select(.conclusion == "failure")] | length' runs.json)
+          CANCELLED=$(jq '[.[] | select(.conclusion == "cancelled")] | length' runs.json)
+
+          # Per-workflow median duration (in seconds), computed in jq.
+          PER_WORKFLOW=$(jq '[group_by(.name)[] | {
+            workflow: .[0].name,
+            count: length,
+            success_rate: (([.[] | select(.conclusion == "success")] | length) / length),
+            avg_duration_s: ([.[] | ((.updated_at | fromdateiso8601) - (.created_at | fromdateiso8601))] | add / length | floor)
+          }]' runs.json)
+
+          DATE=$(date -u '+%Y-%m-%d')
+          jq -n \
+            --arg date "$DATE" \
+            --arg since "$SINCE" \
+            --argjson total "$TOTAL" \
+            --argjson success "$SUCCESS" \
+            --argjson failure "$FAILURE" \
+            --argjson cancelled "$CANCELLED" \
+            --argjson per_workflow "$PER_WORKFLOW" \
+            '{date: $date, window_since: $since, totals: {runs: $total, success: $success, failure: $failure, cancelled: $cancelled}, per_workflow: $per_workflow}' \
+            > metrics.json
+
+          echo "## CI metrics — ${DATE}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat metrics.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+          echo "date=${DATE}" >> "$GITHUB_OUTPUT"
+
+      - name: Store metrics in Ruflo memory (namespace=ci-metrics)
+        run: |
+          set -euo pipefail
+          VALUE=$(jq -c . metrics.json)
+          # Best-effort: ruflo CLI may not exist on a fresh repo. Failure
+          # here writes a notice rather than failing the job.
+          if bunx ruflo@latest --version >/dev/null 2>&1; then
+            bunx ruflo@latest memory store \
+              --namespace ci-metrics \
+              --key "${{ steps.collect.outputs.date }}" \
+              --value "${VALUE}" \
+              || echo "::warning::ruflo memory store failed — metrics retained as artifact only."
+          else
+            echo "::notice::ruflo CLI not installed in this workspace — skipping memory store. Add 'ruflo' to root devDependencies to enable."
+          fi
+
+      - name: Fire post-task hook
+        run: |
+          if bunx ruflo@latest --version >/dev/null 2>&1; then
+            bunx ruflo@latest hooks post-task \
+              --task-id "nightly-ci-learn-${{ steps.collect.outputs.date }}" \
+              --success true \
+              --store-results true \
+              || echo "::warning::ruflo hooks post-task failed."
+          else
+            echo "::notice::ruflo CLI not installed — skipping post-task hook."
+          fi
+
+      - name: Upload metrics artifact (fallback storage)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-metrics-${{ steps.collect.outputs.date }}
+          path: metrics.json
+          if-no-files-found: warn
+          retention-days: 30

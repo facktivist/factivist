@@ -1,0 +1,28 @@
+# Cloudflare Workers config for the synthetic uptime cron (Phase 8 §8.7).
+#
+# Free-tier scoped — see apps/api/src/workers/uptime-cron.ts. Deploy
+# with `wrangler deploy` after setting the secret:
+#
+#   cd apps/api
+#   bun add -D wrangler
+#   bunx wrangler secret put UPTIME_WEBHOOK_URL
+#   bunx wrangler secret put UPTIME_WEBHOOK_SECRET   # optional
+#   bunx wrangler deploy
+#
+# The cron schedule below is 5-minute parity with cost-scenarios.md S1.
+# Bump to 1-minute only after upgrading to Workers Paid ($5/mo).
+
+name = "factivist-uptime"
+main = "src/workers/uptime-cron.ts"
+compatibility_date = "2026-05-01"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+# Default targets — override per env with `wrangler secret put`.
+UPTIME_TARGETS = """
+https://factivist.example/
+https://api.factivist.example/healthz
+https://staging.factivist.example/
+"""

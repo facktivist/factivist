@@ -1,3 +1,21 @@
+# Local-dev observability gate.
+#
+# ## Relationship to `ci.yml`
+#
+# This workflow runs on every push to a feature branch so contributors get
+# fast per-commit feedback **without** waiting for a PR to be opened. It is
+# intentionally narrower than `ci.yml`:
+#
+#   * `check.yml` (this file) — runs on PRs and pushes; mobile paths excluded
+#     to keep the loop fast. NOT the branch-protection gate.
+#   * `ci.yml`                — runs on every PR (all paths) + `main` push;
+#     this IS the branch-protection gate. Mirrors `bun run check` 1:1.
+#
+# Both files run `bun run check`. They overlap on PR runs by design: `check.yml`
+# catches drift early on feature branches; `ci.yml` is the named status check
+# enforced at merge time. Kept separate so we can tune their triggers
+# independently (e.g. exclude `apps/mobile/**` here without weakening the gate).
+
 name: check
 
 on:
@@ -34,6 +52,13 @@ jobs:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: turbo-${{ runner.os }}-
+
+      # Cheapest gate first: a pure bash + grep + awk scan of the
+      # moderator-facing surface for citizen-identifier leaks
+      # (ADR-0010 + aggregates §4 I-MOD-2). Runs before `bun install`
+      # so a regression fails the workflow in seconds, not minutes.
+      - name: Anonymity floor (ADR-0010 grep guard)
+        run: bash scripts/anonymity-grep-guard.sh
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
